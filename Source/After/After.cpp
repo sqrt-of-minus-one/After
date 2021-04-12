@@ -1,4 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+    ////////////////////////////////////////
+   //        After by SnegirSoft         //
+  //                                    //
+ //  File: After.cpp                   //
+////////////////////////////////////////
 
 #include "After.h"
 #include "Modules/ModuleManager.h"

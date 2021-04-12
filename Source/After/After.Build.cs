@@ -1,4 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+    ////////////////////////////////////////
+   //        After by SnegirSoft         //
+  //                                    //
+ //  File: After.Build.cs              //
+////////////////////////////////////////
 
 using UnrealBuildTool;
 
@@ -8,7 +12,7 @@ public class After : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "GameplayTags", "Paper2D" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

@@ -1,5 +1,8 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
-
+    ////////////////////////////////////////
+   //        After by SnegirSoft         //
+  //                                    //
+ //  File: AfterGameModeBase.cpp       //
+////////////////////////////////////////
 
 #include "AfterGameModeBase.h"
 
