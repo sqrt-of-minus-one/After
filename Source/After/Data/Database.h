@@ -97,70 +97,70 @@ public:
 	
 			/* ENTITY */
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FEntityInfo& GetEntityData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FLastInfo& GetLastData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FMobInfo& GetMobData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FAnimalInfo& GetAnimalData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FWolfInfo& GetWolfData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FMutantInfo& GetMutantData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FAlienInfo& GetAlienData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Entity")
 	const FRobotInfo& GetRobotData(const FGameplayTag Tag) const;
 
 			/* UNIT */
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FUnitInfo& GetUnitData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FLiquidInfo& GetLiquidData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FSolidUnitInfo& GetSolidUnitData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FDesktopInfo& GetDesktopData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FCrateInfo& GetCrateData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Unit")
 	const FVesselUnitInfo& GetVesselUnitData(const FGameplayTag Tag) const;
 
 			/* ITEM */
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FItemInfo& GetItemData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FVesselItemInfo& GetVesselItemData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FBuildableInfo& GetBuildableData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FFoodInfo& GetFoodData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FClothesInfo& GetClothesData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FRangedWeaponInfo& GetRangedWeaponData(const FGameplayTag Tag) const;
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FAmmunitionInfo& GetAmmunitionData(const FGameplayTag Tag) const;
 };

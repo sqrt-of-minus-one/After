@@ -6,3 +6,13 @@
 
 #include "AfterGameModeBase.h"
 
+void AAfterGameModeBase::BeginPlay()
+{
+	Super::BeginPlay();
+	Database->Check();
+}
+
+const UDatabase* AAfterGameModeBase::GetDatabase() const
+{
+	return Database;
+}
