@@ -8,9 +8,9 @@
 
 #include "CoreMinimal.h"
 
-#include "Data/Database.h"
-
 #include "GameFramework/GameModeBase.h"
+
+#include "Data/Database.h"
 
 #include "AfterGameModeBase.generated.h"
 

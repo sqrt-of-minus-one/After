@@ -59,6 +59,12 @@ struct FLiquidInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+
+	// Liquid's tags
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TArray<FGameplayTag> Tags;
+
 			/* FLOW */
 
 	// Updates per second
@@ -96,6 +102,12 @@ struct FSolidUnitInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+
+	// Solid unit's tags
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TArray<FGameplayTag> Tags;
+
 			/* STATS */
 
 	// Maximum value of the entity's health
@@ -129,6 +141,10 @@ public:
 	// What can be used to get unit (<<profile.breake>>)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
 	FGameplayTag BreakeProfile;
+
+	// How long unit is being broken (seconds)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
+	float BreakingTime;
 
 			/* AUDIO */
 

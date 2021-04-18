@@ -9,7 +9,7 @@
 void AAfterGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	Database->Check();
+	Database->Init();
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const

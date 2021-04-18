@@ -6,9 +6,8 @@
 
 #include "Database.h"
 
-void UDatabase::Check()
+void UDatabase::Init()
 {
-	UE_LOG(LogTemp, Log, TEXT("I'm here!"));
 	TArray<FGameplayTag> Tags;
 
 	// Check entity
@@ -290,6 +289,20 @@ void UDatabase::Check()
 			UE_LOG(LogTemp, Error, TEXT("%s is not an ammunition, but it is contained in the ammunition database"), *i.ToString());
 		}
 	}
+
+	// Check projectile
+	ProjectileData.GetKeys(Tags);
+	for (const FGameplayTag& i : Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Projectile database contains an invalid tag %s"), *i.ToString());
+		}
+		if (i.ToString().Find(TEXT("projetile")) != 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s is not a projectile, but it is contained in the projectile database"), *i.ToString());
+		}
+	}
 }
 
 		/* ENTITY */
@@ -485,4 +498,62 @@ const FAmmunitionInfo& UDatabase::GetAmmunitionData(const FGameplayTag Tag) cons
 		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about ammunition %s that is not contained in the database"), *Tag.ToString());
 	}
 	return AmmunitionData[Tag];
+}
+
+		/* PROJECTILE */
+
+const FProjectileInfo& UDatabase::GetProjectileData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !ProjectileData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about projectile %s that is not contained in the database"), *Tag.ToString());
+	}
+	return ProjectileData[Tag];
+}
+
+		/* TAG */
+
+const FTagInfo& UDatabase::GetEntityTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !EntityTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about entity tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return EntityTagData[Tag];
+}
+
+const FTagInfo& UDatabase::GetLiquidTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !LiquidTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about liquid tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return LiquidTagData[Tag];
+}
+
+const FTagInfo& UDatabase::GetSolidUnitTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !SolidUnitTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about solid unit tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return SolidUnitTagData[Tag];
+}
+
+const FTagInfo& UDatabase::GetItemTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !ItemTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about item tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return ItemTagData[Tag];
+}
+
+const FTagInfo& UDatabase::GetProjectileTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !ProjectileTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about projectile tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return ProjectileTagData[Tag];
 }

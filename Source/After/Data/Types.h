@@ -28,6 +28,7 @@ enum class FDamageType : uint8
 	Burn
 };
 
+
 UENUM(BlueprintType)
 enum class FClothesType : uint8
 {

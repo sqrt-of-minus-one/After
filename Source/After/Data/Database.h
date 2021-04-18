@@ -13,6 +13,8 @@
 #include "EntityInfo.h"
 #include "UnitInfo.h"
 #include "ItemInfo.h"
+#include "ProjectileInfo.h"
+#include "TagInfo.h"
 
 #include "Database.generated.h"
 
@@ -91,9 +93,31 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Item")
 	TMap<FGameplayTag, FAmmunitionInfo> AmmunitionData;
 
+			/* PROJECTILE */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Projectile")
+	TMap<FGameplayTag, FProjectileInfo> ProjectileData;
+
+			/* TAG */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> EntityTagData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> LiquidTagData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> SolidUnitTagData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> ItemTagData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> ProjectileTagData;
+
 public:
 	UFUNCTION()
-	void Check();
+	void Init();
 	
 			/* ENTITY */
 
@@ -163,4 +187,26 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Item")
 	const FAmmunitionInfo& GetAmmunitionData(const FGameplayTag Tag) const;
+
+			/* PROJECTILE */
+
+	UFUNCTION(BlueprintCallable, Category = "Projectile")
+	const FProjectileInfo& GetProjectileData(const FGameplayTag Tag) const;
+
+			/* TAG */
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetEntityTagData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetLiquidTagData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetSolidUnitTagData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetItemTagData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetProjectileTagData(const FGameplayTag Tag) const;
 };

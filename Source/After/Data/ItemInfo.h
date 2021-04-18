@@ -30,6 +30,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	FText Description;
 
+	// Item's tags
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TArray<FGameplayTag> Tags;
+
 			/* INVENTORY */
 
 	// How many items can be placed in one inventory cell

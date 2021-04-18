@@ -28,6 +28,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	FText Description;
 
+	// Entity's tags
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TArray<FGameplayTag> Tags;
+
 			/* STATS */
 
 	// Maximum value of the entity's health
