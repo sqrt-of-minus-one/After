@@ -9,12 +9,32 @@
 #include "CoreMinimal.h"
 
 #include "GameplayTagContainer.h"
+#include <functional>
 
 #include "Types.generated.h"
 
 class UPaperFlipbook;
 class USoundBase;
 class UItem;
+
+//// 
+// After any changement of any enum, definition of
+// corresponding for_enum function also must be changed!
+////
+
+template <typename T>
+inline void for_enum(const std::function<void(T)>& Func) = delete;
+
+template<typename T>
+static inline void _for_enum_impl(const std::function<void(T)>& Func, T Begin, T End)
+{
+	T i = Begin;
+	do
+	{
+		Func(i);
+		i = static_cast<T>(static_cast<int>(i) + 1);
+	} while (i <= End);
+}
 
 UENUM(BlueprintType)
 enum class FDamageType : uint8
@@ -27,7 +47,11 @@ enum class FDamageType : uint8
 	Suffocation,
 	Burn
 };
-
+template<>
+inline void for_enum(const std::function<void(FDamageType)>& Func)
+{
+	_for_enum_impl(Func, FDamageType::Strike, FDamageType::Burn);
+}
 
 UENUM(BlueprintType)
 enum class FClothesType : uint8
@@ -38,6 +62,11 @@ enum class FClothesType : uint8
 	Shoes,
 	Backpack
 };
+template<>
+inline void for_enum(const std::function<void(FClothesType)>& Func)
+{
+	_for_enum_impl(Func, FClothesType::Hat, FClothesType::Backpack);
+}
 
 // What is entity doing now?
 UENUM(BlueprintType)
@@ -56,6 +85,11 @@ enum class FEntityStatus : uint8
 	Web,
 	Special
 };
+template<>
+inline void for_enum(const std::function<void(FEntityStatus)>& Func)
+{
+	_for_enum_impl(Func, FEntityStatus::Stay, FEntityStatus::Special);
+}
 
 UENUM(BlueprintType)
 enum class FDirection : uint8
@@ -65,6 +99,11 @@ enum class FDirection : uint8
 	B,
 	L
 };
+template<>
+inline void for_enum(const std::function<void(FDirection)>& Func)
+{
+	_for_enum_impl(Func, FDirection::F, FDirection::L);
+}
 
 USTRUCT(BlueprintType)
 struct FEntityFlipbooks
@@ -86,6 +125,11 @@ enum class FEntitySoundType : uint8
 	Attack,
 	Death
 };
+template<>
+inline void for_enum(const std::function<void(FEntitySoundType)>& Func)
+{
+	_for_enum_impl(Func, FEntitySoundType::Passive, FEntitySoundType::Death);
+}
 
 UENUM(BlueprintType)
 enum class FLiquidSoundType : uint8
@@ -94,6 +138,11 @@ enum class FLiquidSoundType : uint8
 	EntityEnter,
 	EntityQuit
 };
+template<>
+inline void for_enum(const std::function<void(FLiquidSoundType)>& Func)
+{
+	_for_enum_impl(Func, FLiquidSoundType::Flow, FLiquidSoundType::EntityQuit);
+}
 
 UENUM(BlueprintType)
 enum class FSolidUnitSoundType : uint8
@@ -104,6 +153,11 @@ enum class FSolidUnitSoundType : uint8
 	Breaking,
 	Broken
 };
+template<>
+inline void for_enum(const std::function<void(FSolidUnitSoundType)>& Func)
+{
+	_for_enum_impl(Func, FSolidUnitSoundType::Passive, FSolidUnitSoundType::Broken);
+}
 
 USTRUCT(BlueprintType)
 struct FSoundsArray

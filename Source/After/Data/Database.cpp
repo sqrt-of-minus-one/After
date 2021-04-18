@@ -6,6 +6,8 @@
 
 #include "Database.h"
 
+#include <functional>
+
 void UDatabase::Init()
 {
 	TArray<FGameplayTag> Tags;
