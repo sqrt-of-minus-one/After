@@ -134,10 +134,6 @@ public:
 
 			/* BREAKING */
 
-	// Whether the unit can be broken without special tools
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
-	bool bCanBeBrokenByHand;
-
 	// What can be used to get unit (<<profile.breake>>)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
 	FGameplayTag BreakeProfile;

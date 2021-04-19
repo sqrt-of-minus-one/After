@@ -15,6 +15,7 @@
 #include "ItemInfo.h"
 #include "ProjectileInfo.h"
 #include "TagInfo.h"
+#include "ProfileInfo.h"
 
 #include "Database.generated.h"
 
@@ -113,7 +114,21 @@ protected:
 	TMap<FGameplayTag, FTagInfo> ItemTagData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
+	TMap<FGameplayTag, FTagInfo> AmmunitionTagData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Tag")
 	TMap<FGameplayTag, FTagInfo> ProjectileTagData;
+
+			/* PROFILE */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
+	TMap<FGameplayTag, FBreakeProfileInfo> BreakeProfileData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
+	TMap<FGameplayTag, FVesselProfileInfo> VesselProfileData;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
+	TMap<FGameplayTag, FAmmunitionProfileInfo> AmmunitionProfileData;
 
 public:
 	UFUNCTION()
@@ -208,5 +223,19 @@ public:
 	const FTagInfo& GetItemTagData(const FGameplayTag Tag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Tag")
+	const FTagInfo& GetAmmunitionTagData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Tag")
 	const FTagInfo& GetProjectileTagData(const FGameplayTag Tag) const;
+
+			/* PROFILE */
+
+	UFUNCTION(BlueprintCallable, Category = "Profile")
+	const FBreakeProfileInfo& GetBreakeProfileData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Profile")
+	const FVesselProfileInfo& GetVesselProfileData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Profile")
+	const FAmmunitionProfileInfo& GetAmmunitionProfileData(const FGameplayTag Tag) const;
 };

@@ -190,6 +190,12 @@ struct FAmmunitionInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+
+	// Ammunition's tags
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TArray<FGameplayTag> Tags;
+
 			/* CHARACTERISTICS */
 
 	// The projectile that is used (<<projectile>>)

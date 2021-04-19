@@ -6,8 +6,6 @@
 
 #include "Database.h"
 
-#include <functional>
-
 void UDatabase::Init()
 {
 	TArray<FGameplayTag> Tags;
@@ -305,6 +303,48 @@ void UDatabase::Init()
 			UE_LOG(LogTemp, Error, TEXT("%s is not a projectile, but it is contained in the projectile database"), *i.ToString());
 		}
 	}
+
+	// Check profile: breake
+	ProjectileData.GetKeys(Tags);
+	for (const FGameplayTag& i : Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Breake profile database contains an invalid tag %s"), *i.ToString());
+		}
+		if (i.ToString().Find(TEXT("profile.breake")) != 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s is not a breake profile, but it is contained in the breake profile database"), *i.ToString());
+		}
+	}
+
+	// Check profile: vessel
+	ProjectileData.GetKeys(Tags);
+	for (const FGameplayTag& i : Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Vessel profile database contains an invalid tag %s"), *i.ToString());
+		}
+		if (i.ToString().Find(TEXT("profile.vessel")) != 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s is not a vessel profile, but it is contained in the vessel profile database"), *i.ToString());
+		}
+	}
+
+	// Check profile: ammunition
+	ProjectileData.GetKeys(Tags);
+	for (const FGameplayTag& i : Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Ammunition profile database contains an invalid tag %s"), *i.ToString());
+		}
+		if (i.ToString().Find(TEXT("profile.ammunition")) != 0)
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s is not a ammunition profile, but it is contained in the ammunition profile database"), *i.ToString());
+		}
+	}
 }
 
 		/* ENTITY */
@@ -551,6 +591,15 @@ const FTagInfo& UDatabase::GetItemTagData(const FGameplayTag Tag) const
 	return ItemTagData[Tag];
 }
 
+const FTagInfo& UDatabase::GetAmmunitionTagData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !ItemTagData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about ammunition tag %s that is not contained in the database"), *Tag.ToString());
+	}
+	return ItemTagData[Tag];
+}
+
 const FTagInfo& UDatabase::GetProjectileTagData(const FGameplayTag Tag) const
 {
 	if (!Tag.IsValid() || !ProjectileTagData.Contains(Tag))
@@ -558,4 +607,33 @@ const FTagInfo& UDatabase::GetProjectileTagData(const FGameplayTag Tag) const
 		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about projectile tag %s that is not contained in the database"), *Tag.ToString());
 	}
 	return ProjectileTagData[Tag];
+}
+
+		/* PROFILE */
+
+const FBreakeProfileInfo& UDatabase::GetBreakeProfileData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !BreakeProfileData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about breake profile %s that is not contained in the database"), *Tag.ToString());
+	}
+	return BreakeProfileData[Tag];
+}
+
+const FVesselProfileInfo& UDatabase::GetVesselProfileData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !VesselProfileData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about vessel profile %s that is not contained in the database"), *Tag.ToString());
+	}
+	return VesselProfileData[Tag];
+}
+
+const FAmmunitionProfileInfo& UDatabase::GetAmmunitionProfileData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !AmmunitionProfileData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about ammunition profile %s that is not contained in the database"), *Tag.ToString());
+	}
+	return AmmunitionProfileData[Tag];
 }
