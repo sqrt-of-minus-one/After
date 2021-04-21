@@ -34,7 +34,7 @@ public:
 
 	// Damage that is dealt by the unit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
-	float Damage;
+	float Damage = 0.f;
 
 	// Type of the unit's damage
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
@@ -44,14 +44,15 @@ public:
 
 	// The fraction of light that is not passing through the unit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	float Opacity;
+	float Opacity = 1.f;
 
 			/* INTERACTION */
 
 	// Whether entity can be selected by player
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
-	bool bSelectable;
+	bool bSelectable = true;
 };
+void Check(const FUnitInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FLiquidInfo
@@ -95,6 +96,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FLiquidSounds Sounds;
 };
+void Check(const FLiquidInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FSolidUnitInfo
@@ -122,7 +124,7 @@ public:
 
 	// Whether the unit uses flipbook or sprite
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	bool bUseFlipbook;
+	bool bUseFlipbook = false;
 
 	// The unit's flipbook
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
@@ -148,6 +150,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FSolidUnitSounds Sounds;
 };
+void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FDesktopInfo
@@ -179,6 +182,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	int ExtraItemsSize;
 };
+void Check(const FDesktopInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FCrateInfo
@@ -192,6 +196,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	int InventorySize;
 };
+void Check(const FCrateInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FVesselUnitInfo
@@ -209,3 +214,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Content")
 	FGameplayTag VesselProfile;
 };
+void Check(const FVesselUnitInfo& Data, const FGameplayTag& Tag);

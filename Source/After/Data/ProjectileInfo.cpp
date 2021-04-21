@@ -1,0 +1,43 @@
+    ////////////////////////////////////////
+   //        After by SnegirSoft         //
+  //                                    //
+ //  File: ProjectileInfo.cpp          //
+////////////////////////////////////////
+
+#include "ProjectileInfo.h"
+
+void Check(const FProjectileInfo& Data, const FGameplayTag& Tag)
+{
+	// General
+	if (Data.Name.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Projectile %s doesn't have a name"), *Tag.ToString());
+	}
+	if (Data.Description.IsEmpty())
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Projectile %s doesn't have a description"), *Tag.ToString());
+	}
+	for (const FGameplayTag& i : Data.Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Projectile %s contains an invalid projectile tag (%s)"), *Tag.ToString(), *i.ToString());
+		}
+		if (!IS_TAG_PARENT(i, "tag.projectile"))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Projectile %s contains a tag with invalid name (%s is not an projectile tag)"), *Tag.ToString(), *i.ToString());
+		}
+	}
+
+	// Characteristics
+	if (Data.Distance <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Projectile %s has non-positive distance (%f)"), *Tag.ToString(), Data.Distance);
+	}
+
+	// Appearance
+	if (!Data.Sprite)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Projectile %s doesn't have sprite"), *Tag.ToString());
+	}
+}

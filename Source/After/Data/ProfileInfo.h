@@ -18,7 +18,7 @@ struct FBreakeProfileGroup
 	GENERATED_USTRUCT_BODY()
 
 public:
-	// Tags that item must have to be able to breake the unit
+	// Tags that item must have to be able to breake the unit <<tag.item || item>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> Group;
 };
@@ -37,6 +37,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FBreakeProfileGroup> CanBeBrokenBy;
 };
+void Check(const FBreakeProfileInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FVesselProfileInfo
@@ -44,10 +45,11 @@ struct FVesselProfileInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
-	// If liquid have one of these tags, it can be contained by the vessel
+	// If liquid have one of these tags, it can be contained by the vessel <<tag.liquid || unit.liquid>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> CanStand;
 };
+void Check(const FVesselProfileInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FAmmunitionProfileInfo
@@ -55,7 +57,24 @@ struct FAmmunitionProfileInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
-	// If ammunition have one of these tags, it can be used with the weapon
+	// If ammunition have one of these tags, it can be used with the weapon <<tag.ammunition || item.ammunition>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> CanUse;
 };
+void Check(const FAmmunitionProfileInfo& Data, const FGameplayTag& Tag);
+
+USTRUCT(BlueprintType)
+struct FBehaviourProfileInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+public:
+	// Whether entity attacks everyone
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool IsAgressive;
+
+	// Exceptions to is agressive <<tag.entity || entity>>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FGameplayTag> Except;
+};
+void Check(const FBehaviourProfileInfo& Data, const FGameplayTag& Tag);

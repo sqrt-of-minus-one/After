@@ -6,345 +6,179 @@
 
 #include "Database.h"
 
+#include <functional>
+
+template <typename T>
+inline void InitField(const TMap<FGameplayTag, T>& Map, const FString& TagName, const FString& DatabaseName,
+					  const std::function<void(const FGameplayTag&)>& Func = [](const FGameplayTag& i) { })
+{
+	TArray<FGameplayTag> Tags;
+
+	Map.GetKeys(Tags);
+	for (const FGameplayTag& i : Tags)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogTemp, Error, TEXT("There is an invalid tag %s in the %s database"), *i.ToString(), *DatabaseName);
+		}
+		if (!IS_TAG_PARENT(i, "entity"))
+		{
+			UE_LOG(LogTemp, Error, TEXT("%s is not %s, but it is contained in the %s database"), *i.ToString(), *DatabaseName, *DatabaseName);
+		}
+
+		Check(Map[i], i);
+
+		Func(i);
+	}
+}
+
 void UDatabase::Init()
 {
 	TArray<FGameplayTag> Tags;
 
 	// Check entity
-	EntityData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FEntityInfo>(EntityData, "entity", "entity", [&EntityData = EntityData, &EntityTagData = EntityTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		EntityTagData.Empty();
+		for (const FGameplayTag& i : EntityData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Entity database contains an invalid tag %s"), *i.ToString());
+			if (!EntityTagData.Contains(i))
+			{
+				EntityTagData.Add(i);
+			}
+			EntityTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("entity")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not an entity, but it is contained in the entity database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check entity: last
-	LastData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Last database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.last")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a last, but it is contained in the last database"), *i.ToString());
-		}
-	}
+	InitField<FLastInfo>(LastData, "entity.last", "last");
+
+	// Check entity: mob
+	InitField<FMobInfo>(MobData, "entity", "mob");
 
 	// Check entity: animal
-	AnimalData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Animal database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.animal")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not an animal, but it is contained in the animal database"), *i.ToString());
-		}
-	}
+	InitField<FAnimalInfo>(AnimalData, "entity.animal", "animal");
 
 	// Check entity: animal: wolf
-	WolfData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Wolf database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.animal.wolf")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a wolf, but it is contained in the wolf database"), *i.ToString());
-		}
-	}
+	InitField<FWolfInfo>(WolfData, "entity.animal.wolf", "wolf");
 
 	// Check entity: mutant
-	MutantData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Mutant database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.mutant")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a mutant, but it is contained in the mutant database"), *i.ToString());
-		}
-	}
+	InitField<FMutantInfo>(MutantData, "entity.mutant", "mutant");
 
 	// Check entity: alien
-	AlienData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Alien database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.alien")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not an alien, but it is contained in the alien database"), *i.ToString());
-		}
-	}
+	InitField<FAlienInfo>(AlienData, "entity.alien", "alien");
 
 	// Check entity: robot
-	RobotData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Robot database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("entity.robot")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a robot, but it is contained in the robot database"), *i.ToString());
-		}
-	}
+	InitField<FRobotInfo>(RobotData, "entity.robot", "robot");
 
 	// Check unit
-	UnitData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Unit database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("unit")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a unit, but it is contained in the unit database"), *i.ToString());
-		}
-	}
+	InitField<FUnitInfo>(UnitData, "unit", "unit");
 
 	// Check unit: liquid
-	LiquidData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FLiquidInfo>(LiquidData, "unit.liquid", "liquid", [&LiquidData = LiquidData, &LiquidTagData = LiquidTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		LiquidTagData.Empty();
+		for (const FGameplayTag& i : LiquidData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Liquid database contains an invalid tag %s"), *i.ToString());
+			if (!LiquidTagData.Contains(i))
+			{
+				LiquidTagData.Add(i);
+			}
+			LiquidTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("unit.liquid")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a liquid, but it is contained in the liquid database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check unit: solid unit
-	SolidUnitData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FSolidUnitInfo>(SolidUnitData, "unit.solid", "solid unit", [&SolidUnitData = SolidUnitData, &SolidUnitTagData = SolidUnitTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		SolidUnitTagData.Empty();
+		for (const FGameplayTag& i : SolidUnitData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Solid unit database contains an invalid tag %s"), *i.ToString());
+			if (!SolidUnitTagData.Contains(i))
+			{
+				SolidUnitTagData.Add(i);
+			}
+			SolidUnitTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("unit.solid")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a solid unit, but it is contained in the solid unit database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check unit: solid unit: desktop
-	DesktopData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Desktop database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("unit.solid.desktop")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a desktop, but it is contained in the desktop database"), *i.ToString());
-		}
-	}
+	InitField<FDesktopInfo>(DesktopData, "unit.solid.desktop", "desktop");
 
 	// Check unit: solid unit: crate
-	CrateData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Crate database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("unit.solid.crate")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a crate, but it is contained in the crate database"), *i.ToString());
-		}
-	}
+	InitField<FCrateInfo>(CrateData, "unit.solid.crate", "crate");
 
 	// Check unit: solid unit: vessel
-	VesselUnitData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Vessel unit database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("unit.solid.vessel")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a vessel unit, but it is contained in the vessel unit database"), *i.ToString());
-		}
-	}
+	InitField<FVesselUnitInfo>(VesselUnitData, "unit.solid.vessel", "vessel unit");
 
 	// Check item
-	ItemData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FItemInfo>(ItemData, "item", "item", [&ItemData = ItemData, &ItemTagData = ItemTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		ItemTagData.Empty();
+		for (const FGameplayTag& i : ItemData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Item database contains an invalid tag %s"), *i.ToString());
+			if (!ItemTagData.Contains(i))
+			{
+				ItemTagData.Add(i);
+			}
+			ItemTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("item")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not an item, but it is contained in the item database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check item: vessel item
-	VesselItemData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Vessel item database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("item.vessel")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a vessel item, but it is contained in the vessel item database"), *i.ToString());
-		}
-	}
+	InitField<FVesselItemInfo>(VesselItemData, "item.vessel", "vessel item");
 
 	// Check item: buildable
-	BuildableData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Buildable item database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("item.buildable")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a buildable item, but it is contained in the buildable item database"), *i.ToString());
-		}
-	}
+	InitField<FBuildableInfo>(BuildableData, "item.buildable", "buildable item");
 
-	// Check item: fool
-	FoodData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Food database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("item.food")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a food, but it is contained in the food database"), *i.ToString());
-		}
-	}
+	// Check item: food
+	InitField<FFoodInfo>(FoodData, "item.food", "food");
 
 	// Check item: clothes
-	ClothesData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Clothes database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("item.clothes")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a clothes, but it is contained in the clothes database"), *i.ToString());
-		}
-	}
+	InitField<FClothesInfo>(ClothesData, "item.clothes", "clothes");
 
 	// Check item: ranged weapon
-	RangedWeaponData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Ranged weapon database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("item.weapon")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a ranged weapon, but it is contained in the ranged weapon database"), *i.ToString());
-		}
-	}
+	InitField<FRangedWeaponInfo>(RangedWeaponData, "item.weapon", "ranged weapon");
 
 	// Check item: ammunition
-	AmmunitionData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FAmmunitionInfo>(AmmunitionData, "item.ammunition", "ammunition", [&AmmunitionData = AmmunitionData, &AmmunitionTagData = AmmunitionTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		AmmunitionTagData.Empty();
+		for (const FGameplayTag& i : AmmunitionData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ammunition database contains an invalid tag %s"), *i.ToString());
+			if (!AmmunitionTagData.Contains(i))
+			{
+				AmmunitionTagData.Add(i);
+			}
+			AmmunitionTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("item.ammunition")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not an ammunition, but it is contained in the ammunition database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check projectile
-	ProjectileData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
+	InitField<FProjectileInfo>(ProjectileData, "item.ammunition", "ammunition", [&ProjectileData = ProjectileData, &ProjectileTagData = ProjectileTagData](const FGameplayTag& Tag)
 	{
-		if (!i.IsValid())
+		ProjectileTagData.Empty();
+		for (const FGameplayTag& i : ProjectileData[Tag].Tags)
 		{
-			UE_LOG(LogTemp, Error, TEXT("Projectile database contains an invalid tag %s"), *i.ToString());
+			if (!ProjectileTagData.Contains(i))
+			{
+				ProjectileTagData.Add(i);
+			}
+			ProjectileTagData[i].Objects.Add(Tag);
 		}
-		if (i.ToString().Find(TEXT("projetile")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a projectile, but it is contained in the projectile database"), *i.ToString());
-		}
-	}
+	});
 
 	// Check profile: breake
-	ProjectileData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Breake profile database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("profile.breake")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a breake profile, but it is contained in the breake profile database"), *i.ToString());
-		}
-	}
+	InitField<FBreakeProfileInfo>(BreakeProfileData, "profile.breake", "breake profile");
 
 	// Check profile: vessel
-	ProjectileData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Vessel profile database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("profile.vessel")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a vessel profile, but it is contained in the vessel profile database"), *i.ToString());
-		}
-	}
+	InitField<FVesselProfileInfo>(VesselProfileData, "profile.vessel", "vessel profile");
 
 	// Check profile: ammunition
-	ProjectileData.GetKeys(Tags);
-	for (const FGameplayTag& i : Tags)
-	{
-		if (!i.IsValid())
-		{
-			UE_LOG(LogTemp, Error, TEXT("Ammunition profile database contains an invalid tag %s"), *i.ToString());
-		}
-		if (i.ToString().Find(TEXT("profile.ammunition")) != 0)
-		{
-			UE_LOG(LogTemp, Error, TEXT("%s is not a ammunition profile, but it is contained in the ammunition profile database"), *i.ToString());
-		}
-	}
+	InitField<FAmmunitionProfileInfo>(AmmunitionProfileData, "profile.ammunition", "ammunition profile");
+
+	// Check profile: behaviour
+	InitField<FBehaviourProfileInfo>(BehaviourProfileData, "profile.behaviour", "behaviour profile");
 }
 
 		/* ENTITY */
@@ -636,4 +470,13 @@ const FAmmunitionProfileInfo& UDatabase::GetAmmunitionProfileData(const FGamepla
 		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about ammunition profile %s that is not contained in the database"), *Tag.ToString());
 	}
 	return AmmunitionProfileData[Tag];
+}
+
+const FBehaviourProfileInfo& UDatabase::GetBehaviourProfileData(const FGameplayTag Tag) const
+{
+	if (!Tag.IsValid() || !BehaviourProfileData.Contains(Tag))
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about behaviour profile %s that is not contained in the database"), *Tag.ToString());
+	}
+	return BehaviourProfileData[Tag];
 }

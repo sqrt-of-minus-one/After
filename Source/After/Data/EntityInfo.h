@@ -78,11 +78,11 @@ public:
 
 	// Whether entity need stairs to move between layers
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	bool bNeedStairs;
+	bool bNeedStairs = true;
 
 			/* DAMAGE */
 
-	// Values by which damage is multiplies (more than 1 = resist; less than 1 = vulnerability)
+	// Values by which damage is divided (more than 1 = resist; less than 1 = vulnerability)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	TMap<FDamageType, float> DamageResist;
 
@@ -106,15 +106,15 @@ public:
 
 	// The projectile's range is multiplied by this value
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float RangedRadiusMultiplier;
+	float RangedRadiusMultiplier = 1.f;
 
 	// The projectile's speed is multiplied by this value
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float RangedSpeedMultiplier;
+	float RangedSpeedMultiplier = 1.f;
 
 	// The projectile's damage is multiplied by this value
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
-	float RangedDamageMultiplier;
+	float RangedDamageMultiplier = 1.f;
 
 	// Projectiles per second
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
@@ -124,13 +124,13 @@ public:
 
 	// Whether entity can be selected by player
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
-	bool bSelectable;
+	bool bSelectable = true;
 
 			/* APPEARANCE */
 
-	// Values by which damage is multiplies (more than 1 = resist; less than 1 = vulnerability)
+	// The entity's flipbooks
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	TMap<FEntityStatus, FEntityFlipbooks> Flipbook;
+	TMap<FEntityStatus, FEntityFlipbooks> Flipbooks;
 
 			/* AUDIO */
 
@@ -138,6 +138,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FEntitySounds Sounds;
 };
+void Check(const FEntityInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FLastInfo
@@ -155,6 +156,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float SatietySpeed;
 };
+void Check(const FLastInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FMobInfo
@@ -190,8 +192,9 @@ public:
 
 	// The behaviour towards other entities (<<profile.agressive>>)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behaviour")
-	FGameplayTag AgressiveProfile;
+	FGameplayTag BehaviourProfile;
 };
+void Check(const FMobInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FAnimalInfo
@@ -205,6 +208,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mutation")
 	FGameplayTag Mutant;
 };
+void Check(const FAnimalInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FWolfInfo
@@ -222,6 +226,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float SatietySpeed;
 };
+void Check(const FWolfInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FMutantInfo
@@ -231,6 +236,7 @@ struct FMutantInfo
 public:
 
 };
+void Check(const FMutantInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FAlienInfo
@@ -240,6 +246,7 @@ struct FAlienInfo
 public:
 
 };
+void Check(const FAlienInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FRobotInfo
@@ -249,3 +256,4 @@ struct FRobotInfo
 public:
 
 };
+void Check(const FRobotInfo& Data, const FGameplayTag& Tag);

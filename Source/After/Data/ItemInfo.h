@@ -38,7 +38,7 @@ public:
 
 	// How many items can be placed in one inventory cell
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	int StackSize;
+	int StackSize = 100;
 
 			/* ATTACK */
 
@@ -52,21 +52,21 @@ public:
 
 			/* STATS */
 
-	// Maximum value of item's condition
+	// Maximum value of item's condition. If negative, item doesn't have condition
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
-	float MaxCondition;
+	float MaxCondition = -1.f;
 
 			/* FUEL */
 
 	// The amount of heat that the item can get as fuel
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Fuel")
-	float Heat;
+	float Heat = 0.f;
 
 			/* APPEARANCE */
 
 	// Whether the item uses flipbook or sprite
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	bool bUseFlipbook;
+	bool bUseFlipbook = false;
 
 	// The item's flipbook
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
@@ -76,6 +76,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
 };
+void Check(const FItemInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FVesselItemInfo
@@ -93,6 +94,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Content")
 	FGameplayTag VesselProfile;
 };
+void Check(const FVesselItemInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FBuildableInfo
@@ -102,10 +104,11 @@ struct FBuildableInfo
 public:
 			/* USING */
 
-	// The unit that this item creates
+	// The unit that this item creates <<unit>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Using")
 	FGameplayTag Unit;
 };
+void Check(const FBuildableInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FFoodInfo
@@ -119,6 +122,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Using")
 	float Satiety;
 };
+void Check(const FFoodInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FClothesInfo
@@ -146,6 +150,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	TMap<FDamageType, float> Resist;
 };
+void Check(const FClothesInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FRangedWeaponInfo
@@ -183,6 +188,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	float Accuracy;
 };
+void Check(const FRangedWeaponInfo& Data, const FGameplayTag& Tag);
 
 USTRUCT(BlueprintType)
 struct FAmmunitionInfo
@@ -214,3 +220,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	int MagazineSize;
 };
+void Check(const FAmmunitionInfo& Data, const FGameplayTag& Tag);

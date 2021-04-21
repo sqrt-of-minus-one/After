@@ -54,3 +54,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
 };
+void Check(const FProjectileInfo& Data, const FGameplayTag& Tag);

@@ -22,18 +22,23 @@ class UItem;
 // corresponding for_enum function also must be changed!
 ////
 
+#define IS_TAG_PARENT(Tag, ParentString) (Tag.ToString().Find(ParentString) == 0)
+
+// The function is used to make for loop for enums
+// Func must make bool false if the loop must not continue
 template <typename T>
-inline void for_enum(const std::function<void(T)>& Func) = delete;
+inline void for_enum(const std::function<void(T, bool&)>& Func) = delete;
 
 template<typename T>
-static inline void _for_enum_impl(const std::function<void(T)>& Func, T Begin, T End)
+static inline void _for_enum_impl(const std::function<void(T, bool&)>& Func, T Begin, T End)
 {
 	T i = Begin;
+	bool Continue = true;
 	do
 	{
-		Func(i);
+		Func(i, Continue);
 		i = static_cast<T>(static_cast<int>(i) + 1);
-	} while (i <= End);
+	} while (Continue && i <= End);
 }
 
 UENUM(BlueprintType)
@@ -48,7 +53,7 @@ enum class FDamageType : uint8
 	Burn
 };
 template<>
-inline void for_enum(const std::function<void(FDamageType)>& Func)
+inline void for_enum(const std::function<void(FDamageType, bool&)>& Func)
 {
 	_for_enum_impl(Func, FDamageType::Strike, FDamageType::Burn);
 }
@@ -63,7 +68,7 @@ enum class FClothesType : uint8
 	Backpack
 };
 template<>
-inline void for_enum(const std::function<void(FClothesType)>& Func)
+inline void for_enum(const std::function<void(FClothesType, bool&)>& Func)
 {
 	_for_enum_impl(Func, FClothesType::Hat, FClothesType::Backpack);
 }
@@ -86,7 +91,7 @@ enum class FEntityStatus : uint8
 	Special
 };
 template<>
-inline void for_enum(const std::function<void(FEntityStatus)>& Func)
+inline void for_enum(const std::function<void(FEntityStatus, bool&)>& Func)
 {
 	_for_enum_impl(Func, FEntityStatus::Stay, FEntityStatus::Special);
 }
@@ -100,7 +105,7 @@ enum class FDirection : uint8
 	L
 };
 template<>
-inline void for_enum(const std::function<void(FDirection)>& Func)
+inline void for_enum(const std::function<void(FDirection, bool&)>& Func)
 {
 	_for_enum_impl(Func, FDirection::F, FDirection::L);
 }
@@ -126,7 +131,7 @@ enum class FEntitySoundType : uint8
 	Death
 };
 template<>
-inline void for_enum(const std::function<void(FEntitySoundType)>& Func)
+inline void for_enum(const std::function<void(FEntitySoundType, bool&)>& Func)
 {
 	_for_enum_impl(Func, FEntitySoundType::Passive, FEntitySoundType::Death);
 }
@@ -139,7 +144,7 @@ enum class FLiquidSoundType : uint8
 	EntityQuit
 };
 template<>
-inline void for_enum(const std::function<void(FLiquidSoundType)>& Func)
+inline void for_enum(const std::function<void(FLiquidSoundType, bool&)>& Func)
 {
 	_for_enum_impl(Func, FLiquidSoundType::Flow, FLiquidSoundType::EntityQuit);
 }
@@ -154,7 +159,7 @@ enum class FSolidUnitSoundType : uint8
 	Broken
 };
 template<>
-inline void for_enum(const std::function<void(FSolidUnitSoundType)>& Func)
+inline void for_enum(const std::function<void(FSolidUnitSoundType, bool&)>& Func)
 {
 	_for_enum_impl(Func, FSolidUnitSoundType::Passive, FSolidUnitSoundType::Broken);
 }
@@ -210,10 +215,9 @@ struct FItemDrop
 
 public:
 
-	// Item that is dropped
-/* TODO
+	// Item that is dropped <<item>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	UItem* Item; */
+	FGameplayTag Item;
 
 	// Minimum number of items
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

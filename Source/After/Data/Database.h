@@ -130,6 +130,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
 	TMap<FGameplayTag, FAmmunitionProfileInfo> AmmunitionProfileData;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
+	TMap<FGameplayTag, FBehaviourProfileInfo> BehaviourProfileData;
+
 public:
 	UFUNCTION()
 	void Init();
@@ -238,4 +241,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Profile")
 	const FAmmunitionProfileInfo& GetAmmunitionProfileData(const FGameplayTag Tag) const;
+
+	UFUNCTION(BlueprintCallable, Category = "Profile")
+	const FBehaviourProfileInfo& GetBehaviourProfileData(const FGameplayTag Tag) const;
 };
