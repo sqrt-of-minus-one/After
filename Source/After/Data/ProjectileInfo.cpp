@@ -6,7 +6,10 @@
 
 #include "ProjectileInfo.h"
 
-void Check(const FProjectileInfo& Data, const FGameplayTag& Tag)
+#include "DatabaseInitData.h"
+#include "ExtraInfo.h"
+
+void Check(FProjectileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	if (Data.Name.IsEmpty())
@@ -21,11 +24,11 @@ void Check(const FProjectileInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Projectile %s contains an invalid projectile tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Projectile %s contains an invalid projectile tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.projectile"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Projectile %s contains a tag with invalid name (%s is not an projectile tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Projectile %s contains a tag with invalid name (%s is not an projectile tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
@@ -39,5 +42,7 @@ void Check(const FProjectileInfo& Data, const FGameplayTag& Tag)
 	if (!Data.Sprite)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Projectile %s doesn't have sprite"), *Tag.ToString());
+		InitData.ProjectileReplaced.AddTail({ Tag });
+		Data.Sprite = ExtraData.DebugProjectileSprite;
 	}
 }

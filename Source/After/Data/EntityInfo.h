@@ -12,6 +12,9 @@
 
 #include "EntityInfo.generated.h"
 
+struct FDatabaseInitData;
+struct FExtraInfo;
+
 USTRUCT(BlueprintType)
 struct FEntityInfo
 {
@@ -132,13 +135,25 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	TMap<FEntityStatus, FEntityFlipbooks> Flipbooks;
 
+	// The entity's size
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	FIntPoint Size;
+
 			/* AUDIO */
 
 	// The entity's sounds
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FEntitySounds Sounds;
+
+	// Minimum pause between entity's sounds
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	float MinSoundPause;
+
+	// Maximum pause between entity's sounds
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	float MaxSoundPause;
 };
-void Check(const FEntityInfo& Data, const FGameplayTag& Tag);
+void Check(FEntityInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FLastInfo
@@ -156,7 +171,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float SatietySpeed;
 };
-void Check(const FLastInfo& Data, const FGameplayTag& Tag);
+void Check(FLastInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FMobInfo
@@ -194,7 +209,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Behaviour")
 	FGameplayTag BehaviourProfile;
 };
-void Check(const FMobInfo& Data, const FGameplayTag& Tag);
+void Check(FMobInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FAnimalInfo
@@ -208,7 +223,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Mutation")
 	FGameplayTag Mutant;
 };
-void Check(const FAnimalInfo& Data, const FGameplayTag& Tag);
+void Check(FAnimalInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FWolfInfo
@@ -226,7 +241,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float SatietySpeed;
 };
-void Check(const FWolfInfo& Data, const FGameplayTag& Tag);
+void Check(FWolfInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FMutantInfo
@@ -236,7 +251,7 @@ struct FMutantInfo
 public:
 
 };
-void Check(const FMutantInfo& Data, const FGameplayTag& Tag);
+void Check(FMutantInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FAlienInfo
@@ -246,7 +261,7 @@ struct FAlienInfo
 public:
 
 };
-void Check(const FAlienInfo& Data, const FGameplayTag& Tag);
+void Check(FAlienInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FRobotInfo
@@ -256,4 +271,4 @@ struct FRobotInfo
 public:
 
 };
-void Check(const FRobotInfo& Data, const FGameplayTag& Tag);
+void Check(FRobotInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

@@ -12,6 +12,9 @@
 
 #include "ProfileInfo.generated.h"
 
+struct FDatabaseInitData;
+struct FExtraInfo;
+
 USTRUCT(BlueprintType)
 struct FBreakeProfileGroup
 {
@@ -37,7 +40,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FBreakeProfileGroup> CanBeBrokenBy;
 };
-void Check(const FBreakeProfileInfo& Data, const FGameplayTag& Tag);
+void Check(FBreakeProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FVesselProfileInfo
@@ -49,7 +52,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> CanStand;
 };
-void Check(const FVesselProfileInfo& Data, const FGameplayTag& Tag);
+void Check(FVesselProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FAmmunitionProfileInfo
@@ -61,7 +64,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> CanUse;
 };
-void Check(const FAmmunitionProfileInfo& Data, const FGameplayTag& Tag);
+void Check(FAmmunitionProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FBehaviourProfileInfo
@@ -77,4 +80,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> Except;
 };
-void Check(const FBehaviourProfileInfo& Data, const FGameplayTag& Tag);
+void Check(FBehaviourProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

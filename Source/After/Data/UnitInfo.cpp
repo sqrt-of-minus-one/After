@@ -6,7 +6,10 @@
 
 #include "UnitInfo.h"
 
-void Check(const FUnitInfo& Data, const FGameplayTag& Tag)
+#include "DatabaseInitData.h"
+#include "ExtraInfo.h"
+
+void Check(FUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	if (Data.Name.IsEmpty())
@@ -25,18 +28,18 @@ void Check(const FUnitInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FLiquidInfo& Data, const FGameplayTag& Tag)
+void Check(FLiquidInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	for (const FGameplayTag& i : Data.Tags)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Liquid %s contains an invalid liquid tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Liquid %s contains an invalid liquid tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.liquid"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Liquid %s contains a tag with invalid name (%s is not a liquid tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Liquid %s contains a tag with invalid name (%s is not a liquid tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
@@ -51,34 +54,52 @@ void Check(const FLiquidInfo& Data, const FGameplayTag& Tag)
 	}
 
 	// Appearance
-	if (!Data.StayFlipbook || !Data.SideFlowFlipbook || !Data.DiagonalFlowFlipbook)
+	bool bError = false;
+	for_enum<FLiquidStatus>([&Data, &Tag, &InitData, &ExtraData, &bError](FLiquidStatus i, bool& out_continue)
+	{
+		if (!Data.Flipbooks.Contains(i))
+		{
+			Data.Flipbooks.Add(i);
+		}
+		if (!Data.Flipbooks[i])
+		{
+			bError = true;
+			InitData.LiquidReplaced.AddTail({ Tag, i });
+			Data.Flipbooks[i] = ExtraData.DebugLiquidFlipbooks[i];
+		}
+	});
+	if (bError)
 	{
 		UE_LOG(LogTemp, Error, TEXT("There are flipbooks that liquid %s doesn't have"), *Tag.ToString());
 	}
 
 	// Audio
-	for_enum<FLiquidSoundType>([&Data, &Tag](FLiquidSoundType i, bool& out_continue)
+	bError = false;
+	for_enum<FLiquidSoundType>([&Data, &Tag, &bError](FLiquidSoundType i, bool& out_continue)
 	{
 		if (!Data.Sounds.Sounds.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("There are sound types that liquid %s doesn't have (they should be added but may be empty)"), *Tag.ToString());
-			out_continue = false;
+			Data.Sounds.Sounds.Add(i);
 		}
 	});
+	if (bError)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("There are sound types that liquid %s doesn't have (they were added)"), *Tag.ToString());
+	}
 }
 
-void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag)
+void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	for (const FGameplayTag& i : Data.Tags)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Solid unit %s contains an invalid liquid tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s contains an invalid liquid tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.solid"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Solid unit %s contains a tag with invalid name (%s is not a solid unit tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s contains a tag with invalid name (%s is not a solid unit tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
@@ -91,7 +112,7 @@ void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!Data.DamageResist.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Solid unit %s doesn't have one of damage resist values (#%d)"), *Tag.ToString(), i);
+			UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s doesn't have one of damage resist values (#%d)"), *Tag.ToString(), i);
 		}
 		else if (Data.DamageResist[i] == 0)
 		{
@@ -102,17 +123,30 @@ void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag)
 	// Appearance
 	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.Flipbook) : static_cast<bool>(Data.Sprite)))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Solid unit %s doesn't have sprite or flipbook"), *Tag.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Solid unit %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
+		InitData.ItemReplaced.AddTail({ Tag });
+		if (Data.bUseFlipbook)
+		{
+			Data.Flipbook = ExtraData.DebugSolidUnitFlipbook;
+		}
+		else
+		{
+			Data.Sprite = ExtraData.DebugSolidUnitSprite;
+		}
+	}
+	if (Data.Size.X <= 0 || Data.Size.Y <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Solid unit %s have non-positive size (%d, %d)"), *Tag.ToString(), Data.Size.X, Data.Size.Y);
 	}
 
 	// Breaking
 	if (!Data.BreakeProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Solid unit %s has an invalid breake profile (%s)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s has an invalid breake profile (%s)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.BreakeProfile, "profile.breake"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Solid unit %s has a breake profile with invalid name (%s is not a breake profile)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s has a breake profile with invalid name (%s is not a breake profile)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
 	}
 	if (Data.BreakingTime < 0)
 	{
@@ -120,17 +154,21 @@ void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag)
 	}
 
 	// Audio
-	for_enum<FSolidUnitSoundType>([&Data, &Tag](FSolidUnitSoundType i, bool& out_continue)
+	bool bError = false;
+	for_enum<FSolidUnitSoundType>([&Data, &Tag, &bError](FSolidUnitSoundType i, bool& out_continue)
 	{
 		if (!Data.Sounds.Sounds.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("There are sound types that liquid %s doesn't have (they should be added but may be empty)"), *Tag.ToString());
-			out_continue = false;
+			Data.Sounds.Sounds.Add(i);
 		}
 	});
+	if (bError)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("There are sound types that solid unit %s doesn't have (they were added)"), *Tag.ToString());
+	}
 }
 
-void Check(const FDesktopInfo& Data, const FGameplayTag& Tag)
+void Check(FDesktopInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Crafting
 	if (Data.SpeedMultiplier <= 0)
@@ -146,7 +184,7 @@ void Check(const FDesktopInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FCrateInfo& Data, const FGameplayTag& Tag)
+void Check(FCrateInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Inventory
 	if (Data.InventorySize <= 0)
@@ -155,7 +193,7 @@ void Check(const FCrateInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FVesselUnitInfo& Data, const FGameplayTag& Tag)
+void Check(FVesselUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Content
 	if (Data.Volume <= 0)
@@ -164,10 +202,10 @@ void Check(const FVesselUnitInfo& Data, const FGameplayTag& Tag)
 	}
 	if (!Data.VesselProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Vessel unit %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Vessel unit %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.VesselProfile, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Vessel unit %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Vessel unit %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 }

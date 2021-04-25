@@ -13,6 +13,8 @@
 #include "UnitInfo.generated.h"
 
 class UPaperSprite;
+struct FDatabaseInitData;
+struct FExtraInfo;
 
 USTRUCT(BlueprintType)
 struct FUnitInfo
@@ -52,7 +54,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Interaction")
 	bool bSelectable = true;
 };
-void Check(const FUnitInfo& Data, const FGameplayTag& Tag);
+void Check(FUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FLiquidInfo
@@ -80,15 +82,7 @@ public:
 
 	// Still liquid's flipbook
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperFlipbook* StayFlipbook;
-
-	// Side-flowing liquid's flipbook
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperFlipbook* SideFlowFlipbook;
-
-	// Diagonal-flowing liquid's flipbook
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperFlipbook* DiagonalFlowFlipbook;
+	TMap<FLiquidStatus, UPaperFlipbook*> Flipbooks;
 
 			/* AUDIO */
 
@@ -96,7 +90,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FLiquidSounds Sounds;
 };
-void Check(const FLiquidInfo& Data, const FGameplayTag& Tag);
+void Check(FLiquidInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FSolidUnitInfo
@@ -134,6 +128,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
 
+	// The entity's size
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	FIntPoint Size;
+
 			/* BREAKING */
 
 	// What can be used to get unit (<<profile.breake>>)
@@ -150,7 +148,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
 	FSolidUnitSounds Sounds;
 };
-void Check(const FSolidUnitInfo& Data, const FGameplayTag& Tag);
+void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FDesktopInfo
@@ -182,7 +180,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	int ExtraItemsSize;
 };
-void Check(const FDesktopInfo& Data, const FGameplayTag& Tag);
+void Check(FDesktopInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FCrateInfo
@@ -196,7 +194,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	int InventorySize;
 };
-void Check(const FCrateInfo& Data, const FGameplayTag& Tag);
+void Check(FCrateInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FVesselUnitInfo
@@ -214,4 +212,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Content")
 	FGameplayTag VesselProfile;
 };
-void Check(const FVesselUnitInfo& Data, const FGameplayTag& Tag);
+void Check(FVesselUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

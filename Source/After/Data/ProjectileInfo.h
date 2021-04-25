@@ -13,6 +13,8 @@
 #include "ProjectileInfo.generated.h"
 
 class UPaperSprite;
+struct FDatabaseInitData;
+struct FExtraInfo;
 
 USTRUCT(BlueprintType)
 struct FProjectileInfo
@@ -54,4 +56,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
 };
-void Check(const FProjectileInfo& Data, const FGameplayTag& Tag);
+void Check(FProjectileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

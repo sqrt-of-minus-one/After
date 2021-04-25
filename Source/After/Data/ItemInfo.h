@@ -13,6 +13,8 @@
 #include "ItemInfo.generated.h"
 
 class UPaperSprite;
+struct FDatabaseInitData;
+struct FExtraInfo;
 
 USTRUCT(BlueprintType)
 struct FItemInfo
@@ -76,7 +78,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
 };
-void Check(const FItemInfo& Data, const FGameplayTag& Tag);
+void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FVesselItemInfo
@@ -94,7 +96,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Content")
 	FGameplayTag VesselProfile;
 };
-void Check(const FVesselItemInfo& Data, const FGameplayTag& Tag);
+void Check(FVesselItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FBuildableInfo
@@ -108,7 +110,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Using")
 	FGameplayTag Unit;
 };
-void Check(const FBuildableInfo& Data, const FGameplayTag& Tag);
+void Check(FBuildableInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FFoodInfo
@@ -122,7 +124,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Using")
 	float Satiety;
 };
-void Check(const FFoodInfo& Data, const FGameplayTag& Tag);
+void Check(FFoodInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FClothesInfo
@@ -150,7 +152,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	TMap<FDamageType, float> Resist;
 };
-void Check(const FClothesInfo& Data, const FGameplayTag& Tag);
+void Check(FClothesInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FRangedWeaponInfo
@@ -188,7 +190,7 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	float Accuracy;
 };
-void Check(const FRangedWeaponInfo& Data, const FGameplayTag& Tag);
+void Check(FRangedWeaponInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FAmmunitionInfo
@@ -220,4 +222,4 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	int MagazineSize;
 };
-void Check(const FAmmunitionInfo& Data, const FGameplayTag& Tag);
+void Check(FAmmunitionInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

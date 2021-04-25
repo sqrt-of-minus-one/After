@@ -6,7 +6,10 @@
 
 #include "ItemInfo.h"
 
-void Check(const FItemInfo& Data, const FGameplayTag& Tag)
+#include "DatabaseInitData.h"
+#include "ExtraInfo.h"
+
+void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	if (Data.Name.IsEmpty())
@@ -21,20 +24,20 @@ void Check(const FItemInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Item %s contains an invalid item tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Item %s contains an invalid item tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.item"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Item %s contains a tag with invalid name (%s is not an item tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Item %s contains a tag with invalid name (%s is not an item tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
-	
+
 	// Inventory
 	if (Data.StackSize <= 0)
 	{
 		UE_LOG(LogTemp, Error, TEXT("Item %s has non-positive stack size (%d)"), *Tag.ToString(), Data.StackSize);
 	}
-	
+
 	// Fuel
 	if (Data.Heat < 0)
 	{
@@ -44,11 +47,20 @@ void Check(const FItemInfo& Data, const FGameplayTag& Tag)
 	// Appearance
 	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.Flipbook) : static_cast<bool>(Data.Sprite)))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Item %s doesn't have sprite or flipbook"), *Tag.ToString());
+		UE_LOG(LogTemp, Error, TEXT("Item %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
+		InitData.ItemReplaced.AddTail({ Tag });
+		if (Data.bUseFlipbook)
+		{
+			Data.Flipbook = ExtraData.DebugItemFlipbook;
+		}
+		else
+		{
+			Data.Sprite = ExtraData.DebugItemSprite;
+		}
 	}
 }
 
-void Check(const FVesselItemInfo& Data, const FGameplayTag& Tag)
+void Check(FVesselItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Content
 	if (Data.Volume <= 0)
@@ -57,27 +69,27 @@ void Check(const FVesselItemInfo& Data, const FGameplayTag& Tag)
 	}
 	if (!Data.VesselProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Vessel item %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Vessel item %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.VesselProfile, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Vessel item %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Vessel item %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 }
 
-void Check(const FBuildableInfo& Data, const FGameplayTag& Tag)
+void Check(FBuildableInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	if (!Data.Unit.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Buildable item %s contains an invalid unit (%s)"), *Tag.ToString(), *Data.Unit.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Buildable item %s contains an invalid unit (%s)"), *Tag.ToString(), *Data.Unit.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.Unit, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Buildable item %s contains a unit with invalid name (%s is not a unit)"), *Tag.ToString(), *Data.Unit.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Buildable item %s contains a unit with invalid name (%s is not a unit)"), *Tag.ToString(), *Data.Unit.ToString());
 	}
 }
 
-void Check(const FFoodInfo& Data, const FGameplayTag& Tag)
+void Check(FFoodInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Using
 	if (Data.Satiety <= 0)
@@ -86,7 +98,7 @@ void Check(const FFoodInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FClothesInfo& Data, const FGameplayTag& Tag)
+void Check(FClothesInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Characteristics
 	if (Data.Volume <= 0)
@@ -97,16 +109,17 @@ void Check(const FClothesInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!Data.Resist.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Clothes %s doesn't have one of damage resist values (#%d)"), *Tag.ToString(), i);
+			Data.Resist.Add(i, 0.f);
+			UE_LOG(LogTemp, Warning, TEXT("Clothes %s didn't have one of damage resist values (#%d) (it was added)"), *Tag.ToString(), i);
 		}
-		else if (Data.Resist[i] == 0)
+		if (Data.Resist[i] == 0.f)
 		{
 			UE_LOG(LogTemp, Error, TEXT("One of damage resist values (#%d) of clothes %s is zero (may cause divide by zero)"), i, *Tag.ToString());
 		}
 	});
 }
 
-void Check(const FRangedWeaponInfo& Data, const FGameplayTag& Tag)
+void Check(FRangedWeaponInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Characteristics
 	if (Data.DamageMultiplier <= 0)
@@ -123,11 +136,11 @@ void Check(const FRangedWeaponInfo& Data, const FGameplayTag& Tag)
 	}
 	if (!Data.AmmunitionProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s contains an invalid ammunition profile (%s)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Weapon %s contains an invalid ammunition profile (%s)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.AmmunitionProfile, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s contains a ammunition profile with invalid name (%s is not a ammunition profile)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Weapon %s contains a ammunition profile with invalid name (%s is not a ammunition profile)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
 	}
 	if (Data.DistanceMultiplier <= 0)
 	{
@@ -139,29 +152,29 @@ void Check(const FRangedWeaponInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FAmmunitionInfo& Data, const FGameplayTag& Tag)
+void Check(FAmmunitionInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	for (const FGameplayTag& i : Data.Tags)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ammunition %s contains an invalid ammunition tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains an invalid ammunition tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.item"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Ammunition %s contains a tag with invalid name (%s is not an ammunition tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains a tag with invalid name (%s is not an ammunition tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
 	// Characteristics
 	if (!Data.Projectile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ammunition %s contains an invalid projectile (%s)"), *Tag.ToString(), *Data.Projectile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains an invalid projectile (%s)"), *Tag.ToString(), *Data.Projectile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.Projectile, "tag.item"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ammunition %s contains a projectile with invalid name (%s is not a projectile)"), *Tag.ToString(), *Data.Projectile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains a projectile with invalid name (%s is not a projectile)"), *Tag.ToString(), *Data.Projectile.ToString());
 	}
 	if (Data.FiringRateMultiplier <= 0)
 	{

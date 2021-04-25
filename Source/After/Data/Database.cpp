@@ -9,8 +9,8 @@
 #include <functional>
 
 template <typename T>
-inline void InitField(const TMap<FGameplayTag, T>& Map, const FString& TagName, const FString& DatabaseName,
-					  const std::function<void(const FGameplayTag&)>& Func = [](const FGameplayTag& i) { })
+inline void InitField(TMap<FGameplayTag, T>& Map, const FString& TagName, const FString& DatabaseName, FDatabaseInitData& InitData,
+					  const FExtraInfo& ExtraData, const std::function<void(const FGameplayTag&)>& Func = [](const FGameplayTag& i) { })
 {
 	TArray<FGameplayTag> Tags;
 
@@ -26,7 +26,7 @@ inline void InitField(const TMap<FGameplayTag, T>& Map, const FString& TagName, 
 			UE_LOG(LogTemp, Error, TEXT("%s is not %s, but it is contained in the %s database"), *i.ToString(), *DatabaseName, *DatabaseName);
 		}
 
-		Check(Map[i], i);
+		Check(Map[i], i, InitData, ExtraData);
 
 		Func(i);
 	}
@@ -34,10 +34,18 @@ inline void InitField(const TMap<FGameplayTag, T>& Map, const FString& TagName, 
 
 void UDatabase::Init()
 {
-	TArray<FGameplayTag> Tags;
+	InitData.EntityReplaced.Empty();
+	InitData.ItemReplaced.Empty();
+	InitData.ProjectileReplaced.Empty();
+	InitData.LiquidReplaced.Empty();
+	InitData.SolidUnitReplaced.Empty();
+
+	// Check extra
+	Check(ExtraData);
 
 	// Check entity
-	InitField<FEntityInfo>(EntityData, "entity", "entity", [&EntityData = EntityData, &EntityTagData = EntityTagData](const FGameplayTag& Tag)
+	InitField<FEntityInfo>(EntityData, "entity", "entity", InitData, ExtraData,
+		[&EntityData = EntityData, &EntityTagData = EntityTagData](const FGameplayTag& Tag)
 	{
 		EntityTagData.Empty();
 		for (const FGameplayTag& i : EntityData[Tag].Tags)
@@ -51,31 +59,32 @@ void UDatabase::Init()
 	});
 
 	// Check entity: last
-	InitField<FLastInfo>(LastData, "entity.last", "last");
+	InitField<FLastInfo>(LastData, "entity.last", "last", InitData, ExtraData);
 
 	// Check entity: mob
-	InitField<FMobInfo>(MobData, "entity", "mob");
+	InitField<FMobInfo>(MobData, "entity", "mob", InitData, ExtraData);
 
 	// Check entity: animal
-	InitField<FAnimalInfo>(AnimalData, "entity.animal", "animal");
+	InitField<FAnimalInfo>(AnimalData, "entity.animal", "animal", InitData, ExtraData);
 
 	// Check entity: animal: wolf
-	InitField<FWolfInfo>(WolfData, "entity.animal.wolf", "wolf");
+	InitField<FWolfInfo>(WolfData, "entity.animal.wolf", "wolf", InitData, ExtraData);
 
 	// Check entity: mutant
-	InitField<FMutantInfo>(MutantData, "entity.mutant", "mutant");
+	InitField<FMutantInfo>(MutantData, "entity.mutant", "mutant", InitData, ExtraData);
 
 	// Check entity: alien
-	InitField<FAlienInfo>(AlienData, "entity.alien", "alien");
+	InitField<FAlienInfo>(AlienData, "entity.alien", "alien", InitData, ExtraData);
 
 	// Check entity: robot
-	InitField<FRobotInfo>(RobotData, "entity.robot", "robot");
+	InitField<FRobotInfo>(RobotData, "entity.robot", "robot", InitData, ExtraData);
 
 	// Check unit
-	InitField<FUnitInfo>(UnitData, "unit", "unit");
+	InitField<FUnitInfo>(UnitData, "unit", "unit", InitData, ExtraData);
 
 	// Check unit: liquid
-	InitField<FLiquidInfo>(LiquidData, "unit.liquid", "liquid", [&LiquidData = LiquidData, &LiquidTagData = LiquidTagData](const FGameplayTag& Tag)
+	InitField<FLiquidInfo>(LiquidData, "unit.liquid", "liquid", InitData, ExtraData,
+		[&LiquidData = LiquidData, &LiquidTagData = LiquidTagData](const FGameplayTag& Tag)
 	{
 		LiquidTagData.Empty();
 		for (const FGameplayTag& i : LiquidData[Tag].Tags)
@@ -89,7 +98,8 @@ void UDatabase::Init()
 	});
 
 	// Check unit: solid unit
-	InitField<FSolidUnitInfo>(SolidUnitData, "unit.solid", "solid unit", [&SolidUnitData = SolidUnitData, &SolidUnitTagData = SolidUnitTagData](const FGameplayTag& Tag)
+	InitField<FSolidUnitInfo>(SolidUnitData, "unit.solid", "solid unit", InitData, ExtraData,
+		[&SolidUnitData = SolidUnitData, &SolidUnitTagData = SolidUnitTagData](const FGameplayTag& Tag)
 	{
 		SolidUnitTagData.Empty();
 		for (const FGameplayTag& i : SolidUnitData[Tag].Tags)
@@ -103,16 +113,17 @@ void UDatabase::Init()
 	});
 
 	// Check unit: solid unit: desktop
-	InitField<FDesktopInfo>(DesktopData, "unit.solid.desktop", "desktop");
+	InitField<FDesktopInfo>(DesktopData, "unit.solid.desktop", "desktop", InitData, ExtraData);
 
 	// Check unit: solid unit: crate
-	InitField<FCrateInfo>(CrateData, "unit.solid.crate", "crate");
+	InitField<FCrateInfo>(CrateData, "unit.solid.crate", "crate", InitData, ExtraData);
 
 	// Check unit: solid unit: vessel
-	InitField<FVesselUnitInfo>(VesselUnitData, "unit.solid.vessel", "vessel unit");
+	InitField<FVesselUnitInfo>(VesselUnitData, "unit.solid.vessel", "vessel unit", InitData, ExtraData);
 
 	// Check item
-	InitField<FItemInfo>(ItemData, "item", "item", [&ItemData = ItemData, &ItemTagData = ItemTagData](const FGameplayTag& Tag)
+	InitField<FItemInfo>(ItemData, "item", "item", InitData, ExtraData,
+		[&ItemData = ItemData, &ItemTagData = ItemTagData](const FGameplayTag& Tag)
 	{
 		ItemTagData.Empty();
 		for (const FGameplayTag& i : ItemData[Tag].Tags)
@@ -126,22 +137,23 @@ void UDatabase::Init()
 	});
 
 	// Check item: vessel item
-	InitField<FVesselItemInfo>(VesselItemData, "item.vessel", "vessel item");
+	InitField<FVesselItemInfo>(VesselItemData, "item.vessel", "vessel item", InitData, ExtraData);
 
 	// Check item: buildable
-	InitField<FBuildableInfo>(BuildableData, "item.buildable", "buildable item");
+	InitField<FBuildableInfo>(BuildableData, "item.buildable", "buildable item", InitData, ExtraData);
 
 	// Check item: food
-	InitField<FFoodInfo>(FoodData, "item.food", "food");
+	InitField<FFoodInfo>(FoodData, "item.food", "food", InitData, ExtraData);
 
 	// Check item: clothes
-	InitField<FClothesInfo>(ClothesData, "item.clothes", "clothes");
+	InitField<FClothesInfo>(ClothesData, "item.clothes", "clothes", InitData, ExtraData);
 
 	// Check item: ranged weapon
-	InitField<FRangedWeaponInfo>(RangedWeaponData, "item.weapon", "ranged weapon");
+	InitField<FRangedWeaponInfo>(RangedWeaponData, "item.weapon", "ranged weapon", InitData, ExtraData);
 
 	// Check item: ammunition
-	InitField<FAmmunitionInfo>(AmmunitionData, "item.ammunition", "ammunition", [&AmmunitionData = AmmunitionData, &AmmunitionTagData = AmmunitionTagData](const FGameplayTag& Tag)
+	InitField<FAmmunitionInfo>(AmmunitionData, "item.ammunition", "ammunition", InitData, ExtraData,
+		[&AmmunitionData = AmmunitionData, &AmmunitionTagData = AmmunitionTagData](const FGameplayTag& Tag)
 	{
 		AmmunitionTagData.Empty();
 		for (const FGameplayTag& i : AmmunitionData[Tag].Tags)
@@ -155,7 +167,8 @@ void UDatabase::Init()
 	});
 
 	// Check projectile
-	InitField<FProjectileInfo>(ProjectileData, "item.ammunition", "ammunition", [&ProjectileData = ProjectileData, &ProjectileTagData = ProjectileTagData](const FGameplayTag& Tag)
+	InitField<FProjectileInfo>(ProjectileData, "item.ammunition", "ammunition", InitData, ExtraData,
+		[&ProjectileData = ProjectileData, &ProjectileTagData = ProjectileTagData](const FGameplayTag& Tag)
 	{
 		ProjectileTagData.Empty();
 		for (const FGameplayTag& i : ProjectileData[Tag].Tags)
@@ -169,16 +182,65 @@ void UDatabase::Init()
 	});
 
 	// Check profile: breake
-	InitField<FBreakeProfileInfo>(BreakeProfileData, "profile.breake", "breake profile");
+	InitField<FBreakeProfileInfo>(BreakeProfileData, "profile.breake", "breake profile", InitData, ExtraData);
 
 	// Check profile: vessel
-	InitField<FVesselProfileInfo>(VesselProfileData, "profile.vessel", "vessel profile");
+	InitField<FVesselProfileInfo>(VesselProfileData, "profile.vessel", "vessel profile", InitData, ExtraData);
 
 	// Check profile: ammunition
-	InitField<FAmmunitionProfileInfo>(AmmunitionProfileData, "profile.ammunition", "ammunition profile");
+	InitField<FAmmunitionProfileInfo>(AmmunitionProfileData, "profile.ammunition", "ammunition profile", InitData, ExtraData);
 
 	// Check profile: behaviour
-	InitField<FBehaviourProfileInfo>(BehaviourProfileData, "profile.behaviour", "behaviour profile");
+	InitField<FBehaviourProfileInfo>(BehaviourProfileData, "profile.behaviour", "behaviour profile", InitData, ExtraData);
+}
+
+UDatabase::~UDatabase()
+{
+	Reset();
+}
+
+void UDatabase::Reset()
+{
+	for (const auto& i : InitData.EntityReplaced)
+	{
+		EntityData[i.Entity].Flipbooks[i.Status].Flipbooks[i.Direction] = nullptr;
+	}
+	for (const auto& i : InitData.ItemReplaced)
+	{
+		if (ItemData[i.Item].bUseFlipbook)
+		{
+			ItemData[i.Item].Flipbook = nullptr;
+		}
+		else
+		{
+			ItemData[i.Item].Sprite = nullptr;
+		}
+	}
+	for (const auto& i : InitData.ProjectileReplaced)
+	{
+		ProjectileData[i.Projectile].Sprite = nullptr;
+	}
+	for (const auto& i : InitData.LiquidReplaced)
+	{
+		LiquidData[i.Liquid].Flipbooks[i.Status] = nullptr;
+	}
+	for (const auto& i : InitData.SolidUnitReplaced)
+	{
+		if (SolidUnitData[i.SolidUnit].bUseFlipbook)
+		{
+			SolidUnitData[i.SolidUnit].Flipbook = nullptr;
+		}
+		else
+		{
+			SolidUnitData[i.SolidUnit].Sprite = nullptr;
+		}
+	}
+
+	InitData.EntityReplaced.Empty();
+	InitData.ItemReplaced.Empty();
+	InitData.ProjectileReplaced.Empty();
+	InitData.LiquidReplaced.Empty();
+	InitData.SolidUnitReplaced.Empty();
 }
 
 		/* ENTITY */
@@ -479,4 +541,11 @@ const FBehaviourProfileInfo& UDatabase::GetBehaviourProfileData(const FGameplayT
 		UE_LOG(LogTemp, Fatal, TEXT("Attempt to get data about behaviour profile %s that is not contained in the database"), *Tag.ToString());
 	}
 	return BehaviourProfileData[Tag];
+}
+
+		/* EXTRA */
+
+const FExtraInfo& UDatabase::GetExtraData() const
+{
+	return ExtraData;
 }

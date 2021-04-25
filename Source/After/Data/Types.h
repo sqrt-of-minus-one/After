@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 
 #include "GameplayTagContainer.h"
+
 #include <functional>
 
 #include "Types.generated.h"
@@ -94,6 +95,19 @@ template<>
 inline void for_enum(const std::function<void(FEntityStatus, bool&)>& Func)
 {
 	_for_enum_impl(Func, FEntityStatus::Stay, FEntityStatus::Special);
+}
+
+UENUM(BlueprintType)
+enum class FLiquidStatus : uint8
+{
+	Stay,
+	SideFlow,
+	DiagonalFlow
+};
+template<>
+inline void for_enum(const std::function<void(FLiquidStatus, bool&)>& Func)
+{
+	_for_enum_impl(Func, FLiquidStatus::Stay, FLiquidStatus::DiagonalFlow);
 }
 
 UENUM(BlueprintType)

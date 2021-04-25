@@ -6,7 +6,10 @@
 
 #include "EntityInfo.h"
 
-void Check(const FEntityInfo& Data, const FGameplayTag& Tag)
+#include "DatabaseInitData.h"
+#include "ExtraInfo.h"
+
+void Check(FEntityInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	if (Data.Name.IsEmpty())
@@ -21,11 +24,11 @@ void Check(const FEntityInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Entity %s contains an invalid entity tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Entity %s contains an invalid entity tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.entity"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Entity %s contains a tag with invalid name (%s is not an entity tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Entity %s contains a tag with invalid name (%s is not an entity tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
@@ -70,9 +73,10 @@ void Check(const FEntityInfo& Data, const FGameplayTag& Tag)
 	{
 		if (!Data.DamageResist.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Entity %s doesn't have one of damage resist values (#%d)"), *Tag.ToString(), i);
+			Data.DamageResist.Add(i, 0.f);
+			UE_LOG(LogTemp, Warning, TEXT("Entity %s didn't have one of damage resist values (#%d) (it was added)"), *Tag.ToString(), i);
 		}
-		else if (Data.DamageResist[i] == 0)
+		if (Data.DamageResist[i] == 0.f)
 		{
 			UE_LOG(LogTemp, Error, TEXT("One of damage resist values (#%d) of entity %s is zero (may cause divide by zero)"), i, *Tag.ToString());
 		}
@@ -112,36 +116,52 @@ void Check(const FEntityInfo& Data, const FGameplayTag& Tag)
 	}
 
 	// Appearance
-	for_enum<FEntityStatus>([&Data, &Tag](FEntityStatus i, bool& out_continue_i)
+	bool bError = false;
+	for_enum<FEntityStatus>([&Data, &Tag, &InitData, &ExtraData, &bError](FEntityStatus i, bool& out_continue_i)
 	{
 		if (!Data.Flipbooks.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("There are flipbooks that entity %s doesn't have"), *Tag.ToString());
-			out_continue_i = false;
+			Data.Flipbooks.Add(i);
 		}
-		else for_enum<FDirection>([&Data, i, &out_continue_i, &Tag](FDirection j, bool& out_continue_j)
+		for_enum<FDirection>([&Data, i, &out_continue_i, &Tag, &InitData, &ExtraData, &bError](FDirection j, bool& out_continue_j)
 		{
-			if (!Data.Flipbooks[i].Flipbooks.Contains(j) || !Data.Flipbooks[i].Flipbooks[j])
+			if (!Data.Flipbooks[i].Flipbooks.Contains(j))
 			{
-				UE_LOG(LogTemp, Error, TEXT("There are flipbooks that entity %s doesn't have"), *Tag.ToString());
-				out_continue_j = false;
-				out_continue_i = false;
+				Data.Flipbooks[i].Flipbooks.Add(j);
+			}
+			if (!Data.Flipbooks[i].Flipbooks[j])
+			{
+				bError = true;
+				InitData.EntityReplaced.AddTail({ Tag, i, j });
+				Data.Flipbooks[i].Flipbooks[j] = ExtraData.DebugEntityFlipbooks[j];
 			}
 		});
 	});
+	if (bError)
+	{
+		UE_LOG(LogTemp, Error, TEXT("There are flipbooks that entity %s doesn't have"), *Tag.ToString());
+	}
+	if (Data.Size.X <= 0 || Data.Size.Y <= 0)
+	{
+		UE_LOG(LogTemp, Error, TEXT("Entity %s have non-positive size (%d, %d)"), *Tag.ToString(), Data.Size.X, Data.Size.Y);
+	}
 
 	// Audio
-	for_enum<FEntitySoundType>([&Data, &Tag](FEntitySoundType i, bool& out_continue)
+	bError = false;
+	for_enum<FEntitySoundType>([&Data, &Tag, &bError](FEntitySoundType i, bool& out_continue)
 	{
 		if (!Data.Sounds.Sounds.Contains(i))
 		{
-			UE_LOG(LogTemp, Error, TEXT("There are sound types that entity %s doesn't have (they should be added but may be empty)"), *Tag.ToString());
-			out_continue = false;
+			Data.Sounds.Sounds.Add(i);
 		}
 	});
+	if (bError)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("There are sound types that entity %s doesn't have (they were added)"), *Tag.ToString());
+	}
 }
 
-void Check(const FLastInfo& Data, const FGameplayTag& Tag)
+void Check(FLastInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Stats
 	if (Data.MaxSatiety <= 0)
@@ -154,18 +174,18 @@ void Check(const FLastInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FMobInfo& Data, const FGameplayTag& Tag)
+void Check(FMobInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	//Drop
 	for (const FItemDrop& i : Data.Drop)
 	{
 		if (!i.Item.IsValid())
 		{
-			UE_LOG(LogTemp, Error, TEXT("Mob %s has an invalid drop (%s)"), *Tag.ToString(), *i.Item.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Mob %s has an invalid drop (%s)"), *Tag.ToString(), *i.Item.ToString());
 		}
 		if (!IS_TAG_PARENT(i.Item, "item"))
 		{
-			UE_LOG(LogTemp, Error, TEXT("Mob %s has a drop with invalid name (%s is not an item)"), *Tag.ToString(), *i.Item.ToString());
+			UE_LOG(LogTemp, Fatal, TEXT("Mob %s has a drop with invalid name (%s is not an item)"), *Tag.ToString(), *i.Item.ToString());
 		}
 		if (i.Min < 0 || i.Max < i.Min)
 		{
@@ -192,28 +212,28 @@ void Check(const FMobInfo& Data, const FGameplayTag& Tag)
 	// Behaviour
 	if (!Data.BehaviourProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Mob %s has an invalid behaviour profile (%s)"), *Tag.ToString(), *Data.BehaviourProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Mob %s has an invalid behaviour profile (%s)"), *Tag.ToString(), *Data.BehaviourProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.BehaviourProfile, "profile.behaviour"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Mob %s has a behaviour profile with invalid name (%s is not a behaviour profile)"), *Tag.ToString(), *Data.BehaviourProfile.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Mob %s has a behaviour profile with invalid name (%s is not a behaviour profile)"), *Tag.ToString(), *Data.BehaviourProfile.ToString());
 	}
 }
 
-void Check(const FAnimalInfo& Data, const FGameplayTag& Tag)
+void Check(FAnimalInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Mutation
 	if (!Data.Mutant.IsValid())
 	{
-		UE_LOG(LogTemp, Error, TEXT("Animal %s has an invalid mutated analog (%s)"), *Tag.ToString(), *Data.Mutant.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Animal %s has an invalid mutated analog (%s)"), *Tag.ToString(), *Data.Mutant.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.Mutant, "entity.mutant"))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Animal %s has a mutated analog with invalid name (%s is not a mutant)"), *Tag.ToString(), *Data.Mutant.ToString());
+		UE_LOG(LogTemp, Fatal, TEXT("Animal %s has a mutated analog with invalid name (%s is not a mutant)"), *Tag.ToString(), *Data.Mutant.ToString());
 	}
 }
 
-void Check(const FWolfInfo& Data, const FGameplayTag& Tag)
+void Check(FWolfInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// Stats
 	if (Data.MaxSatiety <= 0)
@@ -226,14 +246,14 @@ void Check(const FWolfInfo& Data, const FGameplayTag& Tag)
 	}
 }
 
-void Check(const FMutantInfo& Data, const FGameplayTag& Tag)
+void Check(FMutantInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 }
 
-void Check(const FAlienInfo& Data, const FGameplayTag& Tag)
+void Check(FAlienInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 }
 
-void Check(const FRobotInfo& Data, const FGameplayTag& Tag)
+void Check(FRobotInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 }

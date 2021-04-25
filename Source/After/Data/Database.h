@@ -10,12 +10,14 @@
 
 #include "Engine/DataAsset.h"
 
+#include "DatabaseInitData.h"
 #include "EntityInfo.h"
 #include "UnitInfo.h"
 #include "ItemInfo.h"
 #include "ProjectileInfo.h"
 #include "TagInfo.h"
 #include "ProfileInfo.h"
+#include "ExtraInfo.h"
 
 #include "Database.generated.h"
 
@@ -25,6 +27,8 @@ class UDatabase : public UDataAsset
 	GENERATED_BODY()
 
 protected:
+	FDatabaseInitData InitData;
+
 			/* ENTITY */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Entity")
@@ -133,9 +137,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
 	TMap<FGameplayTag, FBehaviourProfileInfo> BehaviourProfileData;
 
+			/* EXTRA */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Extra")
+	FExtraInfo ExtraData;
+
 public:
+	~UDatabase();
+
 	UFUNCTION()
 	void Init();
+
+	void Reset();
 	
 			/* ENTITY */
 
@@ -244,4 +257,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Profile")
 	const FBehaviourProfileInfo& GetBehaviourProfileData(const FGameplayTag Tag) const;
+
+			/* EXTRA */
+
+	UFUNCTION(BlueprintCallable, Category = "Extra")
+	const FExtraInfo& GetExtraData() const;
 };
