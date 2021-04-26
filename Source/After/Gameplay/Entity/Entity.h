@@ -49,20 +49,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetEnergy() const;
 
-			/* MOVEMENT */
-
-	UFUNCTION()
-	void SetMoveX_(float Value);
-
-	UFUNCTION()
-	void SetMoveY_(float Value);
-
-	UFUNCTION()
-	virtual void StartRun_();
-
-	UFUNCTION()
-	virtual void StopRun_();
-
 			/* DAMAGE */
 
 	UFUNCTION()
@@ -81,14 +67,6 @@ public:
 
 	UFUNCTION()
 	void Unselect();
-
-			/* ATTACK */
-
-	UFUNCTION()
-	virtual bool MeleeAttack_(AEntity* Target);
-
-	UFUNCTION()
-	virtual void RangedAttack_(FRotator Direction);
 
 protected:
 			/* GENERAL */
@@ -110,6 +88,28 @@ protected:
 	// Time remaining until the end of radiation effect
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
 	FTimerHandle RadiationTimer;
+
+			/* MOVEMENT */
+
+	UFUNCTION()
+	void SetMoveX(float Value);
+
+	UFUNCTION()
+	void SetMoveY(float Value);
+
+	UFUNCTION()
+	virtual void StartRun();
+
+	UFUNCTION()
+	virtual void StopRun();
+
+			/* ATTACK */
+
+	UFUNCTION()
+	virtual bool MeleeAttack(AEntity* Target);
+
+	UFUNCTION()
+	virtual void RangedAttack(FRotator Direction);
 
 			/* DAMAGE */
 

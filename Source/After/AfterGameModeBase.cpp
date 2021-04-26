@@ -8,7 +8,10 @@
 
 const FVector AAfterGameModeBase::TileSize = FVector(32.f, 32.f, 8.f);
 const float AAfterGameModeBase::CalcStatsInterval = 1.f;
-const float AAfterGameModeBase::PlayerSpringArmLength = 500.f;
+const float AAfterGameModeBase::ZoomStep = 1.1f;
+const float AAfterGameModeBase::PlayerSpringArmLength = 250.f;
+const float AAfterGameModeBase::MinPlayerSpringArmLength = 100.f;
+const float AAfterGameModeBase::MaxPlayerSpringArmLength = 1500.f;
 
 AAfterGameModeBase::~AAfterGameModeBase()
 {
@@ -31,19 +34,4 @@ void AAfterGameModeBase::BeginPlay()
 const UDatabase* AAfterGameModeBase::GetDatabase() const
 {
 	return Database;
-}
-
-FVector AAfterGameModeBase::GetTileSize() const
-{
-	return TileSize;
-}
-
-float AAfterGameModeBase::GetCalcStatsInterval() const
-{
-	return CalcStatsInterval;
-}
-
-float AAfterGameModeBase::GetPlayerSpringArmLength() const
-{
-	return PlayerSpringArmLength;
 }

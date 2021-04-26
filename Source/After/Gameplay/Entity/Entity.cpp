@@ -34,7 +34,6 @@ AEntity::AEntity() :
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
-	SelectionSpriteComponent->SetActive(false);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
@@ -61,10 +60,11 @@ void AEntity::BeginPlay()
 	Oxygen = EntityData->MaxOxygen;
 	Energy = EntityData->MaxEnergy;
 
-	CollisionComponent->SetBoxExtent(GameMode->GetTileSize() * FVector(EntityData->Size, 1.f));
+	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize * FVector(EntityData->Size, 1.f));
 	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	SelectionSpriteComponent->SetVisibility(false);
 	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 
 	SetFlipbook(FDirection::F, FEntityStatus::Stay);
@@ -86,7 +86,7 @@ void AEntity::BeginPlay()
 	});
 	GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
 
-	GetWorld()->GetTimerManager().SetTimer(StatsTimer, this, &AEntity::CalculateStats, GameMode->GetCalcStatsInterval(), true);
+	GetWorld()->GetTimerManager().SetTimer(StatsTimer, this, &AEntity::CalculateStats, AAfterGameModeBase::CalcStatsInterval, true);
 }
 
 void AEntity::Tick(float DeltaTime)
@@ -101,7 +101,7 @@ void AEntity::Tick(float DeltaTime)
 
 void AEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+//	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
 float AEntity::GetHealth() const
@@ -117,29 +117,6 @@ float AEntity::GetOxygen() const
 float AEntity::GetEnergy() const
 {
 	return Energy;
-}
-
-void AEntity::SetMoveX_(float Value)
-{
-	Moving.X = FMath::Clamp(Value, -1.f, 1.f);
-}
-
-void AEntity::SetMoveY_(float Value)
-{
-	Moving.Y = FMath::Clamp(Value, -1.f, 1.f);
-}
-
-void AEntity::StartRun_()
-{
-	if (Energy > 0.f)
-	{
-		bIsRunning = true;
-	}
-}
-
-void AEntity::StopRun_()
-{
-	bIsRunning = false;
 }
 
 void AEntity::Damage(float Value, FDamageType Type, const AActor* FromWho)
@@ -166,18 +143,46 @@ void AEntity::Web(float Duration)
 
 void AEntity::Select()
 {
-	SelectionSpriteComponent->SetActive(true);
+	SelectionSpriteComponent->SetVisibility(true);
 }
 
 void AEntity::Unselect()
 {
-	SelectionSpriteComponent->SetActive(false);
+	SelectionSpriteComponent->SetVisibility(false);
 }
 
-bool AEntity::MeleeAttack_(AEntity* Target)
+const FEntityInfo& AEntity::GetEntityData() const
+{
+	return *EntityData;
+}
+
+void AEntity::SetMoveX(float Value)
+{
+	Moving.X = FMath::Clamp(Value, -1.f, 1.f);
+}
+
+void AEntity::SetMoveY(float Value)
+{
+	Moving.Y = FMath::Clamp(Value, -1.f, 1.f);
+}
+
+void AEntity::StartRun()
+{
+	if (Energy > 0.f)
+	{
+		bIsRunning = true;
+	}
+}
+
+void AEntity::StopRun()
+{
+	bIsRunning = false;
+}
+
+bool AEntity::MeleeAttack(AEntity* Target)
 {
 	SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
-	
+
 	if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
 	{
 		Target->Damage(EntityData->Damage, EntityData->DamageType, this);
@@ -189,14 +194,9 @@ bool AEntity::MeleeAttack_(AEntity* Target)
 	}
 }
 
-void AEntity::RangedAttack_(FRotator Direction)
+void AEntity::RangedAttack(FRotator Direction)
 {
 	// Todo
-}
-
-const FEntityInfo& AEntity::GetEntityData() const
-{
-	return *EntityData;
 }
 
 void AEntity::Death(FDamageType Type, const AActor* Murderer)
@@ -235,7 +235,7 @@ void AEntity::Move(float DeltaTime)
 		if (bIsRunning && Energy <= 0.f)
 		{
 			Energy = 0.f;
-			StopRun_();
+			StopRun();
 		}
 		Offset *= (bIsRunning ? EntityData->RunSpeed : EntityData->WalkSpeed) * DeltaTime;
 		if (Moving.X != 0.f && Moving.Y != 0.f) // Diagonal movement

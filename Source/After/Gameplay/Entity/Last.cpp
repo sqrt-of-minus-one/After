@@ -11,6 +11,7 @@
 
 #include "../../Data/Database.h"
 #include "../../AfterGameModeBase.h"
+#include "Controller/LastController.h"
 
 ALast::ALast()
 {
@@ -29,6 +30,19 @@ ALast::ALast()
 void ALast::BeginPlay()
 {
 	Super::BeginPlay();
+
+	ALastController* LastController = Cast<ALastController>(GetController());
+	if (!LastController)
+	{
+		UE_LOG(LogTemp, Fatal, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
+	}
+	LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
+	LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
+	LastController->ZoomIn.BindUObject(this, &ALast::ZoomIn);
+	LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
+	LastController->StartRun.BindUObject(this, &ALast::StartRun);
+	LastController->StopRun.BindUObject(this, &ALast::StopRun);
+	LastController->SetupInput();
 
 	// Get game mode
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
@@ -72,4 +86,18 @@ void ALast::Weak()
 const FLastInfo& ALast::GetLastData() const
 {
 	return *LastData;
+}
+
+void ALast::ZoomIn()
+{
+	SpringArmComponent->TargetArmLength = FMath::Clamp(
+		SpringArmComponent->TargetArmLength / AAfterGameModeBase::ZoomStep,
+		AAfterGameModeBase::MinPlayerSpringArmLength, AAfterGameModeBase::MaxPlayerSpringArmLength);
+}
+
+void ALast::ZoomOut()
+{
+	SpringArmComponent->TargetArmLength = FMath::Clamp(
+		SpringArmComponent->TargetArmLength * AAfterGameModeBase::ZoomStep,
+		AAfterGameModeBase::MinPlayerSpringArmLength, AAfterGameModeBase::MaxPlayerSpringArmLength);
 }

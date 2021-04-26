@@ -40,9 +40,8 @@ public:
 
 	static const FVector TileSize;
 	static const float CalcStatsInterval;
+	static const float ZoomStep;
 	static const float PlayerSpringArmLength;
-
-	FVector GetTileSize() const;
-	float GetCalcStatsInterval() const;
-	float GetPlayerSpringArmLength() const;
+	static const float MinPlayerSpringArmLength;
+	static const float MaxPlayerSpringArmLength;
 };

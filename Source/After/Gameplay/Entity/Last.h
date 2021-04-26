@@ -54,6 +54,14 @@ protected:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FLastInfo& GetLastData() const;
 
+			/* ZOOM */
+
+	UFUNCTION()
+	void ZoomIn();
+
+	UFUNCTION()
+	void ZoomOut();
+
 			/* STATS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
