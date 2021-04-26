@@ -8,6 +8,7 @@
 
 const FVector AAfterGameModeBase::TileSize = FVector(32.f, 32.f, 8.f);
 const float AAfterGameModeBase::CalcStatsInterval = 1.f;
+const float AAfterGameModeBase::PlayerSpringArmLength = 500.f;
 
 AAfterGameModeBase::~AAfterGameModeBase()
 {
@@ -40,4 +41,9 @@ FVector AAfterGameModeBase::GetTileSize() const
 float AAfterGameModeBase::GetCalcStatsInterval() const
 {
 	return CalcStatsInterval;
+}
+
+float AAfterGameModeBase::GetPlayerSpringArmLength() const
+{
+	return PlayerSpringArmLength;
 }

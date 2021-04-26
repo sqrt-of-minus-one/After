@@ -40,10 +40,9 @@ public:
 
 	static const FVector TileSize;
 	static const float CalcStatsInterval;
-
+	static const float PlayerSpringArmLength;
 
 	FVector GetTileSize() const;
-
-	// How often stats are calculated
 	float GetCalcStatsInterval() const;
+	float GetPlayerSpringArmLength() const;
 };

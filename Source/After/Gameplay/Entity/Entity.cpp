@@ -11,6 +11,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../../Data/Database.h"
 #include "../../AfterGameModeBase.h"
 
 AEntity::AEntity() :
@@ -29,14 +30,14 @@ AEntity::AEntity() :
 	CollisionComponent->SetCollisionProfileName(FName("Entity"));
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
-	FlipbookComponent->SetupAttachment(CollisionComponent);
+	FlipbookComponent->SetupAttachment(GetRootComponent());
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
 	SelectionSpriteComponent->SetActive(false);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
-	AudioComponent->SetupAttachment(CollisionComponent);
+	AudioComponent->SetupAttachment(GetRootComponent());
 }
 
 void AEntity::BeginPlay()
