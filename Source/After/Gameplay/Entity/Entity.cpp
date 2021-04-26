@@ -13,6 +13,7 @@
 
 #include "../../Data/Database.h"
 #include "../../AfterGameModeBase.h"
+#include "Controller/LastController.h"
 
 AEntity::AEntity() :
 	bIsDead(false),
@@ -50,7 +51,16 @@ void AEntity::BeginPlay()
 		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
-	// Todo: Add selection by Last
+	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
+	if (LastController)
+	{
+		OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+		OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
+	}
 
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
