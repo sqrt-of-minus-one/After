@@ -21,7 +21,7 @@ inline void InitField(TMap<FGameplayTag, T>& Map, const FString& TagName, const 
 		{
 			UE_LOG(LogTemp, Error, TEXT("There is an invalid tag %s in the %s database"), *i.ToString(), *DatabaseName);
 		}
-		if (!IS_TAG_PARENT(i, "entity"))
+		if (!IS_TAG_PARENT(i, TagName))
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s is not %s, but it is contained in the %s database"), *i.ToString(), *DatabaseName, *DatabaseName);
 		}

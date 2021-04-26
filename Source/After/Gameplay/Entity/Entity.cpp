@@ -25,6 +25,7 @@ AEntity::AEntity() :
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	SetRootComponent(CollisionComponent);
+	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize);
 	CollisionComponent->SetCollisionProfileName(FName("Entity"));
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
@@ -42,6 +43,7 @@ void AEntity::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Get game mode
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
@@ -50,6 +52,7 @@ void AEntity::BeginPlay()
 
 	// Todo: Add selection by Last
 
+	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	EntityData = &Database->GetEntityData(Id);
 
@@ -89,7 +92,7 @@ void AEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (!bIsDead)
+	if (!bIsDead && CurrentStatus != FEntityStatus::Stone && CurrentStatus != FEntityStatus::Web)
 	{
 		Move(DeltaTime);
 	}
@@ -234,14 +237,14 @@ void AEntity::Move(float DeltaTime)
 			StopRun_();
 		}
 		Offset *= (bIsRunning ? EntityData->RunSpeed : EntityData->WalkSpeed) * DeltaTime;
-		if (Moving.X != 0.f && Moving.Y != 0.f)
+		if (Moving.X != 0.f && Moving.Y != 0.f) // Diagonal movement
 		{
 			Offset /= Sqrt_2;
 		}
 
 		// Hit handling
 		FHitResult HitResult;
-		AddActorLocalOffset(Offset, true, &HitResult);
+		AddActorLocalOffset(Offset, true, &HitResult); // Move
 		if (HitResult.bBlockingHit)
 		{
 			Offset = Offset.ProjectOnTo(FVector(-HitResult.Normal.Y, HitResult.Normal.X, 0.f));
@@ -281,6 +284,7 @@ void AEntity::Move(float DeltaTime)
 
 void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time)
 {
+	// Whether flipbook have to be fixed with this status
 	bool bIsStatusFixing =
 		Status != FEntityStatus::Stay && Status != FEntityStatus::Walk && Status != FEntityStatus::Run &&
 		Status != FEntityStatus::SwimStay && Status != FEntityStatus::SwimMove;
@@ -300,6 +304,7 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 			FTimerDelegate FixedFlipbookDelegate;
 			FixedFlipbookDelegate.BindLambda([this]()
 			{
+				// "Unfix" flipbook
 				bIsFlipbookFixed = false;
 				SetFlipbook(CurrentDirection, FEntityStatus::Stay);
 			});
@@ -317,7 +322,6 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 
 void AEntity::PlaySound(FEntitySoundType Sound)
 {
-	UE_LOG(LogTemp, Log, TEXT("I'm making sound!"));
 	int Size = EntityData->Sounds.Sounds[Sound].Sounds.Num();
 	if (Size != 0)
 	{

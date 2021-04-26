@@ -6,6 +6,9 @@
 
 #include "AfterGameModeBase.h"
 
+const FVector AAfterGameModeBase::TileSize = FVector(32.f, 32.f, 8.f);
+const float AAfterGameModeBase::CalcStatsInterval = 1.f;
+
 AAfterGameModeBase::~AAfterGameModeBase()
 {
 	if (Database)

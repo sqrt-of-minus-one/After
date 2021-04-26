@@ -31,19 +31,16 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
 	UDatabase* Database;
 
-			/* CONSTANTS */
-
-	const FVector TileSize = FVector(32.f, 32.f, 8.f);
-
-	// How often stats are calculated
-	const float CalcStatsInterval = 1.f;
-
 public:
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;
 
 			/* CONSTANTS */
+
+	static const FVector TileSize;
+	static const float CalcStatsInterval;
+
 
 	FVector GetTileSize() const;
 
