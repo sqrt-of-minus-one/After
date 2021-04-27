@@ -14,6 +14,11 @@
 
 struct FDatabaseInitData;
 struct FExtraInfo;
+class AEntity;
+class ALast;
+class AMob;
+class AAnimal;
+class AMutant;
 
 USTRUCT(BlueprintType)
 struct FEntityInfo
@@ -22,6 +27,9 @@ struct FEntityInfo
 
 public:
 			/* GENERAL */
+	// Entity's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AEntity> Class;
 
 	// User-friendly entity's name
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -161,6 +169,11 @@ struct FLastInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+	// Last's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ALast> Class;
+
 			/* STATS */
 
 	// Maximum value of the satiety
@@ -179,6 +192,11 @@ struct FMobInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+	// Mob's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AMob> Class;
+
 			/* DROP */
 
 	// Items that may be dropped
@@ -217,6 +235,11 @@ struct FAnimalInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+	// Animal's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AAnimal> Class;
+
 			/* MUTATION */
 
 	// Mutant kind that the animal can turn into (<<entity.mutant>>)
@@ -249,7 +272,10 @@ struct FMutantInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
-
+			/* GENERAL */
+	// Mutant's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AMutant> Class;
 };
 void Check(FMutantInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
