@@ -14,8 +14,11 @@
 
 #include "LastController.generated.h"
 
+class AEntity;
+
 DECLARE_DELEGATE_OneParam(FAxisDelegate, float);
 DECLARE_DELEGATE(FEventDelegate);
+DECLARE_DELEGATE_RetVal_OneParam(bool, FInteractDelegate, AEntity*);
 
 UCLASS()
 class AFTER_API ALastController : public APlayerController
@@ -50,6 +53,7 @@ public:
 	FEventDelegate ZoomOut;
 	FEventDelegate StartRun;
 	FEventDelegate StopRun;
+	TDelegate<bool(AEntity*)> Attack;
 
 	void SetupInput();
 
@@ -66,4 +70,5 @@ protected:
 	void ZoomOut_f();
 	void StartRun_f();
 	void StopRun_f();
+	void Attack_f();
 };

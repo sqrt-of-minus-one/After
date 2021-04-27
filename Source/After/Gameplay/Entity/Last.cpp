@@ -42,6 +42,7 @@ void ALast::BeginPlay()
 	LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
 	LastController->StartRun.BindUObject(this, &ALast::StartRun);
 	LastController->StopRun.BindUObject(this, &ALast::StopRun);
+	LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
 	LastController->SetupInput();
 
 	// Get game mode
@@ -100,4 +101,11 @@ void ALast::ZoomOut()
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
 		SpringArmComponent->TargetArmLength * AAfterGameModeBase::ZoomStep,
 		AAfterGameModeBase::MinPlayerSpringArmLength, AAfterGameModeBase::MaxPlayerSpringArmLength);
+}
+
+void ALast::CalculateStats()
+{
+	Super::CalculateStats();
+
+	Satiety = FMath::Clamp(Satiety - LastData->SatietySpeed, 0.f, LastData->MaxSatiety);
 }

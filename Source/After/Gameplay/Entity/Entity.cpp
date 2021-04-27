@@ -109,11 +109,6 @@ void AEntity::Tick(float DeltaTime)
 	}
 }
 
-void AEntity::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-//	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-
 float AEntity::GetHealth() const
 {
 	return Health;
@@ -191,17 +186,17 @@ void AEntity::StopRun()
 
 bool AEntity::MeleeAttack(AEntity* Target)
 {
-	SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+	if (Target != this)
+	{
+		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 
-	if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
-	{
-		Target->Damage(EntityData->Damage, EntityData->DamageType, this);
-		return true;
+		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
+		{
+			Target->Damage(EntityData->Damage, EntityData->DamageType, this);
+			return true;
+		}
 	}
-	else
-	{
-		return false;
-	}
+	return false;
 }
 
 void AEntity::RangedAttack(FRotator Direction)
@@ -213,6 +208,7 @@ void AEntity::Death(FDamageType Type, const AActor* Murderer)
 {
 	SetFlipbook(CurrentDirection, FEntityStatus::Death);
 	bIsDead = true;
+	DeathDrop();
 }
 
 void AEntity::DeathDrop()
@@ -317,6 +313,10 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 			{
 				// "Unfix" flipbook
 				bIsFlipbookFixed = false;
+				if (bIsDead)
+				{
+					Destroy();
+				}
 				SetFlipbook(CurrentDirection, FEntityStatus::Stay);
 			});
 			GetWorld()->GetTimerManager().SetTimer(FixedFlipbookTimer, FixedFlipbookDelegate,

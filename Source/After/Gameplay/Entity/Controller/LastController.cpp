@@ -18,12 +18,18 @@ ALastController::ALastController() :
 
 void ALastController::BeginPlay()
 {
-	SetupInput();
+	Super::BeginPlay();
 }
 
 void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	AEntity* SelectedEntity = Cast<AEntity>(Selected);
+	if (SelectedEntity)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("*          Health: %f"), SelectedEntity->GetHealth()));
+	}
 
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), Selected ? *Selected->GetName() : *FString("None")));
 }
@@ -91,6 +97,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
 	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
 	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::Attack_f);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -121,4 +128,13 @@ void ALastController::StartRun_f()
 void ALastController::StopRun_f()
 {
 	StopRun.ExecuteIfBound();
+}
+
+void ALastController::Attack_f()
+{
+	AEntity* Entity = Cast<AEntity>(Selected);
+	if (Entity && Attack.IsBound())
+	{
+		Attack.Execute(Entity);
+	}
 }

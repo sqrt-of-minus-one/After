@@ -67,6 +67,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float Satiety;
 
+	virtual void CalculateStats() override;
+
 			/* COMPONENTS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
