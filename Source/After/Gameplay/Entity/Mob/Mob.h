@@ -1,24 +1,24 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: Mutant.h                    //
+ //  File: Mob.h                       //
 ////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
 
-#include "../Mob.h"
+#include "../Entity.h"
 
-#include "Mutant.generated.h"
+#include "Mob.generated.h"
 
 UCLASS()
-class AFTER_API AMutant : public AMob
+class AFTER_API AMob : public AEntity
 {
 	GENERATED_BODY()
 
 public:
-	AMutant();
+	AMob();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,8 +31,8 @@ public:
 protected:
 			/* GENERAL */
 
-	const FMutantInfo* MutantData;
+	const FMobInfo* MobData;
 
 	UFUNCTION(BlueprintCallable, Category = "General")
-	const FMutantInfo& GetMutantData() const;
+	const FMobInfo& GetMobData() const;
 };

@@ -1,20 +1,20 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: Animal.cpp                  //
+ //  File: Mob.cpp                     //
 ////////////////////////////////////////
 
-#include "Animal.h"
+#include "Mob.h"
 
 #include "../../../Data/Database.h"
 #include "../../../AfterGameModeBase.h"
 
-AAnimal::AAnimal()
+AMob::AMob()
 {
 
 }
 
-void AAnimal::BeginPlay()
+void AMob::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -27,20 +27,15 @@ void AAnimal::BeginPlay()
 
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
-	AnimalData = &Database->GetAnimalData(Id);
+	MobData = &Database->GetMobData(Id);
 }
 
-void AAnimal::Tick(float DeltaTime)
+void AMob::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-const FAnimalInfo& AAnimal::GetAnimalData() const
+const FMobInfo& AMob::GetMobData() const
 {
-	return *AnimalData;
-}
-
-void AAnimal::Mutate()
-{
-
+	return *MobData;
 }

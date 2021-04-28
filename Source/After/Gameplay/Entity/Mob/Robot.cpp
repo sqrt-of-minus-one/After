@@ -1,20 +1,20 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: Mob.cpp                     //
+ //  File: Robot.cpp                   //
 ////////////////////////////////////////
 
-#include "Mob.h"
+#include "Robot.h"
 
-#include "../../Data/Database.h"
-#include "../../AfterGameModeBase.h"
+#include "../../../Data/Database.h"
+#include "../../../AfterGameModeBase.h"
 
-AMob::AMob()
+ARobot::ARobot()
 {
 
 }
 
-void AMob::BeginPlay()
+void ARobot::BeginPlay()
 {
 	Super::BeginPlay();
 	
@@ -27,15 +27,15 @@ void AMob::BeginPlay()
 
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
-	MobData = &Database->GetMobData(Id);
+	RobotData = &Database->GetRobotData(Id);
 }
 
-void AMob::Tick(float DeltaTime)
+void ARobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-const FMobInfo& AMob::GetMobData() const
+const FRobotInfo& ARobot::GetRobotData() const
 {
-	return *MobData;
+	return *RobotData;
 }

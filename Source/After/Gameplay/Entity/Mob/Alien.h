@@ -1,24 +1,24 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: Animal.h                    //
+ //  File: Alien.h                     //
 ////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
 
-#include "../Mob.h"
+#include "Mob.h"
 
-#include "Animal.generated.h"
+#include "Alien.generated.h"
 
 UCLASS()
-class AFTER_API AAnimal : public AMob
+class AFTER_API AAlien : public AMob
 {
 	GENERATED_BODY()
 
 public:
-	AAnimal();
+	AAlien();
 
 protected:
 	virtual void BeginPlay() override;
@@ -31,13 +31,8 @@ public:
 protected:
 			/* GENERAL */
 
-	const FAnimalInfo* AnimalData;
+	const FAlienInfo* AlienData;
 
 	UFUNCTION(BlueprintCallable, Category = "General")
-	const FAnimalInfo& GetAnimalData() const;
-
-private:
-			/* MUTATION */
-
-	void Mutate();
+	const FAlienInfo& GetAlienData() const;
 };

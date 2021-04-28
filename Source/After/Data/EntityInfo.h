@@ -19,6 +19,8 @@ class ALast;
 class AMob;
 class AAnimal;
 class AMutant;
+class AAlien;
+class ARobot;
 
 USTRUCT(BlueprintType)
 struct FEntityInfo
@@ -27,6 +29,7 @@ struct FEntityInfo
 
 public:
 			/* GENERAL */
+
 	// Entity's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AEntity> Class;
@@ -170,6 +173,7 @@ struct FLastInfo
 
 public:
 			/* GENERAL */
+
 	// Last's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<ALast> Class;
@@ -193,6 +197,7 @@ struct FMobInfo
 
 public:
 			/* GENERAL */
+
 	// Mob's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AMob> Class;
@@ -236,6 +241,7 @@ struct FAnimalInfo
 
 public:
 			/* GENERAL */
+
 	// Animal's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AAnimal> Class;
@@ -273,6 +279,7 @@ struct FMutantInfo
 
 public:
 			/* GENERAL */
+
 	// Mutant's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AMutant> Class;
@@ -285,7 +292,11 @@ struct FAlienInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
 
+	// Alien's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AAlien> Class;
 };
 void Check(FAlienInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
@@ -295,6 +306,10 @@ struct FRobotInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
 
+	// Robot's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ARobot> Class;
 };
 void Check(FRobotInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
