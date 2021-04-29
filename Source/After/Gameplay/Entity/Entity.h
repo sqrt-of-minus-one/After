@@ -14,7 +14,6 @@
 
 #include "Entity.generated.h"
 
-struct FEntityInfo;
 class UBoxComponent;
 class UPaperFlipbookComponent;
 class UPaperSpriteComponent;

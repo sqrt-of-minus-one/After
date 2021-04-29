@@ -89,12 +89,15 @@ void AEntity::BeginPlay()
 		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[EntityData->Size]);
 	}
 
-	AudioDelegate.BindLambda([this]()
+	if (EntityData->Sounds.Sounds[FEntitySoundType::Passive].Sounds.Num() != 0)
 	{
-		PlaySound(FEntitySoundType::Passive);
+		AudioDelegate.BindLambda([this]()
+		{
+			PlaySound(FEntitySoundType::Passive);
+			GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
+		});
 		GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
-	});
-	GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
+	}
 
 	GetWorld()->GetTimerManager().SetTimer(StatsTimer, this, &AEntity::CalculateStats, AAfterGameModeBase::CalcStatsInterval, true);
 }
