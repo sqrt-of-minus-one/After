@@ -7,7 +7,7 @@
 #include "LastController.h"
 
 #include "../Entity.h"
-//#include "../../Unit/Unit.h"
+#include "../../Unit/Unit.h"
 
 ALastController::ALastController() :
 	APlayerController()
@@ -47,13 +47,13 @@ void ALastController::Select(AActor* Actor)
 	}
 	else
 	{
-//		AUnit* Unit = Cast<AUnit>(Actor);
-//		if (Unit)
-//		{
-//			Selected = Unit;
-//			Unit->Select();
-//			bNew = true;
-//		}
+		AUnit* Unit = Cast<AUnit>(Actor);
+		if (Unit)
+		{
+			Selected = Unit;
+			Unit->Select();
+			bNew = true;
+		}
 	}
 
 	if (bNew && Old)
@@ -71,11 +71,11 @@ void ALastController::Unselect(AActor* Actor)
 	}
 	else
 	{
-//		AUnit* Unit = Cast<AUnit>(Actor);
-//		if (Unit)
-//		{
-//			Unit->Unselect();
-//		}
+		AUnit* Unit = Cast<AUnit>(Actor);
+		if (Unit)
+		{
+			Unit->Unselect();
+		}
 	}
 	if (Selected == Actor)
 	{

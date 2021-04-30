@@ -12,6 +12,7 @@
 #include "Components/AudioComponent.h"
 
 #include "../../AfterGameModeBase.h"
+#include "../Entity/Controller/LastController.h"
 #include "../Entity/Entity.h"
 
 AUnit::AUnit()
@@ -26,7 +27,7 @@ AUnit::AUnit()
 	FlipbookComponent->SetupAttachment(GetRootComponent());
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
-	SelectionSpriteComponent->SetupAttachment(GetRootComponent());
+	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
 	SelectionSpriteComponent->SetVisibility(false);
 
 	DamageBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Box"));
@@ -48,20 +49,28 @@ void AUnit::BeginPlay()
 		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
+	// Get database
+	const UDatabase* Database = GameMode->GetDatabase();
+	UnitData = &Database->GetUnitData(Id);
+
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)
 	{
-		OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
-		OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+		if (UnitData->bSelectable)
+		{
+			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+		}
+		else
+		{
+			SelectionSpriteComponent->DestroyComponent();
+			SelectionSpriteComponent = nullptr;
+		}
 	}
 	else
 	{
 		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
 	}
-
-	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
-	UnitData = &Database->GetUnitData(Id);
 
 	if (UnitData->Damage != 0.f)
 	{

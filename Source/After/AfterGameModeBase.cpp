@@ -6,6 +6,7 @@
 
 #include "AfterGameModeBase.h"
 
+const float AAfterGameModeBase::LiquidValueInTile = 100.f;
 const FVector AAfterGameModeBase::TileSize = FVector(16.f, 16.f, 4.f);
 const FVector AAfterGameModeBase::DamageBoxDelta = FVector(1.f, 1.f, 0.f);
 const float AAfterGameModeBase::CalcStatsInterval = 1.f;

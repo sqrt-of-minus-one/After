@@ -21,7 +21,7 @@ class UPaperSpriteComponent;
 class UAudioComponent;
 
 UCLASS()
-class AFTER_API AUnit : AActor
+class AFTER_API AUnit : public AActor
 {
 	GENERATED_BODY()
 

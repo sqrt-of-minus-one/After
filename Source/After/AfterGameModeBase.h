@@ -38,6 +38,7 @@ public:
 
 			/* CONSTANTS */
 
+	static const float LiquidValueInTile;
 	static const FVector TileSize;
 	static const FVector DamageBoxDelta;
 	static const float CalcStatsInterval;

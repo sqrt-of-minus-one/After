@@ -51,24 +51,9 @@ void AEntity::BeginPlay()
 		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
-	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
-	if (LastController)
-	{
-		OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
-		OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
-	}
-	else
-	{
-		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
-	}
-
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	EntityData = &Database->GetEntityData(Id);
-
-	Health = EntityData->MaxHealth;
-	Oxygen = EntityData->MaxOxygen;
-	Energy = EntityData->MaxEnergy;
 
 	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize * FVector(EntityData->Size, 1.f));
 	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
@@ -76,8 +61,6 @@ void AEntity::BeginPlay()
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	SelectionSpriteComponent->SetVisibility(false);
 	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-
-	SetFlipbook(FDirection::F, FEntityStatus::Stay);
 
 	if (!Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) ||
 		!Database->GetExtraData().SelectionSprites[EntityData->Size])
@@ -88,6 +71,31 @@ void AEntity::BeginPlay()
 	{
 		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[EntityData->Size]);
 	}
+
+	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
+	if (LastController)
+	{
+		if (EntityData->bSelectable)
+		{
+			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+		}
+		else
+		{
+			SelectionSpriteComponent->DestroyComponent();
+			SelectionSpriteComponent = nullptr;
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
+	}
+
+	Health = EntityData->MaxHealth;
+	Oxygen = EntityData->MaxOxygen;
+	Energy = EntityData->MaxEnergy;
+
+	SetFlipbook(FDirection::F, FEntityStatus::Stay);
 
 	if (EntityData->Sounds.Sounds[FEntitySoundType::Passive].Sounds.Num() != 0)
 	{
