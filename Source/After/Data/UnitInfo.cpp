@@ -112,7 +112,8 @@ void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& Ini
 	{
 		if (!Data.DamageResist.Contains(i))
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Solid unit %s doesn't have one of damage resist values (#%d)"), *Tag.ToString(), i);
+			Data.DamageResist.Add(i, 0.f);
+			UE_LOG(LogTemp, Error, TEXT("Solid unit %s didn't have one of damage resist values (#%d) (it was added)"), *Tag.ToString(), i);
 		}
 		else if (Data.DamageResist[i] == 0)
 		{
@@ -124,7 +125,7 @@ void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& Ini
 	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.Flipbook) : static_cast<bool>(Data.Sprite)))
 	{
 		UE_LOG(LogTemp, Error, TEXT("Solid unit %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
-		InitData.ItemReplaced.AddTail({ Tag });
+		InitData.SolidUnitReplaced.AddTail({ Tag });
 		if (Data.bUseFlipbook)
 		{
 			Data.Flipbook = ExtraData.DebugSolidUnitFlipbook;

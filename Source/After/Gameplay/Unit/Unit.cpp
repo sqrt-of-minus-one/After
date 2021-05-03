@@ -52,6 +52,12 @@ void AUnit::BeginPlay()
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	UnitData = &Database->GetUnitData(Id);
+	
+	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	DamageBoxComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)

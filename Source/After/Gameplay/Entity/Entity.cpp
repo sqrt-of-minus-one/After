@@ -35,6 +35,7 @@ AEntity::AEntity() :
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
+	SelectionSpriteComponent->SetVisibility(false);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
@@ -59,18 +60,7 @@ void AEntity::BeginPlay()
 	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	SelectionSpriteComponent->SetVisibility(false);
 	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-
-	if (!Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) ||
-		!Database->GetExtraData().SelectionSprites[EntityData->Size])
-	{
-		UE_LOG(LogTemp, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), EntityData->Size.X, EntityData->Size.Y);
-	}
-	else
-	{
-		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[EntityData->Size]);
-	}
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)
@@ -79,6 +69,16 @@ void AEntity::BeginPlay()
 		{
 			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+
+			if (!Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) ||
+				!Database->GetExtraData().SelectionSprites[EntityData->Size])
+			{
+				UE_LOG(LogTemp, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), EntityData->Size.X, EntityData->Size.Y);
+			}
+			else
+			{
+				SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[EntityData->Size]);
+			}
 		}
 		else
 		{

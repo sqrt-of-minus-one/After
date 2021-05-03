@@ -6,7 +6,9 @@
 
 #include "Liquid.h"
 
+#include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
+#include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
 #include "../../../AfterGameModeBase.h"
@@ -14,6 +16,8 @@
 ALiquid::ALiquid()
 {
 	PrimaryActorTick.bCanEverTick = false;
+
+	CollisionComponent->SetCollisionProfileName(FName("Liquid"));
 }
 
 void ALiquid::BeginPlay()
@@ -30,6 +34,17 @@ void ALiquid::BeginPlay()
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	LiquidData = &Database->GetLiquidData(Id);
+
+	if (UnitData->bSelectable &&
+		(!Database->GetExtraData().SelectionSprites.Contains(FIntPoint(1, 1)) ||
+		!Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Database doesn't contain selection sprite with size 1x1"));
+	}
+	else
+	{
+		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]);
+	}
 
 	FlipbookComponent->SetFlipbook(LiquidData->Flipbooks[FLiquidStatus::Stay]);
 
