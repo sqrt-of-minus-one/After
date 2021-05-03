@@ -6,6 +6,8 @@
 
 #include "AfterGameModeBase.h"
 
+#include "Data/LogDatabase.h"
+
 const float AAfterGameModeBase::LiquidValueInTile = 100.f;
 const FVector AAfterGameModeBase::TileSize = FVector(16.f, 16.f, 4.f);
 const FVector AAfterGameModeBase::DamageBoxDelta = FVector(1.f, 1.f, 0.f);
@@ -29,7 +31,7 @@ void AAfterGameModeBase::BeginPlay()
 	Super::BeginPlay();
 	if (!Database)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Couldn't find database"));
+		UE_LOG(LogDatabase, Fatal, TEXT("Couldn't find database"));
 	}
 	Database->Init();
 }

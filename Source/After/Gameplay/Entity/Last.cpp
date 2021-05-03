@@ -9,6 +9,7 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 
+#include "../LogGameplay.h"
 #include "../../Data/Database.h"
 #include "../../AfterGameModeBase.h"
 #include "Controller/LastController.h"
@@ -34,7 +35,7 @@ void ALast::BeginPlay()
 	ALastController* LastController = Cast<ALastController>(GetController());
 	if (!LastController)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
+		UE_LOG(LogGameplay, Fatal, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
 	}
 	LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
 	LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
@@ -49,7 +50,7 @@ void ALast::BeginPlay()
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
 	// Get database

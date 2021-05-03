@@ -150,7 +150,7 @@ public:
 
 	// Values by which damage is multiplies
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
-	TMap<FDamageType, float> Resist;
+	TMap<FDamageType, float> DamageResist;
 };
 void Check(FClothesInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 

@@ -6,6 +6,7 @@
 
 #include "LastController.h"
 
+#include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/Unit.h"
 
@@ -87,7 +88,7 @@ void ALastController::SetupInput()
 {
 	if (CurrentInputStack.Num() <= 0)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Input stack is empty"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Input stack is empty"));
 	}
 
 	CurrentInputStack[0]->BindAxis("MoveX", this, &ALastController::MoveX_f);

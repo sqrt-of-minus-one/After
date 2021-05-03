@@ -1,9 +1,9 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: After.h                     //
+ //  File: LogDatabase.cpp             //
 ////////////////////////////////////////
 
-#pragma once
+#include "LogDatabase.h"
 
-#include "CoreMinimal.h"
+DEFINE_LOG_CATEGORY(LogDatabase);

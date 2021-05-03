@@ -11,6 +11,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../LogGameplay.h"
 #include "../../AfterGameModeBase.h"
 #include "../Entity/Controller/LastController.h"
 #include "../Entity/Entity.h"
@@ -46,7 +47,7 @@ void AUnit::BeginPlay()
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
 	// Get database
@@ -75,7 +76,7 @@ void AUnit::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
+		UE_LOG(LogGameplay, Error, TEXT("Couldn't find Last Controller"));
 	}
 
 	if (UnitData->Damage != 0.f)

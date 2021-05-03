@@ -11,13 +11,12 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 //#include "../../Item/Item.h"
 
 ASolidUnit::ASolidUnit()
 {
-	PrimaryActorTick.bCanEverTick = false;
-
 	CollisionComponent->SetCollisionProfileName(FName("SolidUnit"));
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
@@ -36,7 +35,7 @@ void ASolidUnit::BeginPlay()
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
 	// Get database
@@ -70,7 +69,7 @@ void ASolidUnit::BeginPlay()
 		(!Database->GetExtraData().SelectionSprites.Contains(SolidUnitData->Size) ||
 			!Database->GetExtraData().SelectionSprites[SolidUnitData->Size]))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
+		UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
 	}
 	else
 	{

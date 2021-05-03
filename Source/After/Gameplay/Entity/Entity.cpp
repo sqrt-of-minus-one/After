@@ -11,6 +11,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../LogGameplay.h"
 #include "../../Data/Database.h"
 #include "../../AfterGameModeBase.h"
 #include "Controller/LastController.h"
@@ -49,7 +50,7 @@ void AEntity::BeginPlay()
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
 	// Get database
@@ -73,7 +74,7 @@ void AEntity::BeginPlay()
 			if (!Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) ||
 				!Database->GetExtraData().SelectionSprites[EntityData->Size])
 			{
-				UE_LOG(LogTemp, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), EntityData->Size.X, EntityData->Size.Y);
+				UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), EntityData->Size.X, EntityData->Size.Y);
 			}
 			else
 			{
@@ -88,7 +89,7 @@ void AEntity::BeginPlay()
 	}
 	else
 	{
-		UE_LOG(LogTemp, Error, TEXT("Couldn't find Last Controller"));
+		UE_LOG(LogGameplay, Error, TEXT("Couldn't find Last Controller"));
 	}
 
 	Health = EntityData->MaxHealth;

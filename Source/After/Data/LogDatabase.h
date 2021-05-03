@@ -1,9 +1,11 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: After.h                     //
+ //  File: LogDatabase.h               //
 ////////////////////////////////////////
 
 #pragma once
 
 #include "CoreMinimal.h"
+
+DECLARE_LOG_CATEGORY_EXTERN(LogDatabase, Log, All);

@@ -1,9 +1,9 @@
     ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
- //  File: After.h                     //
+ //  File: LogGameplay.cpp             //
 ////////////////////////////////////////
 
-#pragma once
+#include "LogGameplay.h"
 
-#include "CoreMinimal.h"
+DEFINE_LOG_CATEGORY(LogGameplay);

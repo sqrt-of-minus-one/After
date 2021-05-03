@@ -8,46 +8,47 @@
 
 #include "DatabaseInitData.h"
 #include "ExtraInfo.h"
+#include "LogDatabase.h"
 
 void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
 	if (Data.Name.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Item %s doesn't have a name"), *Tag.ToString());
+		UE_LOG(LogDatabase, Warning, TEXT("Item %s doesn't have a name"), *Tag.ToString());
 	}
 	if (Data.Description.IsEmpty())
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Item %s doesn't have a description"), *Tag.ToString());
+		UE_LOG(LogDatabase, Warning, TEXT("Item %s doesn't have a description"), *Tag.ToString());
 	}
 	for (const FGameplayTag& i : Data.Tags)
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Item %s contains an invalid item tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogDatabase, Fatal, TEXT("Item %s contains an invalid item tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.item"))
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Item %s contains a tag with invalid name (%s is not an item tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogDatabase, Fatal, TEXT("Item %s contains a tag with invalid name (%s is not an item tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
 	// Inventory
 	if (Data.StackSize <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Item %s has non-positive stack size (%d)"), *Tag.ToString(), Data.StackSize);
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has non-positive stack size (%d)"), *Tag.ToString(), Data.StackSize);
 	}
 
 	// Fuel
 	if (Data.Heat < 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Item %s has negative heat (%f)"), *Tag.ToString(), Data.Heat);
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative heat (%f)"), *Tag.ToString(), Data.Heat);
 	}
 
 	// Appearance
 	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.Flipbook) : static_cast<bool>(Data.Sprite)))
 	{
-		UE_LOG(LogTemp, Error, TEXT("Item %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
+		UE_LOG(LogDatabase, Error, TEXT("Item %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
 		InitData.ItemReplaced.AddTail({ Tag });
 		if (Data.bUseFlipbook)
 		{
@@ -65,15 +66,15 @@ void Check(FVesselItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& In
 	// Content
 	if (Data.Volume <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Vessel item %s has non-positive volume (%f)"), *Tag.ToString(), Data.Volume);
+		UE_LOG(LogDatabase, Error, TEXT("Vessel item %s has non-positive volume (%f)"), *Tag.ToString(), Data.Volume);
 	}
 	if (!Data.VesselProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Vessel item %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Vessel item %s contains an invalid vessel profile (%s)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.VesselProfile, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Vessel item %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Vessel item %s contains a vessel profile with invalid name (%s is not a vessel profile)"), *Tag.ToString(), *Data.VesselProfile.ToString());
 	}
 }
 
@@ -81,11 +82,11 @@ void Check(FBuildableInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& Ini
 {
 	if (!Data.Unit.IsValid())
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Buildable item %s contains an invalid unit (%s)"), *Tag.ToString(), *Data.Unit.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Buildable item %s contains an invalid unit (%s)"), *Tag.ToString(), *Data.Unit.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.Unit, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Buildable item %s contains a unit with invalid name (%s is not a unit)"), *Tag.ToString(), *Data.Unit.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Buildable item %s contains a unit with invalid name (%s is not a unit)"), *Tag.ToString(), *Data.Unit.ToString());
 	}
 }
 
@@ -94,7 +95,7 @@ void Check(FFoodInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 	// Using
 	if (Data.Satiety <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Food %s has non-positive satiety (%f)"), *Tag.ToString(), Data.Satiety);
+		UE_LOG(LogDatabase, Error, TEXT("Food %s has non-positive satiety (%f)"), *Tag.ToString(), Data.Satiety);
 	}
 }
 
@@ -103,20 +104,29 @@ void Check(FClothesInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitD
 	// Characteristics
 	if (Data.Volume <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Clothes %s has non-positive inventory size (%d)"), *Tag.ToString(), Data.Volume);
+		UE_LOG(LogDatabase, Error, TEXT("Clothes %s has non-positive inventory size (%d)"), *Tag.ToString(), Data.Volume);
 	}
-	for_enum<FDamageType>([&Data, &Tag](FDamageType i, bool& out_continue)
+	bool None = false, Zero = false;
+	for_enum<FDamageType>([&Data, &Tag, &None, &Zero](FDamageType i, bool& out_continue)
 	{
-		if (!Data.Resist.Contains(i))
+		if (!Data.DamageResist.Contains(i))
 		{
-			Data.Resist.Add(i, 0.f);
-			UE_LOG(LogTemp, Warning, TEXT("Clothes %s didn't have one of damage resist values (#%d) (it was added)"), *Tag.ToString(), i);
+			Data.DamageResist.Add(i, 0.f);
+			None = true;
 		}
-		if (Data.Resist[i] == 0.f)
+		if (Data.DamageResist[i] == 0.f)
 		{
-			UE_LOG(LogTemp, Error, TEXT("One of damage resist values (#%d) of clothes %s is zero (may cause divide by zero)"), i, *Tag.ToString());
+			Zero = true;
 		}
 	});
+	if (None)
+	{
+		UE_LOG(LogDatabase, Warning, TEXT("Clothes %s didn't have some damage resist values (they was added)"), *Tag.ToString());
+	}
+	if (Zero)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Some damage resist values of clothes %s are zero (may cause divide by zero)"), *Tag.ToString());
+	}
 }
 
 void Check(FRangedWeaponInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
@@ -124,31 +134,31 @@ void Check(FRangedWeaponInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& 
 	// Characteristics
 	if (Data.DamageMultiplier <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s has non-positive damage multiplier (%f)"), *Tag.ToString(), Data.DamageMultiplier);
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive damage multiplier (%f)"), *Tag.ToString(), Data.DamageMultiplier);
 	}
 	if (Data.FiringRate <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s has non-positive firing rate (%f)"), *Tag.ToString(), Data.FiringRate);
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive firing rate (%f)"), *Tag.ToString(), Data.FiringRate);
 	}
 	if (Data.ReloadTime < 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s has negative reload time (%f)"), *Tag.ToString(), Data.ReloadTime);
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has negative reload time (%f)"), *Tag.ToString(), Data.ReloadTime);
 	}
 	if (!Data.AmmunitionProfile.IsValid())
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Weapon %s contains an invalid ammunition profile (%s)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Weapon %s contains an invalid ammunition profile (%s)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.AmmunitionProfile, "tag.solid"))
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Weapon %s contains a ammunition profile with invalid name (%s is not a ammunition profile)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Weapon %s contains a ammunition profile with invalid name (%s is not a ammunition profile)"), *Tag.ToString(), *Data.AmmunitionProfile.ToString());
 	}
 	if (Data.DistanceMultiplier <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s has non-positive distance multiplier (%f)"), *Tag.ToString(), Data.DistanceMultiplier);
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive distance multiplier (%f)"), *Tag.ToString(), Data.DistanceMultiplier);
 	}
 	if (Data.Accuracy <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Weapon %s has non-positive accuracy value (%f)"), *Tag.ToString(), Data.Accuracy);
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive accuracy value (%f)"), *Tag.ToString(), Data.Accuracy);
 	}
 }
 
@@ -159,33 +169,33 @@ void Check(FAmmunitionInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& In
 	{
 		if (!i.IsValid())
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains an invalid ammunition tag (%s)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogDatabase, Fatal, TEXT("Ammunition %s contains an invalid ammunition tag (%s)"), *Tag.ToString(), *i.ToString());
 		}
 		if (!IS_TAG_PARENT(i, "tag.item"))
 		{
-			UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains a tag with invalid name (%s is not an ammunition tag)"), *Tag.ToString(), *i.ToString());
+			UE_LOG(LogDatabase, Fatal, TEXT("Ammunition %s contains a tag with invalid name (%s is not an ammunition tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
 
 	// Characteristics
 	if (!Data.Projectile.IsValid())
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains an invalid projectile (%s)"), *Tag.ToString(), *Data.Projectile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Ammunition %s contains an invalid projectile (%s)"), *Tag.ToString(), *Data.Projectile.ToString());
 	}
 	if (!IS_TAG_PARENT(Data.Projectile, "tag.item"))
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Ammunition %s contains a projectile with invalid name (%s is not a projectile)"), *Tag.ToString(), *Data.Projectile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Ammunition %s contains a projectile with invalid name (%s is not a projectile)"), *Tag.ToString(), *Data.Projectile.ToString());
 	}
 	if (Data.FiringRateMultiplier <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ammunition %s has non-positive firing rate multiplier (%f)"), *Tag.ToString(), Data.FiringRateMultiplier);
+		UE_LOG(LogDatabase, Error, TEXT("Ammunition %s has non-positive firing rate multiplier (%f)"), *Tag.ToString(), Data.FiringRateMultiplier);
 	}
 	if (Data.AccuracyMultiplier <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ammunition %s has non-positive accuracy multiplier (%f)"), *Tag.ToString(), Data.AccuracyMultiplier);
+		UE_LOG(LogDatabase, Error, TEXT("Ammunition %s has non-positive accuracy multiplier (%f)"), *Tag.ToString(), Data.AccuracyMultiplier);
 	}
 	if (Data.MagazineSize <= 0)
 	{
-		UE_LOG(LogTemp, Error, TEXT("Ammunition %s has non-positive magazine size (%d)"), *Tag.ToString(), Data.MagazineSize);
+		UE_LOG(LogDatabase, Error, TEXT("Ammunition %s has non-positive magazine size (%d)"), *Tag.ToString(), Data.MagazineSize);
 	}
 }

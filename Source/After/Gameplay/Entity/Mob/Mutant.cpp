@@ -6,6 +6,7 @@
 
 #include "Mutant.h"
 
+#include "../../LogGameplay.h"
 #include "../../../Data/Database.h"
 #include "../../../AfterGameModeBase.h"
 
@@ -22,7 +23,7 @@ void AMutant::BeginPlay()
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
 	{
-		UE_LOG(LogTemp, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
 	}
 
 	// Get database
