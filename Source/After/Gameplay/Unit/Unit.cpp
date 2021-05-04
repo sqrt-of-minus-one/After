@@ -12,9 +12,10 @@
 #include "Components/AudioComponent.h"
 
 #include "../LogGameplay.h"
-#include "../../AfterGameModeBase.h"
 #include "../Entity/Controller/LastController.h"
+#include "../../AfterGameModeBase.h"
 #include "../Entity/Entity.h"
+#include "../../GameConstants.h"
 
 AUnit::AUnit()
 {
@@ -22,7 +23,7 @@ AUnit::AUnit()
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	SetRootComponent(CollisionComponent);
-	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize);
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize);
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
 	FlipbookComponent->SetupAttachment(GetRootComponent());
@@ -33,7 +34,7 @@ AUnit::AUnit()
 
 	DamageBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Box"));
 	DamageBoxComponent->SetupAttachment(GetRootComponent());
-	DamageBoxComponent->SetBoxExtent(AAfterGameModeBase::TileSize + AAfterGameModeBase::DamageBoxDelta);
+	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
@@ -121,7 +122,7 @@ void AUnit::StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPri
 		if (!GetWorld()->GetTimerManager().IsTimerActive(AttackTimer))
 		{
 			Attack();
-			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AUnit::Attack, AAfterGameModeBase::UnitDamageInterval, true);
+			GetWorld()->GetTimerManager().SetTimer(AttackTimer, this, &AUnit::Attack, GameConstants::UnitDamageInterval, true);
 		}
 	}
 }

@@ -31,11 +31,15 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// ==================================================
 
 public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FLastInfo& GetLastData() const;
+			
 			/* STATS */
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
@@ -50,9 +54,6 @@ protected:
 			/* GENERAL */
 
 	const FLastInfo* LastData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FLastInfo& GetLastData() const;
 
 			/* ZOOM */
 

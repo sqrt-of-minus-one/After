@@ -28,11 +28,14 @@ public:
 
 	// ==================================================
 
+public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FRobotInfo& GetRobotData() const;
+
 protected:
 			/* GENERAL */
 
 	const FRobotInfo* RobotData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FRobotInfo& GetRobotData() const;
 };

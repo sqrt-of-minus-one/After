@@ -74,10 +74,18 @@ struct FBehaviourProfileInfo
 public:
 	// Whether entity attacks everyone
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool IsAgressive;
+	bool bIsAgressive;
 
 	// Exceptions to is agressive <<tag.entity || entity>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FGameplayTag> Except;
+	TArray<FGameplayTag> AgressiveExcept;
+	
+	// Whether entity runs away from everyone
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bIsFearful;
+
+	// Exceptions to is fearful <<tag.entity || entity>>
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<FGameplayTag> FearfulExcept;
 };
 void Check(FBehaviourProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);

@@ -16,10 +16,6 @@
 
 class AEntity;
 
-DECLARE_DELEGATE_OneParam(FAxisDelegate, float);
-DECLARE_DELEGATE(FEventDelegate);
-DECLARE_DELEGATE_RetVal_OneParam(bool, FInteractDelegate, AEntity*);
-
 UCLASS()
 class AFTER_API ALastController : public APlayerController
 {
@@ -45,14 +41,14 @@ public:
 	UFUNCTION()
 	void Unselect(AActor* Actor);
 
-			/* CONTROLLING */
+			/* CONTROL */
 
-	FAxisDelegate MoveX;
-	FAxisDelegate MoveY;
-	FEventDelegate ZoomIn;
-	FEventDelegate ZoomOut;
-	FEventDelegate StartRun;
-	FEventDelegate StopRun;
+	TDelegate<void(float)> MoveX;
+	TDelegate<void(float)> MoveY;
+	TDelegate<void()> ZoomIn;
+	TDelegate<void()> ZoomOut;
+	TDelegate<void()> StartRun;
+	TDelegate<void()> StopRun;
 	TDelegate<bool(AEntity*)> Attack;
 
 	void SetupInput();
@@ -62,7 +58,7 @@ protected:
 
 	AActor* Selected;
 
-			/* CONTROLLING */
+			/* CONTROL */
 
 	void MoveX_f(float Value);
 	void MoveY_f(float Value);

@@ -11,8 +11,9 @@
 
 #include "../LogGameplay.h"
 #include "../../Data/Database.h"
-#include "../../AfterGameModeBase.h"
 #include "Controller/LastController.h"
+#include "../../AfterGameModeBase.h"
+#include "../../GameConstants.h"
 
 ALast::ALast()
 {
@@ -21,7 +22,7 @@ ALast::ALast()
 	SpringArmComponent = CreateDefaultSubobject<USpringArmComponent>(TEXT("Spring Arm"));
 	SpringArmComponent->SetupAttachment(GetRootComponent());
 	SpringArmComponent->SetRelativeRotation(FRotator(-90.f, -90.f, 0.f));
-	SpringArmComponent->TargetArmLength = AAfterGameModeBase::PlayerSpringArmLength;
+	SpringArmComponent->TargetArmLength = GameConstants::PlayerSpringArmLength;
 	SpringArmComponent->bDoCollisionTest = false;
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
@@ -70,9 +71,9 @@ void ALast::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Health: %f"), Health));
 }
 
-void ALast::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+const FLastInfo& ALast::GetLastData() const
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+	return *LastData;
 }
 
 float ALast::GetSatiety() const
@@ -85,23 +86,18 @@ void ALast::Weak()
 	// Todo
 }
 
-const FLastInfo& ALast::GetLastData() const
-{
-	return *LastData;
-}
-
 void ALast::ZoomIn()
 {
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
-		SpringArmComponent->TargetArmLength / AAfterGameModeBase::ZoomStep,
-		AAfterGameModeBase::MinPlayerSpringArmLength, AAfterGameModeBase::MaxPlayerSpringArmLength);
+		SpringArmComponent->TargetArmLength / GameConstants::ZoomStep,
+		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
 }
 
 void ALast::ZoomOut()
 {
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
-		SpringArmComponent->TargetArmLength * AAfterGameModeBase::ZoomStep,
-		AAfterGameModeBase::MinPlayerSpringArmLength, AAfterGameModeBase::MaxPlayerSpringArmLength);
+		SpringArmComponent->TargetArmLength * GameConstants::ZoomStep,
+		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
 }
 
 void ALast::CalculateStats()

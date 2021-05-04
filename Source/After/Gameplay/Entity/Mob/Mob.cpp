@@ -9,10 +9,11 @@
 #include "../../LogGameplay.h"
 #include "../../../Data/Database.h"
 #include "../../../AfterGameModeBase.h"
+#include "../Controller/MobController.h"
 
 AMob::AMob()
 {
-
+	AIControllerClass = AMobController::StaticClass();
 }
 
 void AMob::BeginPlay()
@@ -29,6 +30,21 @@ void AMob::BeginPlay()
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	MobData = &Database->GetMobData(Id);
+
+	// Set controller
+	AMobController* MobController = Cast<AMobController>(GetController());
+	if (!MobController)
+	{
+		UE_LOG(LogGameplay, Error, TEXT("Mob (%s) doesn't have mob controller"), *Id.ToString());
+	}
+	else
+	{
+		MobController->MoveX.BindUObject(this, &AMob::SetMoveX);
+		MobController->MoveY.BindUObject(this, &AMob::SetMoveY);
+		MobController->StartRun.BindUObject(this, &AMob::StartRun);
+		MobController->StartRun.BindUObject(this, &AMob::StopRun);
+		MobController->SetupInput();
+	}
 }
 
 void AMob::Tick(float DeltaTime)

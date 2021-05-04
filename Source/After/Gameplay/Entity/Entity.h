@@ -36,6 +36,11 @@ public:
 // ==================================================
 
 public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FEntityInfo& GetEntityData() const;
+
 			/* STATS */
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
@@ -73,9 +78,6 @@ protected:
 	FGameplayTag Id;
 
 	const FEntityInfo* EntityData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FEntityInfo& GetEntityData() const;
 
 			/* EFFECTS */
 	

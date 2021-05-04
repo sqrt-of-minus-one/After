@@ -13,6 +13,7 @@
 
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
+#include "../../../GameConstants.h"
 //#include "../../Item/Item.h"
 
 ASolidUnit::ASolidUnit()
@@ -42,7 +43,7 @@ void ASolidUnit::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	SolidUnitData = &Database->GetSolidUnitData(Id);
 
-	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize * FVector(SolidUnitData->Size, 1.f));
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f));
 	SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	BreakSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));

@@ -28,11 +28,14 @@ public:
 
 	// ==================================================
 
+public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FMutantInfo& GetMutantData() const;
+
 protected:
 			/* GENERAL */
 
 	const FMutantInfo* MutantData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FMutantInfo& GetMutantData() const;
 };

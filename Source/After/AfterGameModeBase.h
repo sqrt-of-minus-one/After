@@ -35,16 +35,4 @@ public:
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;
-
-			/* CONSTANTS */
-
-	static const float LiquidValueInTile;
-	static const FVector TileSize;
-	static const FVector DamageBoxDelta;
-	static const float CalcStatsInterval;
-	static const float UnitDamageInterval;
-	static const float ZoomStep;
-	static const float PlayerSpringArmLength;
-	static const float MinPlayerSpringArmLength;
-	static const float MaxPlayerSpringArmLength;
 };

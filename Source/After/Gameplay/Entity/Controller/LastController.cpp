@@ -10,8 +10,7 @@
 #include "../Entity.h"
 #include "../../Unit/Unit.h"
 
-ALastController::ALastController() :
-	APlayerController()
+ALastController::ALastController()
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;

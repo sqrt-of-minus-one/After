@@ -60,7 +60,18 @@ void Check(FAmmunitionProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitD
 
 void Check(FBehaviourProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
-	for (const FGameplayTag& i : Data.Except)
+	for (const FGameplayTag& i : Data.AgressiveExcept)
+	{
+		if (!i.IsValid())
+		{
+			UE_LOG(LogDatabase, Fatal, TEXT("Behaviour profile %s contains an invalid tag (%s)"), *Tag.ToString(), *i.ToString());
+		}
+		if (!IS_TAG_PARENT(i, "tag.entity") && !IS_TAG_PARENT(i, "entity"))
+		{
+			UE_LOG(LogDatabase, Fatal, TEXT("Behaviour profile %s contains a tag with invalid name (%s is not an entity or an entity tag)"), *Tag.ToString(), *i.ToString());
+		}
+	}
+	for (const FGameplayTag& i : Data.FearfulExcept)
 	{
 		if (!i.IsValid())
 		{

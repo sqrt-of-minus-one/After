@@ -13,6 +13,7 @@
 
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
+#include "../../../GameConstants.h"
 
 ALiquid::ALiquid()
 {
@@ -60,7 +61,7 @@ float ALiquid::Add(FGameplayTag Liquid, float AddedAmount)
 	if (Liquid == Id && AddedAmount > 0)
 	{
 		float OldAmount = Amount;
-		Amount = FMath::Clamp(Amount + AddedAmount, 0.f, AAfterGameModeBase::LiquidValueInTile);
+		Amount = FMath::Clamp(Amount + AddedAmount, 0.f, GameConstants::LiquidValueInTile);
 		BeginFlow();
 		return Amount - OldAmount;
 	}

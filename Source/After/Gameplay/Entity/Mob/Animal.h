@@ -28,13 +28,16 @@ public:
 
 	// ==================================================
 
+public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FAnimalInfo& GetAnimalData() const;
+
 protected:
 			/* GENERAL */
 
 	const FAnimalInfo* AnimalData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FAnimalInfo& GetAnimalData() const;
 
 			/* DAMAGE */
 

@@ -28,11 +28,14 @@ public:
 
 	// ==================================================
 
+public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FMobInfo& GetMobData() const;
+
 protected:
 			/* GENERAL */
 
 	const FMobInfo* MobData;
-
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FMobInfo& GetMobData() const;
 };

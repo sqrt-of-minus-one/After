@@ -13,8 +13,9 @@
 
 #include "../LogGameplay.h"
 #include "../../Data/Database.h"
-#include "../../AfterGameModeBase.h"
 #include "Controller/LastController.h"
+#include "../../AfterGameModeBase.h"
+#include "../../GameConstants.h"
 
 AEntity::AEntity() :
 	bIsDead(false),
@@ -28,7 +29,7 @@ AEntity::AEntity() :
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	SetRootComponent(CollisionComponent);
-	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize);
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize);
 	CollisionComponent->SetCollisionProfileName(FName("Entity"));
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
@@ -57,7 +58,7 @@ void AEntity::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	EntityData = &Database->GetEntityData(Id);
 
-	CollisionComponent->SetBoxExtent(AAfterGameModeBase::TileSize * FVector(EntityData->Size, 1.f));
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
 	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
@@ -108,7 +109,7 @@ void AEntity::BeginPlay()
 		GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
 	}
 
-	GetWorld()->GetTimerManager().SetTimer(StatsTimer, this, &AEntity::CalculateStats, AAfterGameModeBase::CalcStatsInterval, true);
+	GetWorld()->GetTimerManager().SetTimer(StatsTimer, this, &AEntity::CalculateStats, GameConstants::CalcStatsInterval, true);
 }
 
 void AEntity::Tick(float DeltaTime)
@@ -119,6 +120,11 @@ void AEntity::Tick(float DeltaTime)
 	{
 		Move(DeltaTime);
 	}
+}
+
+const FEntityInfo& AEntity::GetEntityData() const
+{
+	return *EntityData;
 }
 
 float AEntity::GetHealth() const
@@ -166,11 +172,6 @@ void AEntity::Select()
 void AEntity::Unselect()
 {
 	SelectionSpriteComponent->SetVisibility(false);
-}
-
-const FEntityInfo& AEntity::GetEntityData() const
-{
-	return *EntityData;
 }
 
 void AEntity::SetMoveX(float Value)
