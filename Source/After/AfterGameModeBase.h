@@ -23,7 +23,6 @@ public:
 	~AAfterGameModeBase();
 	
 protected:
-	
 	virtual void BeginPlay() override;
 
 			/* DATA */

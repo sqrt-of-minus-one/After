@@ -29,37 +29,42 @@ public:
 	// ==================================================
 
 public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FLiquidInfo& GetLiquidData() const;
+
 			/* CHANGE */
 	
 	// Tries to add some liquid. Returns how much liquid was added
+	UFUNCTION(Category = "Change")
 	float Add(FGameplayTag Liquid, float AddedAmount);
 
 	// Tries to take some liquid into the vessel. Returns how much liquid was taken
+	UFUNCTION(Category = "Change")
 	float Get(FGameplayTag Liquid, float GotAmount);
 
 			/* FLOW */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Change")
 	void BeginFlow();
 
 protected:
+	UFUNCTION()
 	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
 
 			/* GENERAL */
 
 	const FLiquidInfo* LiquidData;
 
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FLiquidInfo& GetLiquidData() const;
-
 			/* STATUS */
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Status")
+	UPROPERTY(BlueprintReadOnly, Category = "Status")
 	float Amount;
 
 			/* FLOW */
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Flow")
+	UPROPERTY(BlueprintReadOnly, Category = "Flow")
 	FTimerHandle FlowTimer;
 
 	UFUNCTION()

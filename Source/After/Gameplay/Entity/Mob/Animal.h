@@ -46,5 +46,6 @@ protected:
 private:
 			/* MUTATION */
 
+	UFUNCTION(Category = "Mutation")
 	void Mutate();
 };

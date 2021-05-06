@@ -31,18 +31,30 @@ public:
 	// ==================================================
 
 public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FSolidUnitInfo& GetSolidUnitData() const;
+
+			/* STATS */
+
+	UFUNCTION(BlueprintCallable, Category = "Stats")
+	float GetHealth() const;
 
 			/* INTERACTION */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Interaction")
 	virtual void Interact();
 
 			/* DAMAGE */
 
+	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void Damage(float Value, FDamageType Type, const AActor* FromWho);
 
+	UFUNCTION(Category = "Damage")
 	void StartBreaking(/* const UItem* By */);
 
+	UFUNCTION(Category = "Damage")
 	void StopBreaking();
 
 protected:
@@ -50,25 +62,22 @@ protected:
 
 	const FSolidUnitInfo* SolidUnitData;
 
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FSolidUnitInfo& GetSolidUnitData() const;
-
 			/* STATS */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Health;
 
 			/* DAMAGE */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void Kill(FDamageType Type, const AActor* Murderer);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	void Break(/* const UItem* By */);
 
 			/* AUDIO */
 	
-	UFUNCTION()
+	UFUNCTION(Category = "Audio")
 	void PlaySound(FSolidUnitSoundType Sound);
 
 			/* COMPONENTS */

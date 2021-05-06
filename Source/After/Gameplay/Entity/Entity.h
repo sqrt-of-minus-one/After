@@ -54,21 +54,21 @@ public:
 
 			/* DAMAGE */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void Stone(float Duration);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void Web(float Duration);
 
 			/* SELECTION */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Select();
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Unselect();
 
 protected:
@@ -85,102 +85,103 @@ protected:
 			/* EFFECTS */
 	
 	// Time remaining until the end of poison effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	UPROPERTY(BlueprintReadOnly, Category = "Effects")
 	FTimerHandle PoisonTimer;
 
 	// Time remaining until the end of radiation effect
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Effects")
+	UPROPERTY(BlueprintReadOnly, Category = "Effects")
 	FTimerHandle RadiationTimer;
 
 			/* MOVEMENT */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector2D Moving;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector2D PushMoving;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	bool bIsRunning;
 
-	UFUNCTION()
+	UFUNCTION(Category = "Movement")
 	void Move(float DeltaTime);
 
-	void MoveHit(FVector Offset);
+	UFUNCTION(Category = "Movement")
+	void AddOffset(FVector Offset);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Movement")
 	void SetMoveX(float Value);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Movement")
 	void SetMoveY(float Value);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Movement")
 	virtual void StartRun();
 
-	UFUNCTION()
+	UFUNCTION(Category = "Movement")
 	virtual void StopRun();
 
 			/* ATTACK */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Attack")
 	virtual bool MeleeAttack(AEntity* Target);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Attack")
 	virtual void RangedAttack(FRotator Direction);
 
 			/* DAMAGE */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void Death(FDamageType Type, const AActor* Murderer);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Damage")
 	virtual void DeathDrop();
 
 			/* DEATH */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Death")
+	UPROPERTY(BlueprintReadOnly, Category = "Death")
 	bool bIsDead;
 
 			/* STATS */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	FTimerHandle StatsTimer;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Health;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Oxygen;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Energy;
 
-	UFUNCTION()
+	UFUNCTION(Category = "Stats")
 	virtual void CalculateStats();
 
 			/* APPEARANCE */
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FTimerHandle FixedFlipbookTimer;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FEntityStatus CurrentStatus;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FDirection CurrentDirection;
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	bool bIsFlipbookFixed;
 
-	UFUNCTION()
+	UFUNCTION(Category = "Appearance")
 	virtual void SetFlipbook(FDirection Direction, FEntityStatus Status, float Time = 1.f);
 
 			/* AUDIO */
 	
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(BlueprintReadOnly, Category = "Audio")
 	FTimerHandle AudioTimer;
 
-	UFUNCTION()
+	UFUNCTION(Category = "Audio")
 	virtual void PlaySound(FEntitySoundType Sound);
 
 			/* COMPONENTS */

@@ -37,15 +37,17 @@ void ALiquid::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	LiquidData = &Database->GetLiquidData(Id);
 
-	if (UnitData->bSelectable &&
-		(!Database->GetExtraData().SelectionSprites.Contains(FIntPoint(1, 1)) ||
-		!Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]))
+	if (UnitData->bSelectable)
 	{
-		UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size 1x1"));
-	}
-	else
-	{
-		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]);
+		if (!Database->GetExtraData().SelectionSprites.Contains(FIntPoint(1, 1)) ||
+			!Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)])
+		{
+			UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size 1x1"));
+		}
+		else
+		{
+			SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]);
+		}
 	}
 
 	FlipbookComponent->SetFlipbook(LiquidData->Flipbooks[FLiquidStatus::Stay]);
@@ -56,6 +58,11 @@ void ALiquid::BeginPlay()
 void ALiquid::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+const FLiquidInfo& ALiquid::GetLiquidData() const
+{
+	return *LiquidData;
 }
 
 float ALiquid::Add(FGameplayTag Liquid, float AddedAmount)
@@ -79,9 +86,9 @@ float ALiquid::Get(FGameplayTag Liquid, float GotAmount)
 	{
 		float Got = FMath::Min(GotAmount, Amount);
 		Amount -= Got;
-		if (Amount == 0.f)
+		if (Amount <= 0.f)
 		{
-			Destroy(); // There may be problems...
+			GetWorld()->DestroyActor(this);
 		}
 		return Got;
 	}
@@ -105,11 +112,6 @@ void ALiquid::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 	{
 		GetWorld()->GetTimerManager().ClearTimer(FlowTimer);
 	}
-}
-
-const FLiquidInfo& ALiquid::GetLiquidData() const
-{
-	return *LiquidData;
 }
 
 void ALiquid::Flow()

@@ -73,6 +73,7 @@ void AUnit::BeginPlay()
 		}
 		else
 		{
+			// We don't need a selection sprite if the unit is not selectable
 			SelectionSpriteComponent->DestroyComponent();
 			SelectionSpriteComponent = nullptr;
 		}
@@ -89,6 +90,7 @@ void AUnit::BeginPlay()
 	}
 	else
 	{
+		// We don't need a damage box if the unit does not deal damage
 		DamageBoxComponent->DestroyComponent();
 		DamageBoxComponent = nullptr;
 	}
@@ -97,6 +99,11 @@ void AUnit::BeginPlay()
 void AUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+const FUnitInfo& AUnit::GetUnitData() const
+{
+	return *UnitData;
 }
 
 void AUnit::Select()
@@ -124,11 +131,6 @@ void AUnit::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 	}
 }
 
-const FUnitInfo& AUnit::GetUnitData() const
-{
-	return *UnitData;
-}
-
 void AUnit::StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -152,6 +154,7 @@ void AUnit::StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrim
 		Attacked.Remove(Entity);
 		if (Attacked.Num() == 0)
 		{
+			// Stop attack if there is no attacked entity
 			GetWorld()->GetTimerManager().ClearTimer(AttackTimer);
 		}
 	}

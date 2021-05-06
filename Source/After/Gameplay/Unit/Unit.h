@@ -37,6 +37,11 @@ public:
 	// ==================================================
 
 public:
+			/* GENERAL */
+
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FUnitInfo& GetUnitData() const;
+
 			/* SELECTION */
 
 	UFUNCTION()
@@ -56,30 +61,31 @@ protected:
 
 	const FUnitInfo* UnitData;
 
-	UFUNCTION(BlueprintCallable, Category = "General")
-	const FUnitInfo& GetUnitData() const;
-
 			/* ATTACK */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	FTimerHandle AttackTimer;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	// Entities that are being attacked by this unit
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	TArray<AEntity*> Attacked;
 
-	UFUNCTION()
+	// Add new entity to the Attacked array
+	UFUNCTION(Category = "Attack")
 	void StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
 		bool bFromSweep, const FHitResult& SweepResult);
 
-	UFUNCTION()
+	// Remove an entity from the Attacked array
+	UFUNCTION(Category = "Attack")
 	void StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
 
-	UFUNCTION()
+	// Attack all of entities that are in the Attacked array
+	UFUNCTION(Category = "Attack")
 	void Attack();
 
 			/* AUDIO */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Audio")
+	UPROPERTY(BlueprintReadOnly, Category = "Audio")
 	FTimerHandle AudioTimer;
 
 			/* COMPONENTS */

@@ -47,7 +47,7 @@ public:
 
 			/* TELEPATHY */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Telepathy")
 	void Weak();
 
 protected:
@@ -57,15 +57,15 @@ protected:
 
 			/* ZOOM */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Zoom")
 	void ZoomIn();
 
-	UFUNCTION()
+	UFUNCTION(Category = "Zoom")
 	void ZoomOut();
 
 			/* STATS */
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Satiety;
 
 	virtual void CalculateStats() override;

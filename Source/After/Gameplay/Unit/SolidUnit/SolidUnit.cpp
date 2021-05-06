@@ -44,6 +44,10 @@ void ASolidUnit::BeginPlay()
 	SolidUnitData = &Database->GetSolidUnitData(Id);
 
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f));
+	if (DamageBoxComponent) // Damage box can be destroyed by AUnit::BeginPlay
+	{
+		DamageBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + GameConstants::DamageBoxDelta);
+	}
 	SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	BreakSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
@@ -58,6 +62,7 @@ void ASolidUnit::BeginPlay()
 	}
 	else
 	{
+		MeshComponent = SpriteComponent;
 		SelectionSpriteComponent->SetupAttachment(SpriteComponent);
 		BreakSpriteComponent->SetupAttachment(SpriteComponent);
 		FlipbookComponent->DestroyComponent();
@@ -66,15 +71,17 @@ void ASolidUnit::BeginPlay()
 		SpriteComponent->SetSprite(SolidUnitData->Sprite);
 	}
 
-	if (UnitData->bSelectable &&
-		(!Database->GetExtraData().SelectionSprites.Contains(SolidUnitData->Size) ||
-			!Database->GetExtraData().SelectionSprites[SolidUnitData->Size]))
+	if (UnitData->bSelectable)
 	{
-		UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
-	}
-	else
-	{
-		SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[SolidUnitData->Size]);
+		if (!Database->GetExtraData().SelectionSprites.Contains(SolidUnitData->Size) ||
+			!Database->GetExtraData().SelectionSprites[SolidUnitData->Size])
+		{
+			UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
+		}
+		else
+		{
+			SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[SolidUnitData->Size]);
+		}
 	}
 
 	Health = SolidUnitData->MaxHealth;
@@ -83,6 +90,16 @@ void ASolidUnit::BeginPlay()
 void ASolidUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+const FSolidUnitInfo& ASolidUnit::GetSolidUnitData() const
+{
+	return *SolidUnitData;
+}
+
+float ASolidUnit::GetHealth() const
+{
+	return Health;
 }
 
 void ASolidUnit::Interact()
@@ -113,18 +130,35 @@ void ASolidUnit::StopBreaking()
 
 void ASolidUnit::Kill(FDamageType Type, const AActor* Murderer)
 {
-	Destroy();
+	GetWorld()->DestroyActor(this);
 }
+
+//////////////////////////////////////////////////////////////////////
+//                          o 08O                                   //
+//                       o8O0 o                  \|/                //
+//                      O0 Oo0O                  -0-                //
+//               _      o 80                     /|\                //
+//              / \     0O                                          //
+//             /   \    o                                           //
+//            /     \  ||              01001                        //
+//           /       \ ||            000011001                      //
+//          /   ___   \||           01011011000                     //
+//         /   |_|_|   \|           11011000110                     //
+//        /    |_|_|    \           11110010000                     //
+//       /_______________\          10010000000                     //
+//       |               |           111010001                      //
+//       |    WELCOME    |             01001      It's the          //
+//       |      ___      |              | |      binary tree!       //
+//       |     |   |     |              | |                         //
+//       |     |  _|     |              | |    It says to you,      //
+//       |     |   |     |              / \           Hello! :)     //
+//       |     |   |     |             /| |\                        //
+///////////////////////////////////////ROOT!//////////////////////////
 
 void ASolidUnit::Break(/* const UItem* By */)
 {
 	// Todo: Drop
-	Destroy();
-}
-
-const FSolidUnitInfo& ASolidUnit::GetSolidUnitData() const
-{
-	return *SolidUnitData;
+	GetWorld()->DestroyActor(this);
 }
 
 void ASolidUnit::PlaySound(FSolidUnitSoundType Sound)

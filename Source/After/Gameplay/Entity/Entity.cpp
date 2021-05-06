@@ -87,6 +87,7 @@ void AEntity::BeginPlay()
 		}
 		else
 		{
+			// We don't need a sprite component if the entity is not selectable
 			SelectionSpriteComponent->DestroyComponent();
 			SelectionSpriteComponent = nullptr;
 		}
@@ -121,7 +122,7 @@ void AEntity::Tick(float DeltaTime)
 
 	if (!PushMoving.IsZero())
 	{
-		MoveHit(FVector(PushMoving, 0));
+		AddOffset(FVector(PushMoving, 0));
 		PushMoving *= GameConstants::EntityPushDecrement;
 	}
 
@@ -154,14 +155,16 @@ float AEntity::GetEnergy() const
 void AEntity::Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push)
 {
 	Health -= Value * EntityData->DamageResist[Type];
-	SetFlipbook(CurrentDirection, FEntityStatus::Damage);
-	PushMoving += FVector2D(Push * FMath::Cos(Direction),
-						   Push * FMath::Sin(Direction));
+	PushMoving += FVector2D(Push * FMath::Cos(Direction), Push * FMath::Sin(Direction));
 
 	if (Health <= 0.f)
 	{
 		Health = 0.f;
 		Death(Type, FromWho);
+	}
+	else
+	{
+		SetFlipbook(CurrentDirection, FEntityStatus::Damage);
 	}
 }
 
@@ -232,7 +235,7 @@ void AEntity::Move(float DeltaTime)
 			Offset /= Sqrt_2;
 		}
 
-		MoveHit(Offset);
+		AddOffset(Offset);
 
 		FDirection RequiredDirection;
 		if (Moving.Y < 0)
@@ -265,7 +268,7 @@ void AEntity::Move(float DeltaTime)
 	}
 }
 
-void AEntity::MoveHit(FVector Offset)
+void AEntity::AddOffset(FVector Offset)
 {
 	Offset.Z = 0.f;
 	FHitResult HitResult;
@@ -302,7 +305,7 @@ void AEntity::StopRun()
 
 bool AEntity::MeleeAttack(AEntity* Target)
 {
-	if (Target != this)
+	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this)
 	{
 		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 
@@ -335,7 +338,7 @@ void AEntity::DeathDrop()
 
 void AEntity::CalculateStats()
 {
-	if (!bIsRunning || Moving.IsZero())
+	if (Energy < EntityData->MaxEnergy && (!bIsRunning || Moving.IsZero()))
 	{
 		Energy = FMath::Clamp(Energy + EntityData->EnergyRegenerationSpeed, 0.f, EntityData->MaxEnergy);
 	}
