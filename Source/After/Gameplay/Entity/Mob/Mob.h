@@ -34,8 +34,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FMobInfo& GetMobData() const;
 
+			/* DAMAGE */
+	
+	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f) override;
+
 protected:
 			/* GENERAL */
 
 	const FMobInfo* MobData;
+
+			/* EVENTS */
+
+//	UDELEGATE(Category = "Events")
+	TDelegate<void(float, const AActor*)> DamageDelegate;
 };

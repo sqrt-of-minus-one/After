@@ -50,7 +50,6 @@ public:
 	void BeginFlow();
 
 protected:
-	UFUNCTION()
 	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
 
 			/* GENERAL */

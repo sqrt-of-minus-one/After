@@ -44,7 +44,7 @@ const FAnimalInfo& AAnimal::GetAnimalData() const
 
 void AAnimal::Death(FDamageType Type, const AActor* Murderer)
 {
-	if (Cast<AMutant>(Murderer))
+	if (Cast<AMutant>(Murderer) || Type == FDamageType::Radiation)
 	{
 		Mutate();
 	}

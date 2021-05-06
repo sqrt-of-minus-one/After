@@ -42,7 +42,10 @@ void AMob::BeginPlay()
 		MobController->MoveX.BindUObject(this, &AMob::SetMoveX);
 		MobController->MoveY.BindUObject(this, &AMob::SetMoveY);
 		MobController->StartRun.BindUObject(this, &AMob::StartRun);
-		MobController->StartRun.BindUObject(this, &AMob::StopRun);
+		MobController->StopRun.BindUObject(this, &AMob::StopRun);
+
+		DamageDelegate.BindUObject(MobController, &AMobController::Damage);
+
 		MobController->SetupInput();
 	}
 }
@@ -55,4 +58,11 @@ void AMob::Tick(float DeltaTime)
 const FMobInfo& AMob::GetMobData() const
 {
 	return *MobData;
+}
+
+void AMob::Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push)
+{
+	Super::Damage(Value, Type, Direction, FromWho, Push);
+
+	DamageDelegate.ExecuteIfBound(Direction, FromWho);
 }

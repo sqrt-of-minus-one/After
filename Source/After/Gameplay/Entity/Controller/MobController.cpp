@@ -27,6 +27,21 @@ void AMobController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AMobController::Damage(float Direction, const AActor* FromWho)
+{
+	if (MobPawn->GetEntityData().Damage != 0)
+	{
+
+	}
+	else
+	{
+		SetRun_f(true);
+		Move_f(FVector2D(FMath::Cos(Direction), FMath::Sin(Direction)));
+		bIsRunningAway = true;
+		GetWorld()->GetTimerManager().SetTimer(RunAwayTimer, this, &AMobController::StopRunAway, 5.f);
+	}
+}
+
 void AMobController::SetupInput()
 {
 	MobPawn = Cast<AMob>(GetPawn());
@@ -38,14 +53,13 @@ void AMobController::SetupInput()
 
 	ChangeStateDelegate.BindLambda([this]()
 	{
-		if (FMath::RandBool())
+		if (FMath::RandBool() || bIsRunningAway)
 		{
-			Move_f(FVector2D(0.f, 0.f));
+			Move_f(FVector2D(FMath::RandRange(-1, 1), FMath::RandRange(-1, 1)));
 		}
 		else
 		{
-			Move_f(FVector2D(FMath::RandRange(-1, 1),
-							 FMath::RandRange(-1, 1)));
+			Move_f(FVector2D(0.f, 0.f));
 		}
 
 		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate, FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
@@ -56,10 +70,23 @@ void AMobController::SetupInput()
 
 void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 {
-	if (GetWorld() && GetWorld()->GetTimerManager().IsTimerActive(ChangeStateTimer))
+	if (GetWorld())
 	{
-		GetWorld()->GetTimerManager().ClearTimer(ChangeStateTimer);
+		if (GetWorld()->GetTimerManager().IsTimerActive(ChangeStateTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(ChangeStateTimer);
+		}
+		if (GetWorld()->GetTimerManager().IsTimerActive(RunAwayTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(RunAwayTimer);
+		}
 	}
+}
+
+void AMobController::StopRunAway()
+{
+	bIsRunningAway = false;
+	SetRun_f(false);
 }
 
 void AMobController::Move_f(FVector2D Val)

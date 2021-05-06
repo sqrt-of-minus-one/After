@@ -31,6 +31,10 @@ public:
 	// ==================================================
 
 public:
+			/* EVENTS */
+
+	void Damage(float Direction, const AActor* FromWho);
+
 			/* CONTROL */
 
 	TDelegate<void(float)> MoveX;
@@ -49,6 +53,15 @@ protected:
 			/* TIMERS */
 
 	FTimerHandle ChangeStateTimer;
+	FTimerHandle RunAwayTimer;
+	
+			/* BEHAVIOUR */
+
+	UFUNCTION(Category = "Behaviour")
+	void StopRunAway();
+
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	bool bIsRunningAway;
 
 			/* DELEGATES */
 
