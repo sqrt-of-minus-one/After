@@ -20,5 +20,6 @@ extern const float MinPlayerSpringArmLength;
 extern const float MaxPlayerSpringArmLength;
 extern const float MinMobChangeStateTime;
 extern const float MaxMobChangeStateTime;
+extern const float EntityPushDecrement;
 
 }

@@ -39,6 +39,12 @@ void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 		UE_LOG(LogDatabase, Error, TEXT("Item %s has non-positive stack size (%d)"), *Tag.ToString(), Data.StackSize);
 	}
 
+	// Attack
+	if (Data.Push < 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative push (%f)"), *Tag.ToString(), Data.Push);
+	}
+
 	// Fuel
 	if (Data.Heat < 0)
 	{
@@ -135,6 +141,10 @@ void Check(FRangedWeaponInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& 
 	if (Data.DamageMultiplier <= 0)
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive damage multiplier (%f)"), *Tag.ToString(), Data.DamageMultiplier);
+	}
+	if (Data.PushMultiplier <= 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Weapon %s has non-positive push multiplier (%f)"), *Tag.ToString(), Data.PushMultiplier);
 	}
 	if (Data.FiringRate <= 0)
 	{

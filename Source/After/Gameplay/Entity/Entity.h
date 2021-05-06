@@ -55,7 +55,7 @@ public:
 			/* DAMAGE */
 
 	UFUNCTION()
-	virtual void Damage(float Value, FDamageType Type, const AActor* FromWho);
+	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f);
 
 	UFUNCTION()
 	virtual void Stone(float Duration);
@@ -72,6 +72,9 @@ public:
 	void Unselect();
 
 protected:
+	UFUNCTION()
+	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
+
 			/* GENERAL */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -90,6 +93,20 @@ protected:
 	FTimerHandle RadiationTimer;
 
 			/* MOVEMENT */
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	FVector2D Moving;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	FVector2D PushMoving;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+	bool bIsRunning;
+
+	UFUNCTION()
+	void Move(float DeltaTime);
+
+	void MoveHit(FVector Offset);
 
 	UFUNCTION()
 	void SetMoveX(float Value);
@@ -140,17 +157,6 @@ protected:
 
 	UFUNCTION()
 	virtual void CalculateStats();
-
-			/* MOVEMENT */
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	FVector2D Moving;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
-	bool bIsRunning;
-
-	UFUNCTION()
-	void Move(float DeltaTime);
 
 			/* APPEARANCE */
 	

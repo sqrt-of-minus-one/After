@@ -18,7 +18,7 @@ UCLASS()
 class AFTER_API AMobController : public AAIController
 {
 	GENERATED_BODY()
-
+	
 public:
 	AMobController();
 
@@ -42,6 +42,9 @@ public:
 
 protected:
 	AMob* MobPawn;
+
+	UFUNCTION()
+	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
 
 			/* TIMERS */
 

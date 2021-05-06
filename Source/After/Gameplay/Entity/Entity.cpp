@@ -18,11 +18,12 @@
 #include "../../GameConstants.h"
 
 AEntity::AEntity() :
-	bIsDead(false),
 	Moving(0.f, 0.f),
+	PushMoving(0.f, 0.f),
 	bIsRunning(false),
-	CurrentStatus(FEntityStatus::Special),	// Must not be default for the first
-	CurrentDirection(FDirection::B),		// call of SetFlipbook to work correct
+	bIsDead(false),
+	CurrentStatus(FEntityStatus::Special),  // Must not be default for the first
+	CurrentDirection(FDirection::B),        // call of SetFlipbook to work correct
 	bIsFlipbookFixed(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -46,6 +47,8 @@ AEntity::AEntity() :
 void AEntity::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnEndPlay.AddDynamic(this, &AEntity::ClearTimers);
 
 	// Get game mode
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
@@ -116,6 +119,12 @@ void AEntity::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (!PushMoving.IsZero())
+	{
+		MoveHit(FVector(PushMoving, 0));
+		PushMoving *= GameConstants::EntityPushDecrement;
+	}
+
 	if (!bIsDead && CurrentStatus != FEntityStatus::Stone && CurrentStatus != FEntityStatus::Web)
 	{
 		Move(DeltaTime);
@@ -142,10 +151,12 @@ float AEntity::GetEnergy() const
 	return Energy;
 }
 
-void AEntity::Damage(float Value, FDamageType Type, const AActor* FromWho)
+void AEntity::Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push)
 {
 	Health -= Value * EntityData->DamageResist[Type];
 	SetFlipbook(CurrentDirection, FEntityStatus::Damage);
+	PushMoving += FVector2D(Push * FMath::Cos(Direction),
+						   Push * FMath::Sin(Direction));
 
 	if (Health <= 0.f)
 	{
@@ -172,6 +183,98 @@ void AEntity::Select()
 void AEntity::Unselect()
 {
 	SelectionSpriteComponent->SetVisibility(false);
+}
+
+void AEntity::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
+{
+	if (GetWorld())
+	{
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+
+		if (TimerManager.IsTimerActive(PoisonTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(PoisonTimer);
+		}
+		if (TimerManager.IsTimerActive(RadiationTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(RadiationTimer);
+		}
+		if (TimerManager.IsTimerActive(StatsTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(StatsTimer);
+		}
+		if (TimerManager.IsTimerActive(FixedFlipbookTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(FixedFlipbookTimer);
+		}
+		if (TimerManager.IsTimerActive(AudioTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(AudioTimer);
+		}
+	}
+}
+
+void AEntity::Move(float DeltaTime)
+{
+	const float Sqrt_2 = 1.41421f;
+
+	FVector Offset(Moving, 0.f);
+	if (!Offset.IsZero())
+	{
+		if (bIsRunning && Energy <= 0.f)
+		{
+			Energy = 0.f;
+			StopRun();
+		}
+		Offset *= (bIsRunning ? EntityData->RunSpeed : EntityData->WalkSpeed) * DeltaTime;
+		if (Moving.X != 0.f && Moving.Y != 0.f) // Diagonal movement
+		{
+			Offset /= Sqrt_2;
+		}
+
+		MoveHit(Offset);
+
+		FDirection RequiredDirection;
+		if (Moving.Y < 0)
+		{
+			RequiredDirection = FDirection::F;
+		}
+		else if (Moving.Y > 0)
+		{
+			RequiredDirection = FDirection::B;
+		}
+		else if (Moving.X < 0)
+		{
+			RequiredDirection = FDirection::L;
+		}
+		else
+		{
+			RequiredDirection = FDirection::R;
+		}
+		FEntityStatus RequiredStatus = bIsRunning ? FEntityStatus::Run : FEntityStatus::Walk;
+		SetFlipbook(RequiredDirection, RequiredStatus);
+
+		if (bIsRunning)
+		{
+			Energy -= EntityData->EnergySpeed * DeltaTime;
+		}
+	}
+	else
+	{
+		SetFlipbook(CurrentDirection, FEntityStatus::Stay);
+	}
+}
+
+void AEntity::MoveHit(FVector Offset)
+{
+	Offset.Z = 0.f;
+	FHitResult HitResult;
+	AddActorLocalOffset(Offset, true, &HitResult); // Move
+	if (HitResult.bBlockingHit)
+	{
+		Offset = Offset.ProjectOnTo(FVector(-HitResult.Normal.Y, HitResult.Normal.X, 0.f));
+		AddActorLocalOffset(Offset, true);
+	}
 }
 
 void AEntity::SetMoveX(float Value)
@@ -205,7 +308,8 @@ bool AEntity::MeleeAttack(AEntity* Target)
 
 		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
 		{
-			Target->Damage(EntityData->Damage, EntityData->DamageType, this);
+			FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
+			Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
 			return true;
 		}
 	}
@@ -244,64 +348,6 @@ void AEntity::CalculateStats()
 	*/
 }
 
-void AEntity::Move(float DeltaTime)
-{
-	const float Sqrt_2 = 1.41421f;
-
-	FVector Offset(Moving, 0.f);
-	if (!Offset.IsZero())
-	{
-		if (bIsRunning && Energy <= 0.f)
-		{
-			Energy = 0.f;
-			StopRun();
-		}
-		Offset *= (bIsRunning ? EntityData->RunSpeed : EntityData->WalkSpeed) * DeltaTime;
-		if (Moving.X != 0.f && Moving.Y != 0.f) // Diagonal movement
-		{
-			Offset /= Sqrt_2;
-		}
-
-		// Hit handling
-		FHitResult HitResult;
-		AddActorLocalOffset(Offset, true, &HitResult); // Move
-		if (HitResult.bBlockingHit)
-		{
-			Offset = Offset.ProjectOnTo(FVector(-HitResult.Normal.Y, HitResult.Normal.X, 0.f));
-			AddActorLocalOffset(Offset, true);
-		}
-
-		FDirection RequiredDirection;
-		if (Moving.Y < 0)
-		{
-			RequiredDirection = FDirection::F;
-		}
-		else if (Moving.Y > 0)
-		{
-			RequiredDirection = FDirection::B;
-		}
-		else if (Moving.X < 0)
-		{
-			RequiredDirection = FDirection::L;
-		}
-		else
-		{
-			RequiredDirection = FDirection::R;
-		}
-		FEntityStatus RequiredStatus = bIsRunning ? FEntityStatus::Run : FEntityStatus::Walk;
-		SetFlipbook(RequiredDirection, RequiredStatus);
-
-		if (bIsRunning)
-		{
-			Energy -= EntityData->EnergySpeed * DeltaTime;
-		}
-	}
-	else
-	{
-		SetFlipbook(CurrentDirection, FEntityStatus::Stay);
-	}
-}
-
 void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time)
 {
 	// Whether flipbook have to be fixed with this status
@@ -328,7 +374,7 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 				bIsFlipbookFixed = false;
 				if (bIsDead)
 				{
-					Destroy();
+					GetWorld()->DestroyActor(this);
 				}
 				SetFlipbook(CurrentDirection, FEntityStatus::Stay);
 			});

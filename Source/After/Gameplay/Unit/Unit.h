@@ -46,6 +46,9 @@ public:
 	void Unselect();
 
 protected:
+	UFUNCTION()
+	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
+
 			/* GENERAL */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")

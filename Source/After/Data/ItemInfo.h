@@ -52,6 +52,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	FDamageType DamageType;
 
+	// How hard the item pushes its target
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float Push;
+
 			/* STATS */
 
 	// Maximum value of item's condition. If negative, item doesn't have condition
@@ -165,6 +169,10 @@ public:
 	// The projectile's damage is multiplied by this value
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	float DamageMultiplier;
+
+	// The projectile's push is multiplied by this value
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
+	float PushMultiplier;
 
 	// Projectiles per second
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")

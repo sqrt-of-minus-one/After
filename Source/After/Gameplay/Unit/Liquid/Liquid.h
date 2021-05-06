@@ -43,6 +43,8 @@ public:
 	void BeginFlow();
 
 protected:
+	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
+
 			/* GENERAL */
 
 	const FLiquidInfo* LiquidData;

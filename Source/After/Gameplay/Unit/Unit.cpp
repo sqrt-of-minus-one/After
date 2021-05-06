@@ -44,6 +44,8 @@ void AUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnEndPlay.AddDynamic(this, &AUnit::ClearTimers);
+
 	// Get game mode
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
@@ -107,6 +109,21 @@ void AUnit::Unselect()
 	SelectionSpriteComponent->SetVisibility(false);
 }
 
+void AUnit::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
+{
+	if (GetWorld())
+	{
+		if (GetWorld()->GetTimerManager().IsTimerActive(AttackTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(AttackTimer);
+		}
+		if (GetWorld()->GetTimerManager().IsTimerActive(AudioTimer))
+		{
+			GetWorld()->GetTimerManager().ClearTimer(AudioTimer);
+		}
+	}
+}
+
 const FUnitInfo& AUnit::GetUnitData() const
 {
 	return *UnitData;
@@ -144,6 +161,7 @@ void AUnit::Attack()
 {
 	for (AEntity* i : Attacked)
 	{
-		i->Damage(UnitData->Damage, UnitData->DamageType, this);
+		// Direction is zero, because unit cannot push entity (direction is not important)
+		i->Damage(UnitData->Damage, UnitData->DamageType, 0.f, this);
 	}
 }

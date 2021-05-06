@@ -18,6 +18,8 @@ AMobController::AMobController()
 void AMobController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	OnEndPlay.AddDynamic(this, &AMobController::ClearTimers);
 }
 
 void AMobController::Tick(float DeltaTime)
@@ -50,6 +52,14 @@ void AMobController::SetupInput()
 	});
 	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate, FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 
+}
+
+void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
+{
+	if (GetWorld() && GetWorld()->GetTimerManager().IsTimerActive(ChangeStateTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(ChangeStateTimer);
+	}
 }
 
 void AMobController::Move_f(FVector2D Val)

@@ -17,3 +17,4 @@ const float GameConstants::MinPlayerSpringArmLength = 100.f;
 const float GameConstants::MaxPlayerSpringArmLength = 1500.f;
 const float GameConstants::MinMobChangeStateTime = 2.f;
 const float GameConstants::MaxMobChangeStateTime = 5.f;
+const float GameConstants::EntityPushDecrement = 0.85f;

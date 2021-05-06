@@ -93,9 +93,13 @@ void Check(FEntityInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitDa
 	}
 
 	// Attack
+	if (Data.Push < 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative push (%f)"), *Tag.ToString(), Data.AttackRadius);
+	}
 	if (Data.AttackRadius < 0)
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative attack radius (%f)"), *Tag.ToString(), Data.AttackRadius);
+		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative attack radius (%f)"), *Tag.ToString(), Data.Push);
 	}
 	if (Data.RangedProjectile != FGameplayTag::EmptyTag)
 	{
@@ -217,6 +221,10 @@ void Check(FMobInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData,
 	if (Data.PursueRadius <= 0)
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Mob %s has non-positive value of pursue radius (%f)"), *Tag.ToString(), Data.PursueRadius);
+	}
+	if (Data.PursueRadius <= Data.ViewRadius)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Mob %s has wrong view and pursue radiuses (pursue radius should be greater than view)"), *Tag.ToString());
 	}
 	
 	// Behaviour

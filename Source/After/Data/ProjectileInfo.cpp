@@ -38,6 +38,10 @@ void Check(FProjectileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& In
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Projectile %s has non-positive distance (%f)"), *Tag.ToString(), Data.Distance);
 	}
+	if (Data.Push < 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Projectile %s has negative push (%f)"), *Tag.ToString(), Data.Push);
+	}
 
 	// Appearance
 	if (!Data.Sprite)

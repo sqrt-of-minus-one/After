@@ -46,6 +46,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	FDamageType DamageType;
 
+	// How hard the projectile pushes its target
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
+	float Push;
+
 	// Maximum projectile's range
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Characteristics")
 	float Distance;

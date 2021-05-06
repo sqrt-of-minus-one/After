@@ -24,6 +24,8 @@ void ALiquid::BeginPlay()
 {
 	Super::BeginPlay();
 
+	OnEndPlay.AddDynamic(this, &ALiquid::ClearTimers);
+
 	// Get game mode
 	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
 	if (!GameMode)
@@ -94,6 +96,14 @@ void ALiquid::BeginFlow()
 	if (!GetWorld()->GetTimerManager().IsTimerActive(FlowTimer))
 	{
 		GetWorld()->GetTimerManager().SetTimer(FlowTimer, this, &ALiquid::Flow, 1 / LiquidData->Speed, true);
+	}
+}
+
+void ALiquid::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
+{
+	if (GetWorld() && GetWorld()->GetTimerManager().IsTimerActive(FlowTimer))
+	{
+		GetWorld()->GetTimerManager().ClearTimer(FlowTimer);
 	}
 }
 
