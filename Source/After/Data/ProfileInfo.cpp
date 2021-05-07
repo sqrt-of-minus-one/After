@@ -9,6 +9,8 @@
 #include "DatabaseInitData.h"
 #include "ExtraInfo.h"
 #include "LogDatabase.h"
+#include "Database.h"
+#include "TagInfo.h"
 
 void Check(FBreakeProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
@@ -82,4 +84,44 @@ void Check(FBehaviourProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitDa
 			UE_LOG(LogDatabase, Fatal, TEXT("Behaviour profile %s contains a tag with invalid name (%s is not an entity or an entity tag)"), *Tag.ToString(), *i.ToString());
 		}
 	}
+}
+
+bool FBehaviourProfileInfo::bIsAgressiveTowards(const FBehaviourProfileInfo& BehaviourProfileData, FGameplayTag TowardsWhom, const UDatabase* Database)
+{
+	bool bExcept = BehaviourProfileData.AgressiveExcept.Contains(TowardsWhom);
+
+	if (!bExcept)
+	{
+		const TArray<FGameplayTag>& EntityTags = Database->GetEntityData(TowardsWhom).Tags;
+		for (const FGameplayTag& i : EntityTags)
+		{
+			if (BehaviourProfileData.AgressiveExcept.Contains(i))
+			{
+				bExcept = true;
+				break;
+			}
+		}
+	}
+	
+	return BehaviourProfileData.bIsAgressive ^ bExcept;
+}
+
+bool FBehaviourProfileInfo::bIsFearfulTowards(const FBehaviourProfileInfo& BehaviourProfileData, FGameplayTag TowardsWhom, const UDatabase* Database)
+{
+	bool bExcept = BehaviourProfileData.FearfulExcept.Contains(TowardsWhom);
+
+	if (!bExcept)
+	{
+		const TArray<FGameplayTag>& EntityTags = Database->GetEntityData(TowardsWhom).Tags;
+		for (const FGameplayTag& i : EntityTags)
+		{
+			if (BehaviourProfileData.FearfulExcept.Contains(i))
+			{
+				bExcept = true;
+				break;
+			}
+		}
+	}
+
+	return BehaviourProfileData.bIsFearful ^ bExcept;
 }

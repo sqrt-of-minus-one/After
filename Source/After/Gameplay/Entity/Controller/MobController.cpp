@@ -7,8 +7,10 @@
 #include "MobController.h"
 
 #include "../../LogGameplay.h"
+#include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
 #include "../Mob/Mob.h"
+#include "../../Unit/Unit.h"
 
 AMobController::AMobController()
 {
@@ -29,16 +31,43 @@ void AMobController::Tick(float DeltaTime)
 
 void AMobController::Damage(float Direction, const AActor* FromWho)
 {
-	if (MobPawn->GetEntityData().Damage != 0)
-	{
+	const AEntity* Attacker = Cast<AEntity>(FromWho);
+	bool bShouldRunAway = true;
 
+	if (Attacker)
+	{
+		const UDatabase& Database = *(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase());
+		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+
+		bool bFear = FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Attacker->GetId(), &Database);
+		UE_LOG(LogTemp, Log, TEXT("Fear: %d"), bFear);
+
+		// Mob should run away if it cannot attack or if it fears attacker
+		bShouldRunAway = (MobPawn->GetEntityData().Damage == 0 || bFear);
 	}
 	else
 	{
+		const AUnit* UnitAttacker = Cast<AUnit>(FromWho);
+		if (UnitAttacker)
+		{
+			bShouldRunAway = false;
+			FVector2D WhereToMove(MobPawn->GetActorLocation() - UnitAttacker->GetActorLocation());
+			WhereToMove.Normalize();
+			Move_f(WhereToMove);
+		}
+	}
+
+	if (bShouldRunAway)
+	{
+
 		SetRun_f(true);
 		Move_f(FVector2D(FMath::Cos(Direction), FMath::Sin(Direction)));
 		bIsRunningAway = true;
 		GetWorld()->GetTimerManager().SetTimer(RunAwayTimer, this, &AMobController::StopRunAway, 5.f);
+	}
+	else
+	{
+		UE_LOG(LogTemp, Log, TEXT("I'm not scared."));
 	}
 }
 

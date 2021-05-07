@@ -9,6 +9,9 @@
 #include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/Unit.h"
+#include "../../../AfterGameModeBase.h"
+#include "GameplayTagContainer.h"
+#include "../Mob/Animal.h"
 
 ALastController::ALastController()
 {
@@ -25,13 +28,22 @@ void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	AEntity* SelectedEntity = Cast<AEntity>(Selected);
-	if (SelectedEntity)
+	AEntity* SelectedEntity = nullptr;
+	AUnit* SelectedUnit = nullptr;
+	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("*          Health: %f"), SelectedEntity->GetHealth()));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), *SelectedEntity->GetEntityData().Name.ToString()));
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), Selected ? *Selected->GetName() : *FString("None")));
+	else if (SelectedUnit = Cast<AUnit>(Selected), SelectedUnit)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), *SelectedUnit->GetUnitData().Name.ToString()));
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: None")));
+	}
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("\n")));
 }
 
 void ALastController::Select(AActor* Actor)
@@ -98,6 +110,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
 	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
 	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::Attack_f);
+	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -137,4 +150,12 @@ void ALastController::Attack_f()
 	{
 		Attack.Execute(Entity);
 	}
+}
+
+void ALastController::SpawnCow_tmp()
+{
+	FVector2D Mouse;
+	GetMousePosition(Mouse.X, Mouse.Y);
+	GetWorld()->SpawnActor<AAnimal>(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
+		FVector(Mouse, GetPawn()->GetActorLocation().Z), FRotator());
 }

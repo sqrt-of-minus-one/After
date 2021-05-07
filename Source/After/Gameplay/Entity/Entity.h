@@ -41,6 +41,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FEntityInfo& GetEntityData() const;
 
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FGameplayTag& GetId() const;
+
 			/* STATS */
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")

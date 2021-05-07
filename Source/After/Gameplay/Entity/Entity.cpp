@@ -137,6 +137,11 @@ const FEntityInfo& AEntity::GetEntityData() const
 	return *EntityData;
 }
 
+const FGameplayTag& AEntity::GetId() const
+{
+	return Id;
+}
+
 float AEntity::GetHealth() const
 {
 	return Health;
@@ -165,6 +170,7 @@ void AEntity::Damage(float Value, FDamageType Type, float Direction, const AActo
 	else
 	{
 		SetFlipbook(CurrentDirection, FEntityStatus::Damage);
+		PlaySound(FEntitySoundType::Damage);
 	}
 }
 
@@ -308,6 +314,7 @@ bool AEntity::MeleeAttack(AEntity* Target)
 	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this)
 	{
 		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+		PlaySound(FEntitySoundType::Attack);
 
 		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
 		{
@@ -327,6 +334,7 @@ void AEntity::RangedAttack(FRotator Direction)
 void AEntity::Death(FDamageType Type, const AActor* Murderer)
 {
 	SetFlipbook(CurrentDirection, FEntityStatus::Death);
+	PlaySound(FEntitySoundType::Death);
 	bIsDead = true;
 	DeathDrop();
 }

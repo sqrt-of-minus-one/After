@@ -67,4 +67,5 @@ protected:
 	void StartRun_f();
 	void StopRun_f();
 	void Attack_f();
+	void SpawnCow_tmp();
 };

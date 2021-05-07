@@ -14,6 +14,7 @@
 
 struct FDatabaseInitData;
 struct FExtraInfo;
+class UDatabase;
 
 USTRUCT(BlueprintType)
 struct FBreakeProfileGroup
@@ -87,5 +88,8 @@ public:
 	// Exceptions to is fearful <<tag.entity || entity>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> FearfulExcept;
+
+	static bool bIsAgressiveTowards(const FBehaviourProfileInfo& BehaviourProfileData, FGameplayTag TowardsWhom, const UDatabase* Database);
+	static bool bIsFearfulTowards(const FBehaviourProfileInfo& BehaviourProfileData, FGameplayTag TowardsWhom, const UDatabase* Database);
 };
 void Check(FBehaviourProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
