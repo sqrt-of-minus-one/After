@@ -12,19 +12,19 @@
 #include "Database.h"
 #include "TagInfo.h"
 
-void Check(FBreakeProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
+void Check(FBreakProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
-	for (const FBreakeProfileGroup& i : Data.CanBeBrokenBy)
+	for (const FBreakProfileGroup& i : Data.CanBeBrokenBy)
 	{
 		for (const FGameplayTag& j : i.Group)
 		{
 			if (!j.IsValid())
 			{
-				UE_LOG(LogDatabase, Fatal, TEXT("Breake profile %s contains an invalid tag (%s)"), *Tag.ToString(), *j.ToString());
+				UE_LOG(LogDatabase, Fatal, TEXT("Break profile %s contains an invalid tag (%s)"), *Tag.ToString(), *j.ToString());
 			}
 			if (!IS_TAG_PARENT(j, "tag.item") && !IS_TAG_PARENT(j, "item"))
 			{
-				UE_LOG(LogDatabase, Fatal, TEXT("Breake profile %s contains a tag with invalid name (%s is not an item or an item tag)"), *Tag.ToString(), *j.ToString());
+				UE_LOG(LogDatabase, Fatal, TEXT("Break profile %s contains a tag with invalid name (%s is not an item or an item tag)"), *Tag.ToString(), *j.ToString());
 			}
 		}
 	}

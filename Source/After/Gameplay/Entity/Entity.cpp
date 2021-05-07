@@ -387,7 +387,10 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 				{
 					GetWorld()->DestroyActor(this);
 				}
-				SetFlipbook(CurrentDirection, FEntityStatus::Stay);
+				else
+				{
+					SetFlipbook(CurrentDirection, FEntityStatus::Stay);
+				}
 			});
 			GetWorld()->GetTimerManager().SetTimer(FixedFlipbookTimer, FixedFlipbookDelegate,
 				(Status == FEntityStatus::Stone || Status == FEntityStatus::Web) ? Time : FlipbookComponent->GetFlipbookLength(), false);

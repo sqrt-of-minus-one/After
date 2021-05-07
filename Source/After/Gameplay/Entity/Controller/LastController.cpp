@@ -157,5 +157,5 @@ void ALastController::SpawnCow_tmp()
 	FVector2D Mouse;
 	GetMousePosition(Mouse.X, Mouse.Y);
 	GetWorld()->SpawnActor<AAnimal>(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-		FVector(Mouse, GetPawn()->GetActorLocation().Z), FRotator());
+		FVector(Mouse, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
 }

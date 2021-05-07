@@ -151,13 +151,13 @@ void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& Ini
 	}
 
 	// Breaking
-	if (!Data.BreakeProfile.IsValid())
+	if (!Data.BreakProfile.IsValid())
 	{
-		UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has an invalid breake profile (%s)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has an invalid break profile (%s)"), *Tag.ToString(), *Data.BreakProfile.ToString());
 	}
-	if (!IS_TAG_PARENT(Data.BreakeProfile, "profile.breake"))
+	if (!IS_TAG_PARENT(Data.BreakProfile, "profile.break"))
 	{
-		UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has a breake profile with invalid name (%s is not a breake profile)"), *Tag.ToString(), *Data.BreakeProfile.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has a break profile with invalid name (%s is not a break profile)"), *Tag.ToString(), *Data.BreakProfile.ToString());
 	}
 	if (Data.BreakingTime < 0)
 	{

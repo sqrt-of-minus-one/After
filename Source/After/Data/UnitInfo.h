@@ -134,9 +134,9 @@ public:
 
 			/* BREAKING */
 
-	// What can be used to get unit (<<profile.breake>>)
+	// What can be used to get unit (<<profile.break>>)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
-	FGameplayTag BreakeProfile;
+	FGameplayTag BreakProfile;
 
 	// How long unit is being broken (seconds)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")

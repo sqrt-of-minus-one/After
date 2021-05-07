@@ -185,8 +185,8 @@ void UDatabase::Init()
 		}
 	});
 
-	// Check profile: breake
-	InitField<FBreakeProfileInfo>(BreakeProfileData, "profile.breake", "breake profile", InitData, ExtraData);
+	// Check profile: break
+	InitField<FBreakProfileInfo>(BreakProfileData, "profile.break", "break profile", InitData, ExtraData);
 
 	// Check profile: vessel
 	InitField<FVesselProfileInfo>(VesselProfileData, "profile.vessel", "vessel profile", InitData, ExtraData);
@@ -207,6 +207,7 @@ UDatabase::~UDatabase()
 
 void UDatabase::Reset()
 {
+#if WITH_EDITOR
 	for (const auto& i : InitData.EntityReplaced)
 	{
 		EntityData[i.Entity].Flipbooks[i.Status].Flipbooks[i.Direction] = nullptr;
@@ -247,6 +248,7 @@ void UDatabase::Reset()
 	InitData.ProjectileReplaced.Empty();
 	InitData.LiquidReplaced.Empty();
 	InitData.SolidUnitReplaced.Empty();
+#endif // WITH_EDITOR
 }
 
 		/* ENTITY */
@@ -513,13 +515,13 @@ const FTagInfo& UDatabase::GetProjectileTagData(const FGameplayTag Tag) const
 
 		/* PROFILE */
 
-const FBreakeProfileInfo& UDatabase::GetBreakeProfileData(const FGameplayTag Tag) const
+const FBreakProfileInfo& UDatabase::GetBreakProfileData(const FGameplayTag Tag) const
 {
-	if (!Tag.IsValid() || !BreakeProfileData.Contains(Tag))
+	if (!Tag.IsValid() || !BreakProfileData.Contains(Tag))
 	{
-		UE_LOG(LogDatabase, Fatal, TEXT("Attempt to get data about breake profile %s that is not contained in the database"), *Tag.ToString());
+		UE_LOG(LogDatabase, Fatal, TEXT("Attempt to get data about break profile %s that is not contained in the database"), *Tag.ToString());
 	}
-	return BreakeProfileData[Tag];
+	return BreakProfileData[Tag];
 }
 
 const FVesselProfileInfo& UDatabase::GetVesselProfileData(const FGameplayTag Tag) const

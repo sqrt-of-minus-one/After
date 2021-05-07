@@ -40,7 +40,6 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
 
 		bool bFear = FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Attacker->GetId(), &Database);
-		UE_LOG(LogTemp, Log, TEXT("Fear: %d"), bFear);
 
 		// Mob should run away if it cannot attack or if it fears attacker
 		bShouldRunAway = (MobPawn->GetEntityData().Damage == 0 || bFear);
@@ -67,7 +66,7 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 	}
 	else
 	{
-		UE_LOG(LogTemp, Log, TEXT("I'm not scared."));
+		// Attack
 	}
 }
 

@@ -63,8 +63,9 @@ void ASolidUnit::BeginPlay()
 	else
 	{
 		MeshComponent = SpriteComponent;
-		SelectionSpriteComponent->SetupAttachment(SpriteComponent);
-		BreakSpriteComponent->SetupAttachment(SpriteComponent);
+
+		SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
+		BreakSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 		FlipbookComponent->DestroyComponent();
 		FlipbookComponent = nullptr;
 

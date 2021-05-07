@@ -17,18 +17,18 @@ struct FExtraInfo;
 class UDatabase;
 
 USTRUCT(BlueprintType)
-struct FBreakeProfileGroup
+struct FBreakProfileGroup
 {
 	GENERATED_USTRUCT_BODY()
 
 public:
-	// Tags that item must have to be able to breake the unit <<tag.item || item>>
+	// Tags that item must have to be able to break the unit <<tag.item || item>>
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<FGameplayTag> Group;
 };
 
 USTRUCT(BlueprintType)
-struct FBreakeProfileInfo
+struct FBreakProfileInfo
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -37,11 +37,11 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	bool bCanBeBrokenByHand;
 
-	// Tags that item must have to be able to breake the unit. That's enough to have only tags from one of the groups
+	// Tags that item must have to be able to break the unit. That's enough to have only tags from one of the groups
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<FBreakeProfileGroup> CanBeBrokenBy;
+	TArray<FBreakProfileGroup> CanBeBrokenBy;
 };
-void Check(FBreakeProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
+void Check(FBreakProfileInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 
 USTRUCT(BlueprintType)
 struct FVesselProfileInfo

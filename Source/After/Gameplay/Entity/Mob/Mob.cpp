@@ -13,6 +13,7 @@
 
 AMob::AMob()
 {
+	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AMobController::StaticClass();
 }
 

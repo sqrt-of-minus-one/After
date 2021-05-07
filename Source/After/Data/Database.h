@@ -126,7 +126,7 @@ protected:
 			/* PROFILE */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
-	TMap<FGameplayTag, FBreakeProfileInfo> BreakeProfileData;
+	TMap<FGameplayTag, FBreakProfileInfo> BreakProfileData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Profile")
 	TMap<FGameplayTag, FVesselProfileInfo> VesselProfileData;
@@ -247,7 +247,7 @@ public:
 			/* PROFILE */
 
 	UFUNCTION(BlueprintCallable, Category = "Profile")
-	const FBreakeProfileInfo& GetBreakeProfileData(const FGameplayTag Tag) const;
+	const FBreakProfileInfo& GetBreakProfileData(const FGameplayTag Tag) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Profile")
 	const FVesselProfileInfo& GetVesselProfileData(const FGameplayTag Tag) const;
