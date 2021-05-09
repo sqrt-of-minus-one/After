@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Types.h"
+#include "../Types.h"
 
 #include "ProfileInfo.generated.h"
 

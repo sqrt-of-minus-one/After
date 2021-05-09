@@ -10,7 +10,7 @@
 
 #include "GameFramework/Actor.h"
 
-#include "../../Data/UnitInfo.h"
+#include "../../Data/Database/UnitInfo.h"
 
 #include "Unit.generated.h"
 

@@ -7,7 +7,7 @@
 #include "Alien.h"
 
 #include "../../LogGameplay.h"
-#include "../../../Data/Database.h"
+#include "../../../Data/Database/Database.h"
 #include "../../../AfterGameModeBase.h"
 
 AAlien::AAlien()

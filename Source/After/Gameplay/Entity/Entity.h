@@ -10,7 +10,7 @@
 
 #include "GameFramework/Pawn.h"
 
-#include "../../Data/EntityInfo.h"
+#include "../../Data/Database/EntityInfo.h"
 
 #include "Entity.generated.h"
 
