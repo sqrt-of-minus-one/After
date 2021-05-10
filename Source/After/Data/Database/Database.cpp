@@ -7,6 +7,16 @@
 #include "Database.h"
 
 #include "LogDatabase.h"
+#include "../../Gameplay/Entity/Last.h"
+#include "../../Gameplay/Entity/Mob/Mob.h"
+#include "../../Gameplay/Entity/Mob/Animal.h"
+//#include "../../Gameplay/Entity/Mob/Wolf.h"
+#include "../../Gameplay/Entity/Mob/Mutant.h"
+#include "../../Gameplay/Entity/Mob/Alien.h"
+#include "../../Gameplay/Entity/Mob/Robot.h"
+#include "../../Gameplay/Unit/Unit.h"
+#include "../../Gameplay/Unit/Liquid/Liquid.h"
+#include "../../Gameplay/Unit/SolidUnit/SolidUnit.h"
 
 #include <functional>
 
@@ -63,32 +73,122 @@ void UDatabase::Init()
 	});
 
 	// Check entity: last
-	InitField<FLastInfo>(LastData, "entity.last", "last", InitData, ExtraData);
+	InitField<FLastInfo>(LastData, "entity.last", "last", InitData, ExtraData,
+		[&LastData = LastData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!EntityData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The entity database does not contain a last %s, that is contained in the last database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != LastData[Tag].Class)
+		{
+			EntityData[Tag].Class = LastData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a last %s are different in the last and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check entity: mob
-	InitField<FMobInfo>(MobData, "entity", "mob", InitData, ExtraData);
+	InitField<FMobInfo>(MobData, "entity", "mob", InitData, ExtraData,
+		[&MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!EntityData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The entity database does not contain a mob %s, that is contained in the mob database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != MobData[Tag].Class)
+		{
+			EntityData[Tag].Class = MobData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a mob %s are different in the mob and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check entity: animal
-	InitField<FAnimalInfo>(AnimalData, "entity.animal", "animal", InitData, ExtraData);
+	InitField<FAnimalInfo>(AnimalData, "entity.animal", "animal", InitData, ExtraData,
+		[&AnimalData = AnimalData, &MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!MobData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The mob database does not contain an animal %s, that is contained in the animal database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != AnimalData[Tag].Class)
+		{
+			EntityData[Tag].Class = AnimalData[Tag].Class;
+			MobData[Tag].Class = AnimalData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of an animal %s are different in the animal and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check entity: animal: wolf
-	InitField<FWolfInfo>(WolfData, "entity.animal.wolf", "wolf", InitData, ExtraData);
+	InitField<FWolfInfo>(WolfData, "entity.animal.wolf", "wolf", InitData, ExtraData,
+		[&WolfData = WolfData, &AnimalData = AnimalData, &MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!AnimalData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The animal database does not contain a wolf %s, that is contained in the wolf database"), *Tag.ToString());
+		}
+/*		else if (EntityData[Tag].Class != WolfData[Tag].Class)
+		{
+			EntityData[Tag].Class = WolfData[Tag].Class;
+			AnimalData[Tag].Class = WolfData[Tag].Class;
+			MobData[Tag].Class = WolfData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a wolf %s are different in the wolf and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}*/
+	});
 
 	// Check entity: mutant
-	InitField<FMutantInfo>(MutantData, "entity.mutant", "mutant", InitData, ExtraData);
+	InitField<FMutantInfo>(MutantData, "entity.mutant", "mutant", InitData, ExtraData,
+		[&MutantData = MutantData, &MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!MobData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The mob database does not contain a mutant %s, that is contained in the mutant database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != MutantData[Tag].Class)
+		{
+			EntityData[Tag].Class = MutantData[Tag].Class;
+			MobData[Tag].Class = MutantData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a mutant %s are different in the mutant and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check entity: alien
-	InitField<FAlienInfo>(AlienData, "entity.alien", "alien", InitData, ExtraData);
+	InitField<FAlienInfo>(AlienData, "entity.alien", "alien", InitData, ExtraData,
+		[&AlienData = AlienData, &MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!MobData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The mob database does not contain an alien %s, that is contained in the alien database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != AlienData[Tag].Class)
+		{
+			EntityData[Tag].Class = AlienData[Tag].Class;
+			MobData[Tag].Class = AlienData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of an alien %s are different in the alien and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check entity: robot
-	InitField<FRobotInfo>(RobotData, "entity.robot", "robot", InitData, ExtraData);
+	InitField<FRobotInfo>(RobotData, "entity.robot", "robot", InitData, ExtraData,
+		[&RobotData = RobotData, &MobData = MobData, &EntityData = EntityData](const FGameplayTag& Tag)
+	{
+		if (!MobData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The mob database does not contain a robot %s, that is contained in the robot database"), *Tag.ToString());
+		}
+		else if (EntityData[Tag].Class != RobotData[Tag].Class)
+		{
+			EntityData[Tag].Class = RobotData[Tag].Class;
+			MobData[Tag].Class = RobotData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a robot %s are different in the robot and entity databases (the class in the entity database has been changed)"), *Tag.ToString());
+		}
+	});
 
 	// Check unit
 	InitField<FUnitInfo>(UnitData, "unit", "unit", InitData, ExtraData);
 
 	// Check unit: liquid
 	InitField<FLiquidInfo>(LiquidData, "unit.liquid", "liquid", InitData, ExtraData,
-		[&LiquidData = LiquidData, &LiquidTagData = LiquidTagData](const FGameplayTag& Tag)
+		[&LiquidData = LiquidData, &UnitData = UnitData, &LiquidTagData = LiquidTagData](const FGameplayTag& Tag)
 	{
 		LiquidTagData.Empty();
 		for (const FGameplayTag& i : LiquidData[Tag].Tags)
@@ -99,11 +199,21 @@ void UDatabase::Init()
 			}
 			LiquidTagData[i].Objects.Add(Tag);
 		}
+
+		if (!UnitData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The unit database does not contain a liquid %s, that is contained in the liquid database"), *Tag.ToString());
+		}
+		else if (UnitData[Tag].Class != LiquidData[Tag].Class)
+		{
+			UnitData[Tag].Class = LiquidData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a liquid %s are different in the liquid and liquid databases (the class in the unit database has been changed)"), *Tag.ToString());
+		}
 	});
 
 	// Check unit: solid unit
 	InitField<FSolidUnitInfo>(SolidUnitData, "unit.solid", "solid unit", InitData, ExtraData,
-		[&SolidUnitData = SolidUnitData, &SolidUnitTagData = SolidUnitTagData](const FGameplayTag& Tag)
+		[&SolidUnitData = SolidUnitData, &UnitData = UnitData, &SolidUnitTagData = SolidUnitTagData](const FGameplayTag& Tag)
 	{
 		SolidUnitTagData.Empty();
 		for (const FGameplayTag& i : SolidUnitData[Tag].Tags)
@@ -113,6 +223,16 @@ void UDatabase::Init()
 				SolidUnitTagData.Add(i);
 			}
 			SolidUnitTagData[i].Objects.Add(Tag);
+		}
+
+		if (!UnitData.Contains(Tag))
+		{
+			UE_LOG(LogDatabase, Error, TEXT("The unit database does not contain a solid unit %s, that is contained in the solid unit database"), *Tag.ToString());
+		}
+		else if (UnitData[Tag].Class != SolidUnitData[Tag].Class)
+		{
+			UnitData[Tag].Class = SolidUnitData[Tag].Class;
+			UE_LOG(LogDatabase, Warning, TEXT("Classes of a solid unit %s are different in the liquid and solid unit databases (the class in the unit database has been changed)"), *Tag.ToString());
 		}
 	});
 

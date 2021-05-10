@@ -15,6 +15,9 @@
 class UPaperSprite;
 struct FDatabaseInitData;
 struct FExtraInfo;
+class AUnit;
+class ALiquid;
+class ASolidUnit;
 
 USTRUCT(BlueprintType)
 struct FUnitInfo
@@ -23,6 +26,10 @@ struct FUnitInfo
 
 public:
 			/* GENERAL */
+
+	// Unit's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AUnit> Class;
 
 	// User-friendly unit's name
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -64,6 +71,10 @@ struct FLiquidInfo
 public:
 			/* GENERAL */
 
+	// Liquid's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ALiquid> Class;
+
 	// Liquid's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TArray<FGameplayTag> Tags;
@@ -99,6 +110,10 @@ struct FSolidUnitInfo
 
 public:
 			/* GENERAL */
+
+	// Solid unit's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ASolidUnit> Class;
 
 	// Solid unit's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
