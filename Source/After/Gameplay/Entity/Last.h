@@ -63,6 +63,10 @@ protected:
 	UFUNCTION(Category = "Zoom")
 	void ZoomOut();
 
+			/* DAMAGE */
+	
+	virtual void Disappear() override;
+
 			/* STATS */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")

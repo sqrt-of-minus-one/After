@@ -328,6 +328,7 @@ UDatabase::~UDatabase()
 void UDatabase::Reset()
 {
 #if WITH_EDITOR
+	UE_LOG(LogDatabase, Log, TEXT("Starting database reset"));
 	for (const auto& i : InitData.EntityReplaced)
 	{
 		EntityData[i.Entity].Flipbooks[i.Status].Flipbooks[i.Direction] = nullptr;
@@ -368,6 +369,8 @@ void UDatabase::Reset()
 	InitData.ProjectileReplaced.Empty();
 	InitData.LiquidReplaced.Empty();
 	InitData.SolidUnitReplaced.Empty();
+
+	UE_LOG(LogDatabase, Log, TEXT("Database reset has been finished"));
 #endif // WITH_EDITOR
 }
 

@@ -137,12 +137,14 @@ protected:
 	UFUNCTION(Category = "Damage")
 	virtual void Death(FDamageType Type, const AActor* Murderer);
 
+	// Is called when death animation stops
+	UFUNCTION(Category = "Damage")
+	virtual void Disappear();
+
 	UFUNCTION(Category = "Damage")
 	virtual void DeathDrop();
 
-			/* DEATH */
-
-	UPROPERTY(BlueprintReadOnly, Category = "Death")
+	UPROPERTY(BlueprintReadOnly, Category = "Damage")
 	bool bIsDead;
 
 			/* STATS */

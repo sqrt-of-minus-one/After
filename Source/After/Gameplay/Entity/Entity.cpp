@@ -311,7 +311,7 @@ void AEntity::StopRun()
 
 bool AEntity::MeleeAttack(AEntity* Target)
 {
-	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this)
+	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this && !bIsDead)
 	{
 		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 		PlaySound(FEntitySoundType::Attack);
@@ -337,6 +337,11 @@ void AEntity::Death(FDamageType Type, const AActor* Murderer)
 	PlaySound(FEntitySoundType::Death);
 	bIsDead = true;
 	DeathDrop();
+}
+
+void AEntity::Disappear()
+{
+	GetWorld()->DestroyActor(this);
 }
 
 void AEntity::DeathDrop()
@@ -385,7 +390,7 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 				bIsFlipbookFixed = false;
 				if (bIsDead)
 				{
-					GetWorld()->DestroyActor(this);
+					Disappear();
 				}
 				else
 				{

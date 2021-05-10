@@ -8,6 +8,7 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "PaperFlipbookComponent.h"
 
 #include "../LogGameplay.h"
 #include "../../Data/Database/Database.h"
@@ -102,6 +103,12 @@ void ALast::ZoomOut()
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
 		SpringArmComponent->TargetArmLength * GameConstants::ZoomStep,
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
+}
+
+void ALast::Disappear()
+{
+	FlipbookComponent->SetPlaybackPosition(FlipbookComponent->GetFlipbookLength(), false);
+	FlipbookComponent->Stop();
 }
 
 void ALast::CalculateStats()
