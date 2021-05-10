@@ -6,6 +6,7 @@
 
 #include "MobController.h"
 
+#include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"

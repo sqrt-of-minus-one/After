@@ -6,6 +6,7 @@
 
 #include "LastController.h"
 
+#include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/Unit.h"
@@ -32,18 +33,18 @@ void ALastController::Tick(float DeltaTime)
 	AUnit* SelectedUnit = nullptr;
 	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("*          Health: %f"), SelectedEntity->GetHealth()));
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), *SelectedEntity->GetEntityData().Name.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          Health: %f"), SelectedEntity->GetHealth()));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: %s"), *SelectedEntity->GetEntityData().Name.ToString()));
 	}
 	else if (SelectedUnit = Cast<AUnit>(Selected), SelectedUnit)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: %s"), *SelectedUnit->GetUnitData().Name.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: %s"), *SelectedUnit->GetUnitData().Name.ToString()));
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Selected: None")));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: None")));
 	}
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("\n")));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 
 void ALastController::Select(AActor* Actor)

@@ -11,6 +11,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../../Data/Database/Database.h"
 #include "../LogGameplay.h"
 #include "../Entity/Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
