@@ -82,6 +82,11 @@ protected:
 	UFUNCTION(Category = "Attack")
 	void StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
 
+	// Tell to someone, "I'm dangerous!"
+	UFUNCTION(Category = "Attack")
+	void Danger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+		bool bFromSweep, const FHitResult& SweepResult);
+
 	// Attack all of entities that are in the Attacked array
 	UFUNCTION(Category = "Attack")
 	void Attack();
@@ -104,6 +109,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* DamageBoxComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UBoxComponent* SeemsDangerousBoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UAudioComponent* AudioComponent;

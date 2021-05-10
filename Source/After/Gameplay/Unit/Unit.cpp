@@ -16,6 +16,7 @@
 #include "../Entity/Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
 #include "../Entity/Entity.h"
+#include "../Entity/Mob/Mob.h"
 #include "../../GameConstants.h"
 
 AUnit::AUnit()
@@ -36,6 +37,10 @@ AUnit::AUnit()
 	DamageBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Box"));
 	DamageBoxComponent->SetupAttachment(GetRootComponent());
 	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
+
+	SeemsDangerousBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Seems Dangerous Box"));
+	SeemsDangerousBoxComponent->SetupAttachment(GetRootComponent());
+	SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
@@ -94,6 +99,17 @@ void AUnit::BeginPlay()
 		// We don't need a damage box if the unit does not deal damage
 		DamageBoxComponent->DestroyComponent();
 		DamageBoxComponent = nullptr;
+	}
+
+	if (UnitData->SeemsDangerousDelta <= 0.f)
+	{
+		SeemsDangerousBoxComponent->DestroyComponent();
+		SeemsDangerousBoxComponent = nullptr;
+	}
+	else
+	{
+		SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize + FVector(UnitData->SeemsDangerousDelta, UnitData->SeemsDangerousDelta, GameConstants::TileSize.Z));
+		SeemsDangerousBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUnit::Danger);
 	}
 }
 
@@ -163,6 +179,16 @@ void AUnit::StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrim
 			// Stop attack if there is no attacked entity
 			GetWorld()->GetTimerManager().ClearTimer(AttackTimer);
 		}
+	}
+}
+
+void AUnit::Danger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+	AMob* Mob = Cast<AMob>(OtherActor);
+	if (Mob)
+	{
+		Mob->Danger(this);
 	}
 }
 

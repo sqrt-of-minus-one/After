@@ -46,6 +46,7 @@ void AMob::BeginPlay()
 		MobController->StopRun.BindUObject(this, &AMob::StopRun);
 
 		DamageDelegate.BindUObject(MobController, &AMobController::Damage);
+		DangerDelegate.BindUObject(MobController, &AMobController::Danger);
 
 		MobController->SetupInput();
 	}
@@ -66,4 +67,9 @@ void AMob::Damage(float Value, FDamageType Type, float Direction, const AActor* 
 	Super::Damage(Value, Type, Direction, FromWho, Push);
 
 	DamageDelegate.ExecuteIfBound(Direction, FromWho);
+}
+
+void AMob::Danger(const AUnit* Unit)
+{
+	DangerDelegate.ExecuteIfBound(Unit);
 }

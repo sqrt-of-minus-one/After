@@ -41,6 +41,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	FDamageType DamageType;
 
+	// Distance between the unit border and and a border of the area where entities will detect the unit and think that it is dangerous
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	float SeemsDangerousDelta;
+
 			/* APPEARANCE */
 
 	// The fraction of light that is not passing through the unit

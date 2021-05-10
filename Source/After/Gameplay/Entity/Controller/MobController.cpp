@@ -71,6 +71,16 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 	}
 }
 
+void AMobController::Danger(const AUnit* Detected)
+{
+	if (!bIsRunningAway)
+	{
+		FVector2D WhereToMove(MobPawn->GetActorLocation() - Detected->GetActorLocation());
+		WhereToMove.Normalize();
+		Move_f(WhereToMove);
+	}
+}
+
 void AMobController::SetupInput()
 {
 	MobPawn = Cast<AMob>(GetPawn());

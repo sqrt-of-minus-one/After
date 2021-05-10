@@ -49,6 +49,10 @@ void ASolidUnit::BeginPlay()
 	{
 		DamageBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + GameConstants::DamageBoxDelta);
 	}
+	if (SeemsDangerousBoxComponent) // Can be destroyed by AUnit::BeginPlay
+	{
+		SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + FVector(UnitData->SeemsDangerousDelta, UnitData->SeemsDangerousDelta, GameConstants::TileSize.Z));
+	}
 	SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	BreakSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
