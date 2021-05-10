@@ -31,14 +31,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AUnit> Class;
 
-	// User-friendly unit's name
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Unit's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
-
 			/* DAMAGE */
 
 	// Damage that is dealt by the unit

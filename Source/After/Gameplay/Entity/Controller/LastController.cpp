@@ -7,6 +7,7 @@
 #include "LastController.h"
 
 #include "../../../Data/Database/Database.h"
+#include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/Unit.h"
@@ -29,20 +30,27 @@ void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	const ALangManager* LangManager = GAME_MODE->GetLangManager();
+
 	AEntity* SelectedEntity = nullptr;
 	AUnit* SelectedUnit = nullptr;
 	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          Health: %f"), SelectedEntity->GetHealth()));
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: %s"), *SelectedEntity->GetEntityData().Name.ToString()));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
+
+		FString EntityName = GAME_MODE->GetLangManager()->GetString(FName(SelectedEntity->GetId().ToString() + FString(".name")));
+
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *EntityName));
 	}
 	else if (SelectedUnit = Cast<AUnit>(Selected), SelectedUnit)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: %s"), *SelectedUnit->GetUnitData().Name.ToString()));
+		FString UnitName = GAME_MODE->GetLangManager()->GetString(FName(SelectedUnit->GetId().ToString() + FString(".name")));
+
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("Selected: None")));
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
@@ -112,6 +120,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
 	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::Attack_f);
 	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
+	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -157,6 +166,22 @@ void ALastController::SpawnCow_tmp()
 {
 	FVector2D Mouse;
 	GetMousePosition(Mouse.X, Mouse.Y);
-	GetWorld()->SpawnActor<AAnimal>(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
+	GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
 		FVector(Mouse, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+}
+
+void ALastController::SwitchLang_tmp()
+{
+	ALangManager* LangManager = GAME_MODE->GetLangManager();
+	FLangs Lang = LangManager->GetLang();
+	if (Lang == FLangs::FR_FR)
+	{
+		Lang = FLangs::EN_GB;
+	}
+	else
+	{
+		Lang = static_cast<FLangs>(static_cast<uint8>(Lang) + 1);
+	}
+	LangManager->SetLang(Lang);
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
 }

@@ -21,7 +21,7 @@ void AAnimal::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
@@ -56,6 +56,6 @@ void AAnimal::Death(FDamageType Type, const AActor* Murderer)
 
 void AAnimal::Mutate()
 {
-	const UDatabase* Database = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	GetWorld()->SpawnActor<AMutant>(Database->GetMutantData(AnimalData->Mutant).Class, GetActorLocation(), GetActorRotation());
 }

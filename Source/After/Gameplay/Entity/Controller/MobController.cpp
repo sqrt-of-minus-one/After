@@ -37,7 +37,7 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 
 	if (Attacker)
 	{
-		const UDatabase& Database = *(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase());
+		const UDatabase& Database = *(GAME_MODE->GetDatabase());
 		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
 
 		bool bFear = FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Attacker->GetId(), &Database);

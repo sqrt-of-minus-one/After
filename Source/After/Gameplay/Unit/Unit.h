@@ -42,6 +42,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FUnitInfo& GetUnitData() const;
 
+	UFUNCTION(BlueprintCallable, Category = "General")
+	const FGameplayTag& GetId() const;
+
 			/* SELECTION */
 
 	UFUNCTION()

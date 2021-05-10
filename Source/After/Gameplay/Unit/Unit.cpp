@@ -48,7 +48,7 @@ void AUnit::BeginPlay()
 	OnEndPlay.AddDynamic(this, &AUnit::ClearTimers);
 
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
@@ -105,6 +105,11 @@ void AUnit::Tick(float DeltaTime)
 const FUnitInfo& AUnit::GetUnitData() const
 {
 	return *UnitData;
+}
+
+const FGameplayTag& AUnit::GetId() const
+{
+	return Id;
 }
 
 void AUnit::Select()

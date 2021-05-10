@@ -36,3 +36,8 @@ const UDatabase* AAfterGameModeBase::GetDatabase() const
 {
 	return Database;
 }
+
+ALangManager* AAfterGameModeBase::GetLangManager()
+{
+	return LangManager;
+}

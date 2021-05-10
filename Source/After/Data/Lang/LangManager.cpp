@@ -10,5 +10,5 @@
 
 void ALangManager::BeginPlay()
 {
-	SetLang(FLangs::FR_FR);
+	SetLang(FLangs::EN_GB);
 }

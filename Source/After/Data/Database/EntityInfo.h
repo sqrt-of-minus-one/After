@@ -34,14 +34,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AEntity> Class;
 
-	// User-friendly entity's name
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Entity's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
-
 	// Entity's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TArray<FGameplayTag> Tags;

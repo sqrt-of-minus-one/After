@@ -15,6 +15,8 @@
 class UDatabase;
 class ALangManager;
 
+#define GAME_MODE Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())
+
 UCLASS()
 class AFTER_API AAfterGameModeBase : public AGameModeBase
 {
@@ -41,4 +43,6 @@ public:
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;
+
+	ALangManager* GetLangManager();
 };
