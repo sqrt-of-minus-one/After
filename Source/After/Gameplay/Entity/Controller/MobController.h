@@ -54,6 +54,7 @@ protected:
 
 			/* TIMERS */
 
+	FTimerHandle ChangeDirectionTimer;
 	FTimerHandle ChangeStateTimer;
 	FTimerHandle RunAwayTimer;
 	
@@ -65,8 +66,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
 	bool bIsRunningAway;
 
+	// When the direction was changed last time
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	float LastDirectionChangeTime;
+
 			/* DELEGATES */
 
+	FTimerDelegate ChangeDirectionDelegate;
 	FTimerDelegate ChangeStateDelegate;
 
 			/* CONTROL */

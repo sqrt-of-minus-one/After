@@ -6,6 +6,8 @@
 
 #include "MobController.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
 #include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
@@ -13,7 +15,9 @@
 #include "../Mob/Mob.h"
 #include "../../Unit/Unit.h"
 
-AMobController::AMobController()
+AMobController::AMobController() :
+	bIsRunningAway(false),
+	LastDirectionChangeTime(0.f)
 {
 
 }
@@ -130,8 +134,28 @@ void AMobController::StopRunAway()
 
 void AMobController::Move_f(FVector2D Val)
 {
-	MoveX.ExecuteIfBound(Val.X);
-	MoveY.ExecuteIfBound(Val.Y);
+	float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+	UE_LOG(LogTemp, Log, TEXT("%f"), CurrentGameTime - LastDirectionChangeTime);
+	if (Val.IsZero() || CurrentGameTime - LastDirectionChangeTime > GameConstants::MinMobChangeDirectionTime)
+	{
+		MoveX.ExecuteIfBound(Val.X);
+		MoveY.ExecuteIfBound(Val.Y);
+		LastDirectionChangeTime = CurrentGameTime;
+	}
+	else if (CurrentGameTime - LastDirectionChangeTime > 0.f)
+	{
+		if (!bIsRunningAway)
+		{
+			MoveX.ExecuteIfBound(0.f);
+			MoveY.ExecuteIfBound(0.f);
+		}
+		ChangeDirectionDelegate.BindLambda([this, Val]()
+		{
+			UE_LOG(LogTemp, Log, TEXT("Move! %f, %f"), Val.X, Val.Y);
+			Move_f(Val);
+		});
+		GetWorld()->GetTimerManager().SetTimer(ChangeDirectionTimer, ChangeDirectionDelegate, CurrentGameTime - LastDirectionChangeTime, false);
+	}
 }
 
 void AMobController::SetRun_f(bool Val)

@@ -27,6 +27,7 @@ const float GameConstants::EntityPushDecrement = 0.85f;
 
 const float GameConstants::MinMobChangeStateTime = 2.f;
 const float GameConstants::MaxMobChangeStateTime = 5.f;
+const float GameConstants::MinMobChangeDirectionTime = 0.25f;
 
 		/* UNIT */
 
