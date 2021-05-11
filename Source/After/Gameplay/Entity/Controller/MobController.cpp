@@ -135,7 +135,6 @@ void AMobController::StopRunAway()
 void AMobController::Move_f(FVector2D Val)
 {
 	float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
-	UE_LOG(LogTemp, Log, TEXT("%f"), CurrentGameTime - LastDirectionChangeTime);
 	if (Val.IsZero() || CurrentGameTime - LastDirectionChangeTime > GameConstants::MinMobChangeDirectionTime)
 	{
 		MoveX.ExecuteIfBound(Val.X);
@@ -151,7 +150,6 @@ void AMobController::Move_f(FVector2D Val)
 		}
 		ChangeDirectionDelegate.BindLambda([this, Val]()
 		{
-			UE_LOG(LogTemp, Log, TEXT("Move! %f, %f"), Val.X, Val.Y);
 			Move_f(Val);
 		});
 		GetWorld()->GetTimerManager().SetTimer(ChangeDirectionTimer, ChangeDirectionDelegate, CurrentGameTime - LastDirectionChangeTime, false);

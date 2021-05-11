@@ -6,6 +6,8 @@
 
 #include "LastController.h"
 
+#include "GameFramework/GameUserSettings.h"
+
 #include "../../../Data/Database/Database.h"
 #include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
@@ -167,7 +169,8 @@ void ALastController::SpawnCow_tmp()
 	FVector2D Mouse;
 	GetMousePosition(Mouse.X, Mouse.Y);
 	GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-		FVector(Mouse, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+		FVector(Mouse - GetWorld()->GetGameInstance()->GetEngine()->GetGameUserSettings()->GetScreenResolution() / 4, 0.f) + GetPawn()->GetActorLocation(),
+		GetPawn()->GetActorRotation());
 }
 
 void ALastController::SwitchLang_tmp()
