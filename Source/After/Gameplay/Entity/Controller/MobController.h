@@ -13,6 +13,7 @@
 #include "MobController.generated.h"
 
 class AMob;
+class AUnit;
 
 UCLASS()
 class AFTER_API AMobController : public AAIController
@@ -33,7 +34,8 @@ public:
 public:
 			/* EVENTS */
 
-	void Damage(float Direction, const AActor* FromWho);
+	virtual void Damage(float Direction, const AActor* FromWho); // Is called when the entity receives a damage
+	virtual void Danger(const AUnit* Detected); // Is called when the entity is near a unit that seems dangerous
 
 			/* CONTROL */
 
@@ -52,6 +54,7 @@ protected:
 
 			/* TIMERS */
 
+	FTimerHandle ChangeDirectionTimer;
 	FTimerHandle ChangeStateTimer;
 	FTimerHandle RunAwayTimer;
 	
@@ -63,8 +66,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
 	bool bIsRunningAway;
 
+	// When the direction was changed last time
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	float LastDirectionChangeTime;
+
 			/* DELEGATES */
 
+	FTimerDelegate ChangeDirectionDelegate;
 	FTimerDelegate ChangeStateDelegate;
 
 			/* CONTROL */

@@ -7,7 +7,7 @@
 #include "Mob.h"
 
 #include "../../LogGameplay.h"
-#include "../../../Data/Database.h"
+#include "../../../Data/Database/Database.h"
 #include "../../../AfterGameModeBase.h"
 #include "../Controller/MobController.h"
 
@@ -22,7 +22,7 @@ void AMob::BeginPlay()
 	Super::BeginPlay();
 	
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
@@ -46,6 +46,7 @@ void AMob::BeginPlay()
 		MobController->StopRun.BindUObject(this, &AMob::StopRun);
 
 		DamageDelegate.BindUObject(MobController, &AMobController::Damage);
+		DangerDelegate.BindUObject(MobController, &AMobController::Danger);
 
 		MobController->SetupInput();
 	}
@@ -66,4 +67,9 @@ void AMob::Damage(float Value, FDamageType Type, float Direction, const AActor* 
 	Super::Damage(Value, Type, Direction, FromWho, Push);
 
 	DamageDelegate.ExecuteIfBound(Direction, FromWho);
+}
+
+void AMob::Danger(const AUnit* Unit)
+{
+	DangerDelegate.ExecuteIfBound(Unit);
 }

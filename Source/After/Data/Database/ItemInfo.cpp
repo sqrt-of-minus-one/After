@@ -13,14 +13,6 @@
 void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
 	// General
-	if (Data.Name.IsEmpty())
-	{
-		UE_LOG(LogDatabase, Warning, TEXT("Item %s doesn't have a name"), *Tag.ToString());
-	}
-	if (Data.Description.IsEmpty())
-	{
-		UE_LOG(LogDatabase, Warning, TEXT("Item %s doesn't have a description"), *Tag.ToString());
-	}
 	for (const FGameplayTag& i : Data.Tags)
 	{
 		if (!i.IsValid())

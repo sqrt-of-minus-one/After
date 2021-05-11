@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Types.h"
+#include "../Types.h"
 
 #include "EntityInfo.generated.h"
 
@@ -33,14 +33,6 @@ public:
 	// Entity's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<AEntity> Class;
-
-	// User-friendly entity's name
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Entity's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
 
 	// Entity's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")

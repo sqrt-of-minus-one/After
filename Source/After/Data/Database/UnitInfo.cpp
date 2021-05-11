@@ -12,18 +12,14 @@
 
 void Check(FUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
-	// General
-	if (Data.Name.IsEmpty())
+	// Damage
+	if (Data.SeemsDangerousDelta < 0.f)
 	{
-		UE_LOG(LogDatabase, Warning, TEXT("Unit %s doesn't have a name"), *Tag.ToString());
-	}
-	if (Data.Description.IsEmpty())
-	{
-		UE_LOG(LogDatabase, Warning, TEXT("Unit %s doesn't have a description"), *Tag.ToString());
+		UE_LOG(LogDatabase, Error, TEXT("Unit %s have negative value of seems dangerous delta (%f)"), *Tag.ToString(), Data.Opacity);
 	}
 
 	// Appearance
-	if (Data.Opacity < 0 || Data.Opacity > 1)
+	if (Data.Opacity < 0.f || Data.Opacity > 1.f)
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Unit %s have invalid value of opacity (%f). It must be between 0 and 1"), *Tag.ToString(), Data.Opacity);
 	}

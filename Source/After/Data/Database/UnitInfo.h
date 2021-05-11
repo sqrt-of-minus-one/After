@@ -8,13 +8,16 @@
 
 #include "CoreMinimal.h"
 
-#include "Types.h"
+#include "../Types.h"
 
 #include "UnitInfo.generated.h"
 
 class UPaperSprite;
 struct FDatabaseInitData;
 struct FExtraInfo;
+class AUnit;
+class ALiquid;
+class ASolidUnit;
 
 USTRUCT(BlueprintType)
 struct FUnitInfo
@@ -24,13 +27,9 @@ struct FUnitInfo
 public:
 			/* GENERAL */
 
-	// User-friendly unit's name
+	// Unit's class
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Unit's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
+	TSubclassOf<AUnit> Class;
 
 			/* DAMAGE */
 
@@ -41,6 +40,10 @@ public:
 	// Type of the unit's damage
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	FDamageType DamageType;
+
+	// Distance between the unit border and and a border of the area where entities will detect the unit and think that it is dangerous
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
+	float SeemsDangerousDelta;
 
 			/* APPEARANCE */
 
@@ -63,6 +66,10 @@ struct FLiquidInfo
 
 public:
 			/* GENERAL */
+
+	// Liquid's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ALiquid> Class;
 
 	// Liquid's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -99,6 +106,10 @@ struct FSolidUnitInfo
 
 public:
 			/* GENERAL */
+
+	// Solid unit's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<ASolidUnit> Class;
 
 	// Solid unit's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")

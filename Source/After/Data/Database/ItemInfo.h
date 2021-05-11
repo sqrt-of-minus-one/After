@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Types.h"
+#include "../Types.h"
 
 #include "ItemInfo.generated.h"
 
@@ -23,14 +23,6 @@ struct FItemInfo
 
 public:
 			/* GENERAL */
-
-	// User-friendly item's name
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Item's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
 
 	// Item's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")

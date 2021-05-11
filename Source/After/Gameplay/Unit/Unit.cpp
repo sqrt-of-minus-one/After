@@ -11,10 +11,12 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../../Data/Database/Database.h"
 #include "../LogGameplay.h"
 #include "../Entity/Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
 #include "../Entity/Entity.h"
+#include "../Entity/Mob/Mob.h"
 #include "../../GameConstants.h"
 
 AUnit::AUnit()
@@ -36,6 +38,10 @@ AUnit::AUnit()
 	DamageBoxComponent->SetupAttachment(GetRootComponent());
 	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
 
+	SeemsDangerousBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Seems Dangerous Box"));
+	SeemsDangerousBoxComponent->SetupAttachment(GetRootComponent());
+	SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize);
+
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
 }
@@ -47,7 +53,7 @@ void AUnit::BeginPlay()
 	OnEndPlay.AddDynamic(this, &AUnit::ClearTimers);
 
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
@@ -94,6 +100,17 @@ void AUnit::BeginPlay()
 		DamageBoxComponent->DestroyComponent();
 		DamageBoxComponent = nullptr;
 	}
+
+	if (UnitData->SeemsDangerousDelta <= 0.f)
+	{
+		SeemsDangerousBoxComponent->DestroyComponent();
+		SeemsDangerousBoxComponent = nullptr;
+	}
+	else
+	{
+		SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize + FVector(UnitData->SeemsDangerousDelta, UnitData->SeemsDangerousDelta, GameConstants::TileSize.Z));
+		SeemsDangerousBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUnit::Danger);
+	}
 }
 
 void AUnit::Tick(float DeltaTime)
@@ -104,6 +121,11 @@ void AUnit::Tick(float DeltaTime)
 const FUnitInfo& AUnit::GetUnitData() const
 {
 	return *UnitData;
+}
+
+const FGameplayTag& AUnit::GetId() const
+{
+	return Id;
 }
 
 void AUnit::Select()
@@ -157,6 +179,16 @@ void AUnit::StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrim
 			// Stop attack if there is no attacked entity
 			GetWorld()->GetTimerManager().ClearTimer(AttackTimer);
 		}
+	}
+}
+
+void AUnit::Danger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+	AMob* Mob = Cast<AMob>(OtherActor);
+	if (Mob)
+	{
+		Mob->Danger(this);
 	}
 }
 

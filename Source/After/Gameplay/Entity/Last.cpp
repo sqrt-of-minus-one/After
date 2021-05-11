@@ -8,9 +8,11 @@
 
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
+#include "PaperFlipbookComponent.h"
 
 #include "../LogGameplay.h"
-#include "../../Data/Database.h"
+#include "../../Data/Database/Database.h"
+#include "../../Data/Lang/LangManager.h"
 #include "Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
 #include "../../GameConstants.h"
@@ -48,7 +50,7 @@ void ALast::BeginPlay()
 	LastController->SetupInput();
 
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
@@ -65,10 +67,13 @@ void ALast::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Oxygen: %f"), Oxygen));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("Energy: %f"), Energy));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Satiety: %f"), Satiety));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("Health: %f"), Health));
+	const ALangManager* LangManager = GAME_MODE->GetLangManager();
+
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.oxygen")), Oxygen));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.energy")), Energy));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Magenta, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.satiety")), Satiety));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.health")), Health));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, FString::Printf(TEXT("\nFPS: %.2f (%.2f ms)"), 1 / DeltaTime, DeltaTime * 1000));
 }
 
 const FLastInfo& ALast::GetLastData() const
@@ -98,6 +103,12 @@ void ALast::ZoomOut()
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
 		SpringArmComponent->TargetArmLength * GameConstants::ZoomStep,
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
+}
+
+void ALast::Disappear()
+{
+	FlipbookComponent->SetPlaybackPosition(FlipbookComponent->GetFlipbookLength(), false);
+	FlipbookComponent->Stop();
 }
 
 void ALast::CalculateStats()

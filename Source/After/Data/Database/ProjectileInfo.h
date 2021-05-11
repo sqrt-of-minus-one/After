@@ -8,7 +8,7 @@
 
 #include "CoreMinimal.h"
 
-#include "Types.h"
+#include "../Types.h"
 
 #include "ProjectileInfo.generated.h"
 
@@ -23,14 +23,6 @@ struct FProjectileInfo
 
 public:
 			/* GENERAL */
-
-	// User-friendly projectile's name
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Name;
-
-	// Projectile's description
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
-	FText Description;
 
 	// Projectile's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")

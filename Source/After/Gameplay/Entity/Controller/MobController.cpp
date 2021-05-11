@@ -6,13 +6,18 @@
 
 #include "MobController.h"
 
+#include "Kismet/KismetSystemLibrary.h"
+
+#include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
 #include "../Mob/Mob.h"
 #include "../../Unit/Unit.h"
 
-AMobController::AMobController()
+AMobController::AMobController() :
+	bIsRunningAway(false),
+	LastDirectionChangeTime(0.f)
 {
 
 }
@@ -36,7 +41,7 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 
 	if (Attacker)
 	{
-		const UDatabase& Database = *(Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())->GetDatabase());
+		const UDatabase& Database = *(GAME_MODE->GetDatabase());
 		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
 
 		bool bFear = FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Attacker->GetId(), &Database);
@@ -67,6 +72,16 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 	else
 	{
 		// Attack
+	}
+}
+
+void AMobController::Danger(const AUnit* Detected)
+{
+	if (!bIsRunningAway)
+	{
+		FVector2D WhereToMove(MobPawn->GetActorLocation() - Detected->GetActorLocation());
+		WhereToMove.Normalize();
+		Move_f(WhereToMove);
 	}
 }
 
@@ -119,8 +134,26 @@ void AMobController::StopRunAway()
 
 void AMobController::Move_f(FVector2D Val)
 {
-	MoveX.ExecuteIfBound(Val.X);
-	MoveY.ExecuteIfBound(Val.Y);
+	float CurrentGameTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+	if (Val.IsZero() || CurrentGameTime - LastDirectionChangeTime > GameConstants::MinMobChangeDirectionTime)
+	{
+		MoveX.ExecuteIfBound(Val.X);
+		MoveY.ExecuteIfBound(Val.Y);
+		LastDirectionChangeTime = CurrentGameTime;
+	}
+	else if (CurrentGameTime - LastDirectionChangeTime > 0.f)
+	{
+		if (!bIsRunningAway)
+		{
+			MoveX.ExecuteIfBound(0.f);
+			MoveY.ExecuteIfBound(0.f);
+		}
+		ChangeDirectionDelegate.BindLambda([this, Val]()
+		{
+			Move_f(Val);
+		});
+		GetWorld()->GetTimerManager().SetTimer(ChangeDirectionTimer, ChangeDirectionDelegate, CurrentGameTime - LastDirectionChangeTime, false);
+	}
 }
 
 void AMobController::SetRun_f(bool Val)

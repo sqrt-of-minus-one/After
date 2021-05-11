@@ -12,6 +12,8 @@
 
 #include "Mob.generated.h"
 
+class AUnit;
+
 UCLASS()
 class AFTER_API AMob : public AEntity
 {
@@ -38,6 +40,9 @@ public:
 	
 	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f) override;
 
+	UFUNCTION(Category = "Damage")
+	virtual void Danger(const AUnit* Unit);
+
 protected:
 			/* GENERAL */
 
@@ -47,4 +52,5 @@ protected:
 
 //	UDELEGATE(Category = "Events")
 	TDelegate<void(float, const AActor*)> DamageDelegate;
+	TDelegate<void(const AUnit*)> DangerDelegate;
 };

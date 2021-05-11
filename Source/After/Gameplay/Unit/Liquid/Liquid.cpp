@@ -11,6 +11,7 @@
 #include "PaperSpriteComponent.h"
 #include "Components/AudioComponent.h"
 
+#include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
@@ -27,7 +28,7 @@ void ALiquid::BeginPlay()
 	OnEndPlay.AddDynamic(this, &ALiquid::ClearTimers);
 
 	// Get game mode
-	AAfterGameModeBase* GameMode = Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode());
+	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));

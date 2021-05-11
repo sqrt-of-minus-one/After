@@ -6,7 +6,10 @@
 
 #include "AfterGameModeBase.h"
 
-#include "Data/LogDatabase.h"
+#include "Data/Database/Database.h"
+#include "Data/Lang/LangManager.h"
+#include "Data/Database/LogDatabase.h"
+#include "Data/Lang/LogLang.h"
 
 AAfterGameModeBase::~AAfterGameModeBase()
 {
@@ -24,9 +27,17 @@ void AAfterGameModeBase::BeginPlay()
 		UE_LOG(LogDatabase, Fatal, TEXT("Couldn't find database"));
 	}
 	Database->Init();
+
+	LangManager = Cast<ALangManager>(GetWorld()->SpawnActor(LangManagerClass));
+	UE_LOG(LogLang, Log, TEXT("Language manager object has been created (%s)"), *LangManager->GetName());
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const
 {
 	return Database;
+}
+
+ALangManager* AAfterGameModeBase::GetLangManager()
+{
+	return LangManager;
 }
