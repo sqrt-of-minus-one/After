@@ -35,6 +35,7 @@ extern const float MinMobChangeDirectionTime; // Mobs cannot change their direct
 		/* UNIT */
 
 extern const float UnitDamageInterval; // How often units attack entities
+extern const float UnitDangerInterval; // How often units tell to entities, "I'm dangerous!"
 extern const FVector DamageBoxDelta; // The distance between unit edge and its damage box edge
 
 }

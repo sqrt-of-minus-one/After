@@ -66,6 +66,7 @@ void AEntity::BeginPlay()
 	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)

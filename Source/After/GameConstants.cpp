@@ -32,4 +32,5 @@ const float GameConstants::MinMobChangeDirectionTime = 0.25f;
 		/* UNIT */
 
 const float GameConstants::UnitDamageInterval = 1.f;
+const float GameConstants::UnitDangerInterval = 1.f;
 const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, 0.f);
