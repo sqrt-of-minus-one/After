@@ -31,6 +31,7 @@ extern const float EntityPushDecrement; // How quickly knockback decreases
 extern const float MinMobChangeStateTime; // Minimum time for mobs to change state
 extern const float MaxMobChangeStateTime; // Maximum time for mobs to change state
 extern const float MinMobChangeDirectionTime; // Mobs cannot change their direction more often
+extern const float MobPainTime; // How long mobs feel pain
 
 		/* UNIT */
 

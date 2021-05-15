@@ -16,7 +16,9 @@
 #include "../../Unit/Unit.h"
 
 AMobController::AMobController() :
+	RunningAwayFrom(nullptr),
 	bIsRunningAway(false),
+	bPain(false),
 	LastDirectionChangeTime(0.f)
 {
 
@@ -41,6 +43,9 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 
 	if (Attacker)
 	{
+		bPain = true;
+		GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime);
+		
 		const UDatabase& Database = *(GAME_MODE->GetDatabase());
 		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
 
@@ -56,6 +61,18 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 		{
 			bShouldRunAway = false;
 			FVector2D WhereToMove(MobPawn->GetActorLocation() - UnitAttacker->GetActorLocation());
+			(FMath::Abs(WhereToMove.X) > FMath::Abs(WhereToMove.Y) ? WhereToMove.Y : WhereToMove.X) = 0.f;
+			if (bIsRunningAway && RunningAwayFrom)
+			{
+				FVector2D RunAwayDirection(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
+				RunAwayDirection.Normalize();
+				FVector2D OldWhereToMove(WhereToMove);
+				WhereToMove += RunAwayDirection;
+				if (WhereToMove.IsNearlyZero())
+				{
+					WhereToMove = OldWhereToMove.GetRotated(85.f);
+				}
+			}
 			WhereToMove.Normalize();
 			Move_f(WhereToMove);
 		}
@@ -63,11 +80,10 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 
 	if (bShouldRunAway)
 	{
-
 		SetRun_f(true);
 		Move_f(FVector2D(FMath::Cos(Direction), FMath::Sin(Direction)));
 		bIsRunningAway = true;
-		GetWorld()->GetTimerManager().SetTimer(RunAwayTimer, this, &AMobController::StopRunAway, 5.f);
+		RunningAwayFrom = Attacker;
 	}
 	else
 	{
@@ -77,11 +93,46 @@ void AMobController::Damage(float Direction, const AActor* FromWho)
 
 void AMobController::Danger(const AUnit* Detected)
 {
-	if (!bIsRunningAway)
+	FVector2D WhereToMove(MobPawn->GetActorLocation() - Detected->GetActorLocation());
+	if (bIsRunningAway && RunningAwayFrom)
 	{
-		FVector2D WhereToMove(MobPawn->GetActorLocation() - Detected->GetActorLocation());
+		FVector2D RunAwayDirection(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
+		RunAwayDirection.Normalize();
+		(FMath::Abs(WhereToMove.X) > FMath::Abs(WhereToMove.Y) ? WhereToMove.Y : WhereToMove.X) = 0.f;
 		WhereToMove.Normalize();
-		Move_f(WhereToMove);
+		FVector2D OldWhereToMove(WhereToMove);
+		WhereToMove += RunAwayDirection;
+		if (WhereToMove.IsNearlyZero())
+		{
+			WhereToMove = OldWhereToMove.GetRotated(85.f);
+		}
+	}
+	WhereToMove.Normalize();
+	Move_f(WhereToMove);
+}
+
+void AMobController::BeginView(const AEntity* Entity)
+{
+	const UDatabase& Database = *(GAME_MODE->GetDatabase());
+	const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+
+	if (FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Entity->GetId(), &Database))
+	{
+		FVector2D Direction(MobPawn->GetActorLocation() - Entity->GetActorLocation());
+		Direction.Normalize();
+
+		SetRun_f(true);
+		Move_f(Direction);
+		bIsRunningAway = true;
+		RunningAwayFrom = Entity;
+	}
+}
+
+void AMobController::EndPursue(const AEntity* Entity)
+{
+	if (RunningAwayFrom == Entity && !bPain)
+	{
+		StopPain();
 	}
 }
 
@@ -96,7 +147,13 @@ void AMobController::SetupInput()
 
 	ChangeStateDelegate.BindLambda([this]()
 	{
-		if (FMath::RandBool() || bIsRunningAway)
+		if (RunningAwayFrom && bIsRunningAway)
+		{
+			FVector2D Direction(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
+			Direction.Normalize();
+			Move_f(Direction);
+		}
+		else if (FMath::RandBool() || bIsRunningAway)
 		{
 			Move_f(FVector2D(FMath::RandRange(-1, 1), FMath::RandRange(-1, 1)));
 		}
@@ -119,17 +176,22 @@ void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 		{
 			GetWorld()->GetTimerManager().ClearTimer(ChangeStateTimer);
 		}
-		if (GetWorld()->GetTimerManager().IsTimerActive(RunAwayTimer))
+		if (GetWorld()->GetTimerManager().IsTimerActive(MobPainTimer))
 		{
-			GetWorld()->GetTimerManager().ClearTimer(RunAwayTimer);
+			GetWorld()->GetTimerManager().ClearTimer(MobPainTimer);
 		}
 	}
 }
 
-void AMobController::StopRunAway()
+void AMobController::StopPain()
 {
-	bIsRunningAway = false;
-	SetRun_f(false);
+	bPain = false;
+	if (bIsRunningAway)
+	{
+		RunningAwayFrom = nullptr;
+		bIsRunningAway = false;
+		SetRun_f(false);
+	}
 }
 
 void AMobController::Move_f(FVector2D Val)

@@ -28,9 +28,10 @@ const float GameConstants::EntityPushDecrement = 0.85f;
 const float GameConstants::MinMobChangeStateTime = 2.f;
 const float GameConstants::MaxMobChangeStateTime = 5.f;
 const float GameConstants::MinMobChangeDirectionTime = 0.25f;
+const float GameConstants::MobPainTime = 5.f;
 
 		/* UNIT */
 
 const float GameConstants::UnitDamageInterval = 1.f;
-const float GameConstants::UnitDangerInterval = 1.f;
+const float GameConstants::UnitDangerInterval = .5f;
 const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, 0.f);

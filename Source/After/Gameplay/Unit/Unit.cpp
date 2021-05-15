@@ -36,10 +36,12 @@ AUnit::AUnit()
 
 	DamageBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Damage Box"));
 	DamageBoxComponent->SetupAttachment(GetRootComponent());
+	DamageBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
 	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
 
 	SeemsDangerousBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Seems Dangerous Box"));
 	SeemsDangerousBoxComponent->SetupAttachment(GetRootComponent());
+	SeemsDangerousBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
 	SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize);
 
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));

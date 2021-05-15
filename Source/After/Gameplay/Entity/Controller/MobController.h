@@ -12,6 +12,7 @@
 
 #include "MobController.generated.h"
 
+class AEntity;
 class AMob;
 class AUnit;
 
@@ -36,6 +37,8 @@ public:
 
 	virtual void Damage(float Direction, const AActor* FromWho); // Is called when the entity receives a damage
 	virtual void Danger(const AUnit* Detected); // Is called when the entity is near a unit that seems dangerous
+	virtual void BeginView(const AEntity* Entity); // Entity has entered in view sphere
+	virtual void EndPursue(const AEntity* Entity); // Entity has left pursue sphere
 
 			/* CONTROL */
 
@@ -52,19 +55,27 @@ protected:
 	UFUNCTION()
 	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
 
+			/* TARGETS */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targets")
+	const AEntity* RunningAwayFrom;
+
 			/* TIMERS */
 
 	FTimerHandle ChangeDirectionTimer;
 	FTimerHandle ChangeStateTimer;
-	FTimerHandle RunAwayTimer;
+	FTimerHandle MobPainTimer;
 	
 			/* BEHAVIOUR */
 
 	UFUNCTION(Category = "Behaviour")
-	void StopRunAway();
+	void StopPain();
 
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
 	bool bIsRunningAway;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	bool bPain;
 
 	// When the direction was changed last time
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
