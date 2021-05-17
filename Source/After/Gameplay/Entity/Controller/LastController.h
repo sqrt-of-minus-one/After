@@ -58,6 +58,14 @@ protected:
 
 	AActor* Selected;
 
+			/* STATE */
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsBreaking;
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	int DestroyerId;
+
 			/* CONTROL */
 
 	void MoveX_f(float Value);
@@ -66,7 +74,8 @@ protected:
 	void ZoomOut_f();
 	void StartRun_f();
 	void StopRun_f();
-	void Attack_f();
+	void StartAttack_f();
+	void StopAttack_f();
 	void SpawnCow_tmp();
 	void SwitchLang_tmp();
 };

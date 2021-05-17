@@ -9,6 +9,7 @@
 #include "CoreMinimal.h"
 
 #include "../Unit.h"
+#include "../../../Data/Database/ProfileInfo.h"
 
 #include "SolidUnit.generated.h"
 
@@ -51,16 +52,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Damage")
 	virtual void Damage(float Value, FDamageType Type, const AActor* FromWho);
 
+			/* BREAKING */
+
+	// Returns destroyer id
 	UFUNCTION(Category = "Damage")
-	void StartBreaking(/* const UItem* By */);
+	int StartBreaking(/* const UItem* By */);
 
 	UFUNCTION(Category = "Damage")
-	void StopBreaking();
+	void StopBreaking(int DestroyerId);
 
 protected:
 			/* GENERAL */
 
 	const FSolidUnitInfo* SolidUnitData;
+	const FBreakProfileInfo* BreakProfileData;
 
 			/* STATS */
 
@@ -72,8 +77,25 @@ protected:
 	UFUNCTION(Category = "Damage")
 	virtual void Kill(FDamageType Type, const AActor* Murderer);
 
+			/* BREAKING */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	TMap<int, /* UItem* */ bool> Destroyers;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	float Breaking;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	int BreakingStage;
+
 	UFUNCTION(Category = "Damage")
 	void Break(/* const UItem* By */);
+
+			/* APPEARANCE */
+
+	// -1 = is not being breaked
+	UFUNCTION(Category = "Appearance")
+	void SetAppearance(int Stage);
 
 			/* AUDIO */
 	

@@ -17,8 +17,12 @@
 #include "../../../GameConstants.h"
 //#include "../../Item/Item.h"
 
-ASolidUnit::ASolidUnit()
+ASolidUnit::ASolidUnit() :
+	Breaking(0.f),
+	BreakingStage(-1)
 {
+	PrimaryActorTick.bCanEverTick = true;
+
 	CollisionComponent->SetCollisionProfileName(FName("SolidUnit"));
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
@@ -43,6 +47,7 @@ void ASolidUnit::BeginPlay()
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	SolidUnitData = &Database->GetSolidUnitData(Id);
+	BreakProfileData = &Database->GetBreakProfileData(SolidUnitData->BreakProfile);
 
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f));
 	if (DamageBoxComponent) // Damage box can be destroyed by AUnit::BeginPlay
@@ -96,6 +101,27 @@ void ASolidUnit::BeginPlay()
 void ASolidUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	// Todo: Items
+	if (Destroyers.Num() != 0 && BreakProfileData->bCanBeBrokenByHand)
+	{
+		Breaking += DeltaTime;
+		if (Breaking >= SolidUnitData->BreakingTime)
+		{
+			Break();
+		}
+		else if ((SolidUnitData->bUseFlipbook ? SolidUnitData->BreakFlipbooks.Num() : SolidUnitData->BreakSprites.Num()) > 0)
+		{
+			int NewStage = Breaking *
+				(SolidUnitData->bUseFlipbook ? SolidUnitData->BreakFlipbooks.Num() : SolidUnitData->BreakSprites.Num()) /
+				SolidUnitData->BreakingTime;
+			if (NewStage != BreakingStage)
+			{
+				BreakingStage = NewStage;
+				SetAppearance(NewStage);
+			}
+		}
+	}
 }
 
 const FSolidUnitInfo& ASolidUnit::GetSolidUnitData() const
@@ -124,14 +150,25 @@ void ASolidUnit::Damage(float Value, FDamageType Type, const AActor* FromWho)
 	}
 }
 
-void ASolidUnit::StartBreaking(/* const UItem* By */)
+int ASolidUnit::StartBreaking(/* const UItem* By */)
 {
-	// Todo
+	int DestroyerId = Destroyers.Num();
+	Destroyers.Add(DestroyerId, true);
+	return DestroyerId;
 }
 
-void ASolidUnit::StopBreaking()
+void ASolidUnit::StopBreaking(int DestroyerId)
 {
-	// Todo
+	if (Destroyers.Contains(DestroyerId))
+	{
+		Destroyers.Remove(DestroyerId);
+		if (Destroyers.Num() == 0)
+		{
+			Breaking = 0.f;
+			BreakingStage = -1;
+			SetAppearance(-1);
+		}
+	}
 }
 
 void ASolidUnit::Kill(FDamageType Type, const AActor* Murderer)
@@ -165,6 +202,20 @@ void ASolidUnit::Break(/* const UItem* By */)
 {
 	// Todo: Drop
 	GetWorld()->DestroyActor(this);
+}
+
+void ASolidUnit::SetAppearance(int Stage)
+{
+	if (SolidUnitData->bUseFlipbook)
+	{
+		int FlipbookPosition = FlipbookComponent->GetPlaybackPosition();
+		FlipbookComponent->SetFlipbook(Stage < 0 ? SolidUnitData->Flipbook : SolidUnitData->BreakFlipbooks[Stage]);
+		FlipbookComponent->SetPlaybackPosition(FlipbookPosition, false); // I'm not sure what happens if FlipbookPosition is more than flipbook length
+	}
+	else
+	{
+		SpriteComponent->SetSprite(Stage < 0 ? SolidUnitData->Sprite : SolidUnitData->BreakSprites[Stage]);
+	}
 }
 
 void ASolidUnit::PlaySound(FSolidUnitSoundType Sound)

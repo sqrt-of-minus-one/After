@@ -12,12 +12,14 @@
 #include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
 #include "../Entity.h"
-#include "../../Unit/Unit.h"
+#include "../../Unit/SolidUnit/SolidUnit.h"
 #include "../../../AfterGameModeBase.h"
 #include "GameplayTagContainer.h"
 #include "../Mob/Animal.h"
 
-ALastController::ALastController()
+ALastController::ALastController() :
+	bIsBreaking(false),
+	DestroyerId(-1)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -60,6 +62,7 @@ void ALastController::Tick(float DeltaTime)
 void ALastController::Select(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
+	AUnit* Unit = nullptr;
 	bool bNew = false;
 	AActor* Old = Selected;
 	if (Entity)
@@ -70,7 +73,7 @@ void ALastController::Select(AActor* Actor)
 	}
 	else
 	{
-		AUnit* Unit = Cast<AUnit>(Actor);
+		Unit = Cast<AUnit>(Actor);
 		if (Unit)
 		{
 			Selected = Unit;
@@ -82,6 +85,11 @@ void ALastController::Select(AActor* Actor)
 	if (bNew && Old)
 	{
 		Unselect(Old);
+	}
+
+	if (bIsBreaking && Unit)
+	{
+		StartAttack_f();
 	}
 }
 
@@ -98,6 +106,13 @@ void ALastController::Unselect(AActor* Actor)
 		if (Unit)
 		{
 			Unit->Unselect();
+
+			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Unit);
+			if (bIsBreaking && SolidUnit)
+			{
+				SolidUnit->StopBreaking(DestroyerId);
+				DestroyerId = -1;
+			}
 		}
 	}
 	if (Selected == Actor)
@@ -120,7 +135,8 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
 	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
 	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
-	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::Attack_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
 	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
 	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
 }
@@ -155,12 +171,35 @@ void ALastController::StopRun_f()
 	StopRun.ExecuteIfBound();
 }
 
-void ALastController::Attack_f()
+void ALastController::StartAttack_f()
 {
 	AEntity* Entity = Cast<AEntity>(Selected);
 	if (Entity && Attack.IsBound())
 	{
 		Attack.Execute(Entity);
+	}
+	else
+	{
+		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+		if (SolidUnit)
+		{
+			DestroyerId = SolidUnit->StartBreaking();
+			bIsBreaking = true;
+		}
+	}
+}
+
+void ALastController::StopAttack_f()
+{
+	if (bIsBreaking)
+	{
+		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+		if (SolidUnit)
+		{
+			SolidUnit->StopBreaking(DestroyerId);
+		}
+		DestroyerId = -1;
+		bIsBreaking = false;
 	}
 }
 

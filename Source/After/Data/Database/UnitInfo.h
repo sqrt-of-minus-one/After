@@ -131,13 +131,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	bool bUseFlipbook = false;
 
-	// The unit's flipbook
+	// The flipbook of the unit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperFlipbook* Flipbook;
 
-	// The unit's sprite
+	// The flipbooks of unit being destroyed
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	TArray<UPaperFlipbook*> BreakFlipbooks;
+
+	// The sprite of the unit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	UPaperSprite* Sprite;
+
+	// The sprites of unit being destroyed
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	TArray<UPaperSprite*> BreakSprites;
 
 	// The entity's size
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
