@@ -317,7 +317,7 @@ bool AEntity::MeleeAttack(AEntity* Target)
 		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 		PlaySound(FEntitySoundType::Attack);
 
-		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) <= EntityData->AttackRadius)
+		if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <= FMath::Square(EntityData->AttackRadius))
 		{
 			FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
 			Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);

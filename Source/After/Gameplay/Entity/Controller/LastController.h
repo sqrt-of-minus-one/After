@@ -15,6 +15,7 @@
 #include "LastController.generated.h"
 
 class AEntity;
+class ASolidUnit;
 
 UCLASS()
 class AFTER_API ALastController : public APlayerController
@@ -50,10 +51,14 @@ public:
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
 	TDelegate<bool(AEntity*)> Attack;
+	TDelegate<void(ASolidUnit*)> StartBreak;
+	TDelegate<void()> StopBreak;
 
 	void SetupInput();
 
 protected:
+	AEntity* EntityPawn;
+
 			/* SELECTING */
 
 	AActor* Selected;
@@ -62,9 +67,6 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsBreaking;
-
-	UPROPERTY(BlueprintReadOnly, Category = "State")
-	int DestroyerId;
 
 			/* CONTROL */
 

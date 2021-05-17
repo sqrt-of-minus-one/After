@@ -13,6 +13,7 @@
 #include "Last.generated.h"
 
 struct FLastInfo;
+class ASolidUnit;
 class USpringArmComponent;
 class UCameraComponent;
 //class UPlayerInventoryComponent;
@@ -62,6 +63,20 @@ protected:
 
 	UFUNCTION(Category = "Zoom")
 	void ZoomOut();
+
+			/* ATTACK */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	int DestroyerId;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	ASolidUnit* DestroyedUnit;
+
+	UFUNCTION(Category = "Attack")
+	void StartBreak(ASolidUnit* Target);
+
+	UFUNCTION(Category = "Attack")
+	void StopBreak();
 
 			/* DAMAGE */
 	

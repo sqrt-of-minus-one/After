@@ -16,8 +16,11 @@
 #include "Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
 #include "../../GameConstants.h"
+#include "../Unit/SolidUnit/SolidUnit.h"
 
-ALast::ALast()
+ALast::ALast() :
+	DestroyerId(-1),
+	DestroyedUnit(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -47,6 +50,8 @@ void ALast::BeginPlay()
 	LastController->StartRun.BindUObject(this, &ALast::StartRun);
 	LastController->StopRun.BindUObject(this, &ALast::StopRun);
 	LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
+	LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
+	LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
 	LastController->SetupInput();
 
 	// Get game mode
@@ -74,6 +79,25 @@ void ALast::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Magenta, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.satiety")), Satiety));
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.health")), Health));
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, FString::Printf(TEXT("\nFPS: %.2f (%.2f ms)"), 1 / DeltaTime, DeltaTime * 1000));
+
+	if (DestroyedUnit)
+	{
+		if (DestroyerId >= 0)
+		{
+			if (FVector::DistSquared(DestroyedUnit->GetActorLocation(), GetActorLocation()) > FMath::Square(EntityData->AttackRadius))
+			{
+				DestroyedUnit->StopBreaking(DestroyerId);
+				DestroyerId = -1;
+			}
+		}
+		else
+		{
+			if (FVector::DistSquared(DestroyedUnit->GetActorLocation(), GetActorLocation()) <= FMath::Square(EntityData->AttackRadius))
+			{
+				DestroyerId = DestroyedUnit->StartBreaking();
+			}
+		}
+	}
 }
 
 const FLastInfo& ALast::GetLastData() const
@@ -103,6 +127,23 @@ void ALast::ZoomOut()
 	SpringArmComponent->TargetArmLength = FMath::Clamp(
 		SpringArmComponent->TargetArmLength * GameConstants::ZoomStep,
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
+}
+
+void ALast::StartBreak(ASolidUnit* Target)
+{
+	StopBreak();
+	DestroyedUnit = Target;
+}
+
+void ALast::StopBreak()
+{
+	if (DestroyedUnit && DestroyerId >= 0)
+	{
+		DestroyedUnit->StopBreaking(DestroyerId);
+	}
+
+	DestroyedUnit = nullptr;
+	DestroyerId = -1;
 }
 
 void ALast::Disappear()

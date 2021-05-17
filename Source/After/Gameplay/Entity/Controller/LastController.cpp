@@ -18,8 +18,7 @@
 #include "../Mob/Animal.h"
 
 ALastController::ALastController() :
-	bIsBreaking(false),
-	DestroyerId(-1)
+	bIsBreaking(false)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -28,6 +27,12 @@ ALastController::ALastController() :
 void ALastController::BeginPlay()
 {
 	Super::BeginPlay();
+
+	EntityPawn = Cast<AEntity>(GetPawn());
+	if (!EntityPawn)
+	{
+		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity"));
+	}
 }
 
 void ALastController::Tick(float DeltaTime)
@@ -87,9 +92,13 @@ void ALastController::Select(AActor* Actor)
 		Unselect(Old);
 	}
 
-	if (bIsBreaking && Unit)
+	if (bIsBreaking)
 	{
-		StartAttack_f();
+		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
+		if (SolidUnit)
+		{
+			StartBreak.ExecuteIfBound(SolidUnit);
+		}
 	}
 }
 
@@ -107,11 +116,13 @@ void ALastController::Unselect(AActor* Actor)
 		{
 			Unit->Unselect();
 
-			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Unit);
-			if (bIsBreaking && SolidUnit)
+			if (bIsBreaking)
 			{
-				SolidUnit->StopBreaking(DestroyerId);
-				DestroyerId = -1;
+				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Unit);
+				if (SolidUnit)
+				{
+					StopBreak.ExecuteIfBound();
+				}
 			}
 		}
 	}
@@ -183,7 +194,7 @@ void ALastController::StartAttack_f()
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 		if (SolidUnit)
 		{
-			DestroyerId = SolidUnit->StartBreaking();
+			StartBreak.ExecuteIfBound(SolidUnit);
 			bIsBreaking = true;
 		}
 	}
@@ -191,16 +202,8 @@ void ALastController::StartAttack_f()
 
 void ALastController::StopAttack_f()
 {
-	if (bIsBreaking)
-	{
-		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-		if (SolidUnit)
-		{
-			SolidUnit->StopBreaking(DestroyerId);
-		}
-		DestroyerId = -1;
-		bIsBreaking = false;
-	}
+	StopBreak.ExecuteIfBound();
+	bIsBreaking = false;
 }
 
 void ALastController::SpawnCow_tmp()
