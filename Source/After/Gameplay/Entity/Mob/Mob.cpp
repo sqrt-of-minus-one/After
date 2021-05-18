@@ -7,6 +7,7 @@
 #include "Mob.h"
 
 #include "Components/SphereComponent.h"
+#include "Components/BoxComponent.h"
 
 #include "../../LogGameplay.h"
 #include "../../../Data/Database/Database.h"
@@ -28,6 +29,11 @@ AMob::AMob()
 	PursueComponent->SetupAttachment(GetRootComponent());
 	PursueComponent->SetCollisionProfileName(TEXT("TriggerArea"));
 	PursueComponent->SetSphereRadius(2 * GameConstants::TileSize.X);
+
+	CheckDangerBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Check Danger Box"));
+	CheckDangerBoxComponent->SetupAttachment(GetRootComponent());
+	CheckDangerBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
+	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::MobCheckDangerBoxDelta);
 }
 
 void AMob::BeginPlay()
@@ -57,9 +63,11 @@ void AMob::BeginPlay()
 		MobController->MoveY.BindUObject(this, &AMob::SetMoveY);
 		MobController->StartRun.BindUObject(this, &AMob::StartRun);
 		MobController->StopRun.BindUObject(this, &AMob::StopRun);
+		MobController->Attack.BindUObject(this, &AMob::MeleeAttack);
 
 		DamageDelegate.BindUObject(MobController, &AMobController::Damage);
-		DangerDelegate.BindUObject(MobController, &AMobController::Danger);
+		BeginDangerDelegate.BindUObject(MobController, &AMobController::BeginDanger);
+		EndDangerDelegate.BindUObject(MobController, &AMobController::EndDanger);
 		BeginViewDelegate.BindUObject(MobController, &AMobController::BeginView);
 		EndPursueDelegate.BindUObject(MobController, &AMobController::EndPursue);
 
@@ -70,6 +78,9 @@ void AMob::BeginPlay()
 	ViewComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginView);
 	PursueComponent->SetSphereRadius(MobData->PursueRadius);
 	PursueComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndPursue);
+	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 0.f) + GameConstants::MobCheckDangerBoxDelta);
+	CheckDangerBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginDanger);
+	CheckDangerBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndDanger);
 }
 
 void AMob::Tick(float DeltaTime)
@@ -82,35 +93,31 @@ const FMobInfo& AMob::GetMobData() const
 	return *MobData;
 }
 
-void AMob::Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push)
+void AMob::Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push)
 {
 	Super::Damage(Value, Type, Direction, FromWho, Push);
-
-	UE_LOG(LogTemp, Log, TEXT("Damage from %s"), FromWho ? *FromWho->GetName() : TEXT("Unknown"));
 
 	DamageDelegate.ExecuteIfBound(Direction, FromWho);
 }
 
-void AMob::Danger(const AUnit* Unit)
+void AMob::BeginDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+	bool bFromSweep, const FHitResult& SweepResult)
 {
-	DangerDelegate.ExecuteIfBound(Unit);
+	BeginDangerDelegate.ExecuteIfBound(OtherActor);
+}
+
+void AMob::EndDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
+{
+	EndDangerDelegate.ExecuteIfBound(OtherActor);
 }
 
 void AMob::BeginView(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
 	bool bFromSweep, const FHitResult& SweepResult)
 {
-	AEntity* Entity = Cast<AEntity>(OtherActor);
-	if (Entity)
-	{
-		BeginViewDelegate.ExecuteIfBound(Entity);
-	}
+	BeginViewDelegate.ExecuteIfBound(OtherActor);
 }
 
 void AMob::EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
 {
-	AEntity* Entity = Cast<AEntity>(OtherActor);
-	if (Entity)
-	{
-		EndPursueDelegate.ExecuteIfBound(Entity);
-	}
+	EndPursueDelegate.ExecuteIfBound(OtherActor);
 }

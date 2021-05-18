@@ -158,7 +158,7 @@ float AEntity::GetEnergy() const
 	return Energy;
 }
 
-void AEntity::Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push)
+void AEntity::Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push)
 {
 	Health -= Value * EntityData->DamageResist[Type];
 	PushMoving += FVector2D(Push * FMath::Cos(Direction), Push * FMath::Sin(Direction));
@@ -310,18 +310,23 @@ void AEntity::StopRun()
 	bIsRunning = false;
 }
 
-bool AEntity::MeleeAttack(AEntity* Target)
+bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss)
 {
 	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this && !bIsDead)
 	{
-		SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
-		PlaySound(FEntitySoundType::Attack);
-
 		if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <= FMath::Square(EntityData->AttackRadius))
 		{
+			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+			PlaySound(FEntitySoundType::Attack);
+
 			FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
 			Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
 			return true;
+		}
+		else if (bCanMiss)
+		{
+			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+			PlaySound(FEntitySoundType::Attack);
 		}
 	}
 	return false;

@@ -35,10 +35,20 @@ public:
 public:
 			/* EVENTS */
 
-	virtual void Damage(float Direction, const AActor* FromWho); // Is called when the entity receives a damage
-	virtual void Danger(const AUnit* Detected); // Is called when the entity is near a unit that seems dangerous
-	virtual void BeginView(const AEntity* Entity); // Entity has entered in view sphere
-	virtual void EndPursue(const AEntity* Entity); // Entity has left pursue sphere
+	UFUNCTION(Category = "Events")
+	virtual void Damage(float Direction, AActor* FromWho); // Is called when the entity receives a damage
+
+	UFUNCTION(Category = "Events")
+	virtual void BeginDanger(const AActor* Actor); // Something has entered in danger sphere
+
+	UFUNCTION(Category = "Events")
+	virtual void EndDanger(const AActor* Actor); // Something has left danger sphere
+
+	UFUNCTION(Category = "Events")
+	virtual void BeginView(AActor* Actor); // Something has entered in view sphere
+
+	UFUNCTION(Category = "Events")
+	virtual void EndPursue(const AActor* Actor); // Something has left pursue sphere
 
 			/* CONTROL */
 
@@ -46,48 +56,67 @@ public:
 	TDelegate<void(float)> MoveY;
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
+	TDelegate<bool(AEntity*, bool)> Attack;
 
+	UFUNCTION(Category = "Control")
 	virtual void SetupInput();
 
 protected:
+			/* GENERAL */
+
+	UPROPERTY(BlueprintReadOnly, Category = "General")
 	AMob* MobPawn;
 
-	UFUNCTION()
+	UFUNCTION(Category = "General")
 	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
 
 			/* TARGETS */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Targets")
-	const AEntity* RunningAwayFrom;
+	AEntity* Target;
+	
+	TDoubleLinkedList<const AEntity*> RunningAwayFrom;
+	TDoubleLinkedList<const AUnit*> DangerousUnits;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Targets")
+	const AEntity* Attacker;
 
 			/* TIMERS */
 
-	FTimerHandle ChangeDirectionTimer;
+	UPROPERTY(BlueprintReadOnly, Category = "Timers")
 	FTimerHandle ChangeStateTimer;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Timers")
 	FTimerHandle MobPainTimer;
+
+			/* DELEGATES */
+
+	FTimerDelegate ChangeStateDelegate;
 	
 			/* BEHAVIOUR */
 
+	// Whether mob moves in specified direction
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	bool bHasTarget;
+
+	UFUNCTION(Category = "Behaviour")
+	void UpdateDirection();
+
 	UFUNCTION(Category = "Behaviour")
 	void StopPain();
-
-	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
-	bool bIsRunningAway;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
-	bool bPain;
 
 	// When the direction was changed last time
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
 	float LastDirectionChangeTime;
 
-			/* DELEGATES */
-
-	FTimerDelegate ChangeDirectionDelegate;
-	FTimerDelegate ChangeStateDelegate;
-
 			/* CONTROL */
 
+	UFUNCTION(Category = "Control")
 	void Move_f(FVector2D Val);
+
+	UFUNCTION(Category = "Control")
 	void SetRun_f(bool Val);
+
+	UFUNCTION(Category = "Control")
+	bool Attack_f(AEntity* TargetEntity);
 };

@@ -39,11 +39,6 @@ AUnit::AUnit()
 	DamageBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
 	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
 
-	SeemsDangerousBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Seems Dangerous Box"));
-	SeemsDangerousBoxComponent->SetupAttachment(GetRootComponent());
-	SeemsDangerousBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
-	SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize);
-
 	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
 	AudioComponent->SetupAttachment(GetRootComponent());
 }
@@ -102,18 +97,6 @@ void AUnit::BeginPlay()
 		// We don't need a damage box if the unit does not deal damage
 		DamageBoxComponent->DestroyComponent();
 		DamageBoxComponent = nullptr;
-	}
-
-	if (UnitData->SeemsDangerousDelta <= 0.f)
-	{
-		SeemsDangerousBoxComponent->DestroyComponent();
-		SeemsDangerousBoxComponent = nullptr;
-	}
-	else
-	{
-		SeemsDangerousBoxComponent->SetBoxExtent(GameConstants::TileSize + FVector(UnitData->SeemsDangerousDelta, UnitData->SeemsDangerousDelta, GameConstants::TileSize.Z));
-		SeemsDangerousBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AUnit::StartDanger);
-		SeemsDangerousBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AUnit::StopDanger);
 	}
 }
 
@@ -192,42 +175,5 @@ void AUnit::Attack()
 	{
 		// Direction is zero, because unit cannot push entity (direction is not important)
 		i->Damage(UnitData->Damage, UnitData->DamageType, 0.f, this);
-	}
-}
-
-void AUnit::StartDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
-	bool bFromSweep, const FHitResult& SweepResult)
-{
-	AMob* Mob = Cast<AMob>(OtherActor);
-	if (Mob && !DangerToEntities.Contains(Mob))
-	{
-		DangerToEntities.Add(Mob);
-		if (!GetWorld()->GetTimerManager().IsTimerActive(DangerTimer))
-		{
-			Danger();
-			GetWorld()->GetTimerManager().SetTimer(DangerTimer, this, &AUnit::Danger, GameConstants::UnitDangerInterval, true);
-		}
-	}
-}
-
-void AUnit::StopDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
-{
-	AMob* Mob = Cast<AMob>(OtherActor);
-	if (Mob)
-	{
-		DangerToEntities.Remove(Mob);
-		if (DangerToEntities.Num() == 0)
-		{
-			// Stop tell about danger if there is no entities
-			GetWorld()->GetTimerManager().ClearTimer(DangerTimer);
-		}
-	}
-}
-
-void AUnit::Danger()
-{
-	for (AMob* i : DangerToEntities)
-	{
-		i->Danger(this);
 	}
 }

@@ -50,7 +50,7 @@ public:
 	TDelegate<void()> ZoomOut;
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*)> Attack;
+	TDelegate<bool(AEntity*, bool)> Attack;
 	TDelegate<void(ASolidUnit*)> StartBreak;
 	TDelegate<void()> StopBreak;
 

@@ -39,10 +39,7 @@ public:
 
 			/* DAMAGE */
 	
-	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f) override;
-
-	UFUNCTION(Category = "Damage")
-	virtual void Danger(const AUnit* Unit);
+	virtual void Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push = 0.f) override;
 
 protected:
 			/* GENERAL */
@@ -60,13 +57,23 @@ protected:
 	UFUNCTION(Category = "View")
 	void EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
 
+	// Something has entered in the check danger box
+	UFUNCTION(Category = "View")
+	void BeginDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	// Something has left the check danger box
+	UFUNCTION(Category = "View")
+	void EndDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
+
 			/* EVENTS */
 
 //	UDELEGATE(Category = "Events")
-	TDelegate<void(float, const AActor*)> DamageDelegate;
-	TDelegate<void(const AUnit*)> DangerDelegate;
-	TDelegate<void(const AEntity*)> BeginViewDelegate;
-	TDelegate<void(const AEntity*)> EndPursueDelegate;
+	TDelegate<void(float, AActor*)> DamageDelegate;
+	TDelegate<void(const AActor*)> BeginDangerDelegate;
+	TDelegate<void(const AActor*)> EndDangerDelegate;
+	TDelegate<void(AActor*)> BeginViewDelegate;
+	TDelegate<void(const AActor*)> EndPursueDelegate;
 
 			/* COMPONENTS */
 
@@ -75,4 +82,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	USphereComponent* PursueComponent;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UBoxComponent* CheckDangerBoxComponent;
 };

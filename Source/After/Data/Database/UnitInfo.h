@@ -41,9 +41,9 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
 	FDamageType DamageType;
 
-	// Distance between the unit border and and a border of the area where entities will detect the unit and think that it is dangerous
+	// Whether mobs should fear the unit
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Damage")
-	float SeemsDangerousDelta;
+	bool bSeemsDangerous;
 
 			/* APPEARANCE */
 

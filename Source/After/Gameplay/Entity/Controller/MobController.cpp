@@ -16,12 +16,10 @@
 #include "../../Unit/Unit.h"
 
 AMobController::AMobController() :
-	RunningAwayFrom(nullptr),
-	bIsRunningAway(false),
-	bPain(false),
+	bHasTarget(false),
 	LastDirectionChangeTime(0.f)
 {
-
+	PrimaryActorTick.bCanEverTick = false;
 }
 
 void AMobController::BeginPlay()
@@ -36,103 +34,112 @@ void AMobController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AMobController::Damage(float Direction, const AActor* FromWho)
+void AMobController::Damage(float Direction, AActor* FromWho)
 {
-	const AEntity* Attacker = Cast<AEntity>(FromWho);
-	bool bShouldRunAway = true;
-
-	if (Attacker)
+	AEntity* EntityAttacker = Cast<AEntity>(FromWho);
+	if (EntityAttacker)
 	{
-		bPain = true;
-		GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime);
+		Attacker = EntityAttacker;
+		bHasTarget = true;
+		SetRun_f(true);
+		GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime, false);
 		
-		const UDatabase& Database = *(GAME_MODE->GetDatabase());
-		const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+		const UDatabase* Database = GAME_MODE->GetDatabase();
+		const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+		if (MobPawn->GetEntityData().Damage != 0 && !FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, EntityAttacker->GetId(), Database))
+		{
+			Target = EntityAttacker;
+		}
 
-		bool bFear = FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Attacker->GetId(), &Database);
-
-		// Mob should run away if it cannot attack or if it fears attacker
-		bShouldRunAway = (MobPawn->GetEntityData().Damage == 0 || bFear);
+		ChangeStateDelegate.ExecuteIfBound();
 	}
 	else
 	{
 		const AUnit* UnitAttacker = Cast<AUnit>(FromWho);
-		if (UnitAttacker)
+		if (UnitAttacker && !DangerousUnits.Contains(UnitAttacker))
 		{
-			bShouldRunAway = false;
-			FVector2D WhereToMove(MobPawn->GetActorLocation() - UnitAttacker->GetActorLocation());
-			(FMath::Abs(WhereToMove.X) > FMath::Abs(WhereToMove.Y) ? WhereToMove.Y : WhereToMove.X) = 0.f;
-			if (bIsRunningAway && RunningAwayFrom)
+			DangerousUnits.AddTail(UnitAttacker);
+			bHasTarget = true;
+			ChangeStateDelegate.ExecuteIfBound();
+		}
+	}
+}
+
+void AMobController::BeginDanger(const AActor* Actor)
+{
+	const AUnit* Unit = Cast<AUnit>(Actor);
+	if (Unit && Unit->GetUnitData().bSeemsDangerous && !DangerousUnits.Contains(Unit))
+	{
+		DangerousUnits.AddTail(Unit);
+		bHasTarget = true;
+		ChangeStateDelegate.ExecuteIfBound();
+	}
+}
+
+void AMobController::EndDanger(const AActor* Actor)
+{
+	const AUnit* Unit = Cast<AUnit>(Actor);
+	if (Unit && DangerousUnits.Contains(Unit))
+	{
+		DangerousUnits.RemoveNode(Unit);
+		if (!Target && RunningAwayFrom.Num() == 0 && !Attacker)
+		{
+			SetRun_f(false);
+			if (DangerousUnits.Num() == 0)
 			{
-				FVector2D RunAwayDirection(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
-				RunAwayDirection.Normalize();
-				FVector2D OldWhereToMove(WhereToMove);
-				WhereToMove += RunAwayDirection;
-				if (WhereToMove.IsNearlyZero())
-				{
-					WhereToMove = OldWhereToMove.GetRotated(85.f);
-				}
+				bHasTarget = false;
 			}
-			WhereToMove.Normalize();
-			Move_f(WhereToMove);
 		}
-	}
-
-	if (bShouldRunAway)
-	{
-		SetRun_f(true);
-		Move_f(FVector2D(FMath::Cos(Direction), FMath::Sin(Direction)));
-		bIsRunningAway = true;
-		RunningAwayFrom = Attacker;
-	}
-	else
-	{
-		// Attack
 	}
 }
 
-void AMobController::Danger(const AUnit* Detected)
+void AMobController::BeginView(AActor* Actor)
 {
-	FVector2D WhereToMove(MobPawn->GetActorLocation() - Detected->GetActorLocation());
-	if (bIsRunningAway && RunningAwayFrom)
+	AEntity* Entity = Cast<AEntity>(Actor);
+	if (Entity)
 	{
-		FVector2D RunAwayDirection(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
-		RunAwayDirection.Normalize();
-		(FMath::Abs(WhereToMove.X) > FMath::Abs(WhereToMove.Y) ? WhereToMove.Y : WhereToMove.X) = 0.f;
-		WhereToMove.Normalize();
-		FVector2D OldWhereToMove(WhereToMove);
-		WhereToMove += RunAwayDirection;
-		if (WhereToMove.IsNearlyZero())
+		const UDatabase* Database = GAME_MODE->GetDatabase();
+		const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+
+		if (FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Entity->GetId(), Database) && !RunningAwayFrom.Contains(Entity))
 		{
-			WhereToMove = OldWhereToMove.GetRotated(85.f);
+			RunningAwayFrom.AddTail(Entity);
+			bHasTarget = true;
+			SetRun_f(true);
+			ChangeStateDelegate.ExecuteIfBound();
+		}
+		else if (FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database) && !Target && MobPawn->GetEntityData().Damage != 0)
+		{
+			Target = Entity;
+			bHasTarget = true;
+			SetRun_f(true);
+			ChangeStateDelegate.ExecuteIfBound();
 		}
 	}
-	WhereToMove.Normalize();
-	Move_f(WhereToMove);
 }
 
-void AMobController::BeginView(const AEntity* Entity)
+void AMobController::EndPursue(const AActor* Actor)
 {
-	const UDatabase& Database = *(GAME_MODE->GetDatabase());
-	const FBehaviourProfileInfo& BehaviourProfileData = Database.GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
-
-	if (FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Entity->GetId(), &Database))
+	const AEntity* Entity = Cast<AEntity>(Actor);
+	if (Entity && RunningAwayFrom.Contains(Entity))
 	{
-		FVector2D Direction(MobPawn->GetActorLocation() - Entity->GetActorLocation());
-		Direction.Normalize();
-
-		SetRun_f(true);
-		Move_f(Direction);
-		bIsRunningAway = true;
-		RunningAwayFrom = Entity;
+		RunningAwayFrom.RemoveNode(Entity);
+		if (!Target && RunningAwayFrom.Num() == 0 && !Attacker)
+		{
+			SetRun_f(false);
+			if (DangerousUnits.Num() == 0)
+			{
+				bHasTarget = false;
+			}
+		}
 	}
-}
-
-void AMobController::EndPursue(const AEntity* Entity)
-{
-	if (RunningAwayFrom == Entity && !bPain)
+	if (Target == Entity)
 	{
-		StopPain();
+		Target = nullptr;
+	}
+	if (Attacker == Entity)
+	{
+		Attacker = nullptr;
 	}
 }
 
@@ -147,25 +154,13 @@ void AMobController::SetupInput()
 
 	ChangeStateDelegate.BindLambda([this]()
 	{
-		if (RunningAwayFrom && bIsRunningAway)
-		{
-			FVector2D Direction(MobPawn->GetActorLocation() - RunningAwayFrom->GetActorLocation());
-			Direction.Normalize();
-			Move_f(Direction);
-		}
-		else if (FMath::RandBool() || bIsRunningAway)
-		{
-			Move_f(FVector2D(FMath::RandRange(-1, 1), FMath::RandRange(-1, 1)));
-		}
-		else
-		{
-			Move_f(FVector2D(0.f, 0.f));
-		}
+		UpdateDirection();
 
-		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate, FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
+		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
+			bHasTarget ? GameConstants::MobUpdateDirectionTime : FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 	});
-	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate, FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
-
+	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
+		FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 }
 
 void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
@@ -183,14 +178,79 @@ void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 	}
 }
 
+void AMobController::UpdateDirection()
+{
+	UE_LOG(LogTemp, Log, TEXT("---"));
+	UE_LOG(LogTemp, Log, TEXT("Updating direction..."));
+	UE_LOG(LogTemp, Log, TEXT("| RAF = %d, DU = %d, T = %d, A = %d"), RunningAwayFrom.Num(), DangerousUnits.Num(), (bool)Target, (bool)Attacker);
+	if (bHasTarget) // Mob should go to specific direction
+	{
+		FVector2D Direction;
+		if (RunningAwayFrom.Num() > 0 || DangerousUnits.Num() > 0 || (Attacker && !Target)) // Mob runs away from entities or dangerous units
+		{
+			for (const AEntity* i : RunningAwayFrom)
+			{
+				FVector2D Delta = FVector2D(MobPawn->GetActorLocation() - i->GetActorLocation());
+				if (!Delta.IsZero())
+				{
+					Direction += Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
+				}
+			}
+			for (const AUnit* i : DangerousUnits)
+			{
+				FVector2D Delta = FVector2D(MobPawn->GetActorLocation() - i->GetActorLocation());
+				if (!Delta.IsZero())
+				{
+					Direction += 2.f * Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
+				}
+			}
+			if (Attacker)
+			{
+				FVector2D Delta = FVector2D(MobPawn->GetActorLocation() - Attacker->GetActorLocation());
+				if (!Delta.IsZero())
+				{
+					Direction += .75f * Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
+				}
+			}
+			Direction.Normalize();
+			UE_LOG(LogTemp, Log, TEXT("| (%f, %f)"), Direction.X, Direction.Y);
+			Move_f(Direction);
+			return;
+		}
+		else if (Target)
+		{
+			Direction = FVector2D(Target->GetActorLocation() - MobPawn->GetActorLocation());
+			Attack_f(Target);
+			Direction.Normalize();
+			UE_LOG(LogTemp, Log, TEXT("| (%f, %f)"), Direction.X, Direction.Y);
+			Move_f(Direction);
+			return;
+		}
+		UE_LOG(LogTemp, Log, TEXT("---"), Direction.X, Direction.Y);
+	}
+
+	// else
+
+	if (FMath::RandBool())
+	{
+		Move_f(FVector2D(FMath::RandRange(-1, 1), FMath::RandRange(-1, 1)));
+	}
+	else
+	{
+		Move_f(FVector2D(0.f, 0.f));
+	}
+}
+
 void AMobController::StopPain()
 {
-	bPain = false;
-	if (bIsRunningAway)
+	Attacker = nullptr;
+	if (!Target && RunningAwayFrom.Num() == 0)
 	{
-		RunningAwayFrom = nullptr;
-		bIsRunningAway = false;
 		SetRun_f(false);
+		if (DangerousUnits.Num() == 0)
+		{
+			bHasTarget = false;
+		}
 	}
 }
 
@@ -203,22 +263,21 @@ void AMobController::Move_f(FVector2D Val)
 		MoveY.ExecuteIfBound(Val.Y);
 		LastDirectionChangeTime = CurrentGameTime;
 	}
-	else if (CurrentGameTime - LastDirectionChangeTime > 0.f)
-	{
-		if (!bIsRunningAway)
-		{
-			MoveX.ExecuteIfBound(0.f);
-			MoveY.ExecuteIfBound(0.f);
-		}
-		ChangeDirectionDelegate.BindLambda([this, Val]()
-		{
-			Move_f(Val);
-		});
-		GetWorld()->GetTimerManager().SetTimer(ChangeDirectionTimer, ChangeDirectionDelegate, CurrentGameTime - LastDirectionChangeTime, false);
-	}
 }
 
 void AMobController::SetRun_f(bool Val)
 {
 	(Val ? StartRun : StopRun).ExecuteIfBound();
+}
+
+bool AMobController::Attack_f(AEntity* TargetEntity)
+{
+	if (Attack.IsBound())
+	{
+		return Attack.Execute(TargetEntity, false);
+	}
+	else
+	{
+		return false;
+	}
 }

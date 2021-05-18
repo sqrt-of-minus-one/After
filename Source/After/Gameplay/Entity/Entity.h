@@ -58,7 +58,7 @@ public:
 			/* DAMAGE */
 
 	UFUNCTION(Category = "Damage")
-	virtual void Damage(float Value, FDamageType Type, float Direction, const AActor* FromWho, float Push = 0.f);
+	virtual void Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push = 0.f);
 
 	UFUNCTION(Category = "Damage")
 	virtual void Stone(float Duration);
@@ -127,7 +127,7 @@ protected:
 			/* ATTACK */
 
 	UFUNCTION(Category = "Attack")
-	virtual bool MeleeAttack(AEntity* Target);
+	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss);
 
 	UFUNCTION(Category = "Attack")
 	virtual void RangedAttack(FRotator Direction);

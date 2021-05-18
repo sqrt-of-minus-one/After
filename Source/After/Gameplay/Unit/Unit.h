@@ -87,28 +87,6 @@ protected:
 	UFUNCTION(Category = "Attack")
 	void Attack();
 
-			/* DANGER */
-
-	UPROPERTY(BlueprintReadOnly, Category = "Danger")
-	FTimerHandle DangerTimer;
-
-	// Entities that are told about unit's danger
-	UPROPERTY(BlueprintReadOnly, Category = "Danger")
-	TArray<AMob*> DangerToEntities;
-
-	// Add new entity to the DangerToEntities array
-	UFUNCTION(Category = "Danger")
-	void StartDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
-		bool bFromSweep, const FHitResult& SweepResult);
-
-	// Remove an entity from the DangerToEntities array
-	UFUNCTION(Category = "Danger")
-	void StopDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
-
-	// Tell to all of entities that are in the DangerToEntities array, "I'm dangerous"
-	UFUNCTION(Category = "Danger")
-	void Danger();
-
 			/* AUDIO */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Audio")
@@ -127,9 +105,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* DamageBoxComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	UBoxComponent* SeemsDangerousBoxComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UAudioComponent* AudioComponent;
