@@ -13,6 +13,7 @@
 #include "ExtraInfo.generated.h"
 
 class UPaperSprite;
+class USoundAttenuation;
 
 USTRUCT(BlueprintType)
 struct FExtraInfo
@@ -20,6 +21,9 @@ struct FExtraInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	USoundAttenuation* SoundAttenuation;
 
 	// Sprites that is used when player selects something
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)

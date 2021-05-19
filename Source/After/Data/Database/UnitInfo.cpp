@@ -12,12 +12,6 @@
 
 void Check(FUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData)
 {
-	// Damage
-	if (Data.SeemsDangerousDelta < 0.f)
-	{
-		UE_LOG(LogDatabase, Error, TEXT("Unit %s have negative value of seems dangerous delta (%f)"), *Tag.ToString(), Data.Opacity);
-	}
-
 	// Appearance
 	if (Data.Opacity < 0.f || Data.Opacity > 1.f)
 	{

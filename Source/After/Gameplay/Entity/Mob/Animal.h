@@ -42,9 +42,12 @@ protected:
 			/* DAMAGE */
 
 	virtual void Death(FDamageType Type, const AActor* Murderer) override;
+	virtual void Disappear() override;
 
-private:
 			/* MUTATION */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Mutation")
+	bool bShouldMutate;
 
 	UFUNCTION(Category = "Mutation")
 	void Mutate();

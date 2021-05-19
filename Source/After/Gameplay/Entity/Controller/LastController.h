@@ -15,6 +15,7 @@
 #include "LastController.generated.h"
 
 class AEntity;
+class ASolidUnit;
 
 UCLASS()
 class AFTER_API ALastController : public APlayerController
@@ -49,14 +50,23 @@ public:
 	TDelegate<void()> ZoomOut;
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*)> Attack;
+	TDelegate<bool(AEntity*, bool)> Attack;
+	TDelegate<void(ASolidUnit*)> StartBreak;
+	TDelegate<void()> StopBreak;
 
 	void SetupInput();
 
 protected:
+	AEntity* EntityPawn;
+
 			/* SELECTING */
 
 	AActor* Selected;
+
+			/* STATE */
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsBreaking;
 
 			/* CONTROL */
 
@@ -66,7 +76,8 @@ protected:
 	void ZoomOut_f();
 	void StartRun_f();
 	void StopRun_f();
-	void Attack_f();
+	void StartAttack_f();
+	void StopAttack_f();
 	void SpawnCow_tmp();
 	void SwitchLang_tmp();
 };
