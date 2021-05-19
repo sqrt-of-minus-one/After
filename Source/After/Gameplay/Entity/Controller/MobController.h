@@ -48,7 +48,7 @@ public:
 	virtual void BeginView(AActor* Actor); // Something has entered in view sphere
 
 	UFUNCTION(Category = "Events")
-	virtual void EndPursue(const AActor* Actor); // Something has left pursue sphere
+	virtual void EndPursue(AActor* Actor); // Something has left pursue sphere
 
 			/* CONTROL */
 
@@ -62,6 +62,8 @@ public:
 	virtual void SetupInput();
 
 protected:
+	virtual void OnUnPossess() override;
+
 			/* GENERAL */
 
 	UPROPERTY(BlueprintReadOnly, Category = "General")
@@ -75,6 +77,7 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Targets")
 	AEntity* Target;
 	
+	TDoubleLinkedList<AEntity*> PossibleTargets;
 	TDoubleLinkedList<const AEntity*> RunningAwayFrom;
 	TDoubleLinkedList<const AUnit*> DangerousUnits;
 
@@ -97,7 +100,7 @@ protected:
 
 	// Whether mob moves in specified direction
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
-	bool bHasTarget;
+	bool bHasGoal;
 
 	UFUNCTION(Category = "Behaviour")
 	void UpdateDirection();

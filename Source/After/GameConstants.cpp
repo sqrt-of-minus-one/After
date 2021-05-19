@@ -28,8 +28,7 @@ const float GameConstants::EntityPushDecrement = 0.85f;
 const float GameConstants::MinMobChangeStateTime = 2.f;
 const float GameConstants::MaxMobChangeStateTime = 5.f;
 const float GameConstants::MinMobChangeDirectionTime = 0.25f;
-const float GameConstants::MobUpdateDirectionTime = .5f;
-const FVector GameConstants::MobCheckDangerBoxDelta = FVector(4.f, 4.f, GameConstants::TileSize.Z / 2);
+const float GameConstants::MobUpdateDirectionTime = .3f;
 const float GameConstants::MobPainTime = 5.f;
 
 		/* UNIT */

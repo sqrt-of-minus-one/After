@@ -48,15 +48,6 @@ protected:
 
 			/* VIEW */
 
-	// Something has entered in the view sphere
-	UFUNCTION(Category = "View")
-	void BeginView(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
-		bool bFromSweep, const FHitResult& SweepResult);
-
-	// Something has left the pursue sphere
-	UFUNCTION(Category = "View")
-	void EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
-
 	// Something has entered in the check danger box
 	UFUNCTION(Category = "View")
 	void BeginDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
@@ -66,6 +57,15 @@ protected:
 	UFUNCTION(Category = "View")
 	void EndDanger(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
 
+	// Something has entered in the view sphere
+	UFUNCTION(Category = "View")
+	void BeginView(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	// Something has left the pursue sphere
+	UFUNCTION(Category = "View")
+	void EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
+
 			/* EVENTS */
 
 //	UDELEGATE(Category = "Events")
@@ -73,7 +73,7 @@ protected:
 	TDelegate<void(const AActor*)> BeginDangerDelegate;
 	TDelegate<void(const AActor*)> EndDangerDelegate;
 	TDelegate<void(AActor*)> BeginViewDelegate;
-	TDelegate<void(const AActor*)> EndPursueDelegate;
+	TDelegate<void(AActor*)> EndPursueDelegate;
 
 			/* COMPONENTS */
 

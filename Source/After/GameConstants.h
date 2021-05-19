@@ -32,7 +32,6 @@ extern const float MinMobChangeStateTime; // Minimum time for mobs to change sta
 extern const float MaxMobChangeStateTime; // Maximum time for mobs to change state
 extern const float MinMobChangeDirectionTime; // Mobs cannot change their direction more often
 extern const float MobUpdateDirectionTime; // How often mobs updates their direction when running away or pursuing
-extern const FVector MobCheckDangerBoxDelta; // The distance between mob edge and its check danger box edge
 extern const float MobPainTime; // How long mobs feel pain
 
 		/* UNIT */

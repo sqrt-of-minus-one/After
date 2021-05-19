@@ -16,7 +16,7 @@
 #include "../../Unit/Unit.h"
 
 AMobController::AMobController() :
-	bHasTarget(false),
+	bHasGoal(false),
 	LastDirectionChangeTime(0.f)
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -40,7 +40,7 @@ void AMobController::Damage(float Direction, AActor* FromWho)
 	if (EntityAttacker)
 	{
 		Attacker = EntityAttacker;
-		bHasTarget = true;
+		bHasGoal = true;
 		SetRun_f(true);
 		GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime, false);
 		
@@ -59,7 +59,7 @@ void AMobController::Damage(float Direction, AActor* FromWho)
 		if (UnitAttacker && !DangerousUnits.Contains(UnitAttacker))
 		{
 			DangerousUnits.AddTail(UnitAttacker);
-			bHasTarget = true;
+			bHasGoal = true;
 			ChangeStateDelegate.ExecuteIfBound();
 		}
 	}
@@ -71,7 +71,7 @@ void AMobController::BeginDanger(const AActor* Actor)
 	if (Unit && Unit->GetUnitData().bSeemsDangerous && !DangerousUnits.Contains(Unit))
 	{
 		DangerousUnits.AddTail(Unit);
-		bHasTarget = true;
+		bHasGoal = true;
 		ChangeStateDelegate.ExecuteIfBound();
 	}
 }
@@ -87,7 +87,7 @@ void AMobController::EndDanger(const AActor* Actor)
 			SetRun_f(false);
 			if (DangerousUnits.Num() == 0)
 			{
-				bHasTarget = false;
+				bHasGoal = false;
 			}
 		}
 	}
@@ -96,7 +96,7 @@ void AMobController::EndDanger(const AActor* Actor)
 void AMobController::BeginView(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	if (Entity)
+	if (Entity && !Entity->IsDead())
 	{
 		const UDatabase* Database = GAME_MODE->GetDatabase();
 		const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
@@ -104,42 +104,64 @@ void AMobController::BeginView(AActor* Actor)
 		if (FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, Entity->GetId(), Database) && !RunningAwayFrom.Contains(Entity))
 		{
 			RunningAwayFrom.AddTail(Entity);
-			bHasTarget = true;
+			bHasGoal = true;
 			SetRun_f(true);
 			ChangeStateDelegate.ExecuteIfBound();
 		}
-		else if (FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database) && !Target && MobPawn->GetEntityData().Damage != 0)
+		else if (FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database) && MobPawn->GetEntityData().Damage != 0)
 		{
-			Target = Entity;
-			bHasTarget = true;
-			SetRun_f(true);
-			ChangeStateDelegate.ExecuteIfBound();
+			if (!Target)
+			{
+				Target = Entity;
+				bHasGoal = true;
+				SetRun_f(true);
+				ChangeStateDelegate.ExecuteIfBound();
+			}
+			else if (!PossibleTargets.Contains(Entity))
+			{
+				PossibleTargets.AddTail(Entity);
+			}
 		}
 	}
 }
 
-void AMobController::EndPursue(const AActor* Actor)
+void AMobController::EndPursue(AActor* Actor)
 {
-	const AEntity* Entity = Cast<AEntity>(Actor);
-	if (Entity && RunningAwayFrom.Contains(Entity))
+	AEntity* Entity = Cast<AEntity>(Actor);
+	if (Entity)
 	{
-		RunningAwayFrom.RemoveNode(Entity);
+		if (Target == Entity)
+		{
+			if (PossibleTargets.Num() == 0)
+			{
+				Target = nullptr;
+			}
+			else
+			{
+				Target = PossibleTargets.GetHead()->GetValue();
+				PossibleTargets.RemoveNode(PossibleTargets.GetHead());
+			}
+		}
+		if (Attacker == Entity)
+		{
+			Attacker = nullptr;
+		}
+		if (PossibleTargets.Contains(Entity))
+		{
+			PossibleTargets.RemoveNode(Entity);
+		}
+		if (RunningAwayFrom.Contains(Entity))
+		{
+			RunningAwayFrom.RemoveNode(Entity);
+		}
 		if (!Target && RunningAwayFrom.Num() == 0 && !Attacker)
 		{
 			SetRun_f(false);
 			if (DangerousUnits.Num() == 0)
 			{
-				bHasTarget = false;
+				bHasGoal = false;
 			}
 		}
-	}
-	if (Target == Entity)
-	{
-		Target = nullptr;
-	}
-	if (Attacker == Entity)
-	{
-		Attacker = nullptr;
 	}
 }
 
@@ -157,10 +179,17 @@ void AMobController::SetupInput()
 		UpdateDirection();
 
 		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
-			bHasTarget ? GameConstants::MobUpdateDirectionTime : FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
+			bHasGoal ? GameConstants::MobUpdateDirectionTime : FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 	});
 	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
 		FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
+}
+
+void AMobController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	ClearTimers(this, EEndPlayReason::Destroyed);
 }
 
 void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
@@ -180,12 +209,9 @@ void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 
 void AMobController::UpdateDirection()
 {
-	UE_LOG(LogTemp, Log, TEXT("---"));
-	UE_LOG(LogTemp, Log, TEXT("Updating direction..."));
-	UE_LOG(LogTemp, Log, TEXT("| RAF = %d, DU = %d, T = %d, A = %d"), RunningAwayFrom.Num(), DangerousUnits.Num(), (bool)Target, (bool)Attacker);
-	if (bHasTarget) // Mob should go to specific direction
+	if (bHasGoal) // Mob should go to specific direction
 	{
-		FVector2D Direction;
+		FVector2D Direction(0.f, 0.f);
 		if (RunningAwayFrom.Num() > 0 || DangerousUnits.Num() > 0 || (Attacker && !Target)) // Mob runs away from entities or dangerous units
 		{
 			for (const AEntity* i : RunningAwayFrom)
@@ -213,7 +239,6 @@ void AMobController::UpdateDirection()
 				}
 			}
 			Direction.Normalize();
-			UE_LOG(LogTemp, Log, TEXT("| (%f, %f)"), Direction.X, Direction.Y);
 			Move_f(Direction);
 			return;
 		}
@@ -222,11 +247,29 @@ void AMobController::UpdateDirection()
 			Direction = FVector2D(Target->GetActorLocation() - MobPawn->GetActorLocation());
 			Attack_f(Target);
 			Direction.Normalize();
-			UE_LOG(LogTemp, Log, TEXT("| (%f, %f)"), Direction.X, Direction.Y);
 			Move_f(Direction);
+			if (!Target || Target->IsDead())
+			{
+				if (PossibleTargets.Num() == 0)
+				{
+					Target = nullptr;
+					if (RunningAwayFrom.Num() == 0 && !Attacker)
+					{
+						SetRun_f(false);
+						if (DangerousUnits.Num() == 0)
+						{
+							bHasGoal = false;
+						}
+					}
+				}
+				else
+				{
+					Target = PossibleTargets.GetHead()->GetValue();
+					PossibleTargets.RemoveNode(PossibleTargets.GetHead());
+				}
+			}
 			return;
 		}
-		UE_LOG(LogTemp, Log, TEXT("---"), Direction.X, Direction.Y);
 	}
 
 	// else
@@ -249,7 +292,7 @@ void AMobController::StopPain()
 		SetRun_f(false);
 		if (DangerousUnits.Num() == 0)
 		{
-			bHasTarget = false;
+			bHasGoal = false;
 		}
 	}
 }

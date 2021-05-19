@@ -66,6 +66,9 @@ public:
 	UFUNCTION(Category = "Damage")
 	virtual void Web(float Duration);
 
+	UFUNCTION(Category = "Damage")
+	bool IsDead();
+
 			/* SELECTION */
 
 	UFUNCTION(Category = "Selection")

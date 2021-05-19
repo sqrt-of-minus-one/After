@@ -33,7 +33,7 @@ AMob::AMob()
 	CheckDangerBoxComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Check Danger Box"));
 	CheckDangerBoxComponent->SetupAttachment(GetRootComponent());
 	CheckDangerBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
-	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::MobCheckDangerBoxDelta);
+	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
 }
 
 void AMob::BeginPlay()
@@ -78,7 +78,7 @@ void AMob::BeginPlay()
 	ViewComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginView);
 	PursueComponent->SetSphereRadius(MobData->PursueRadius);
 	PursueComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndPursue);
-	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 0.f) + GameConstants::MobCheckDangerBoxDelta);
+	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 0.f) + EntityData->RunSpeed * GameConstants::MobUpdateDirectionTime);
 	CheckDangerBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginDanger);
 	CheckDangerBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndDanger);
 }

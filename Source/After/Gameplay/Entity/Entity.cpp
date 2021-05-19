@@ -185,6 +185,11 @@ void AEntity::Web(float Duration)
 	SetFlipbook(CurrentDirection, FEntityStatus::Web, Duration);
 }
 
+bool AEntity::IsDead()
+{
+	return bIsDead;
+}
+
 void AEntity::Select()
 {
 	SelectionSpriteComponent->SetVisibility(true);
