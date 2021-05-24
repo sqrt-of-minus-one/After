@@ -127,6 +127,16 @@ protected:
 	UFUNCTION(Category = "Movement")
 	virtual void StopRun();
 
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	TArray<const AEntity*> OverlappingEntities;
+
+	UFUNCTION(Category = "Attack")
+	void StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(Category = "Attack")
+	void StopOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
+
 			/* ATTACK */
 
 	UFUNCTION(Category = "Attack")

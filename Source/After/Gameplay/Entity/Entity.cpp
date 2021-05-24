@@ -62,6 +62,8 @@ void AEntity::BeginPlay()
 	EntityData = &Database->GetEntityData(Id);
 
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
 	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
@@ -123,8 +125,22 @@ void AEntity::Tick(float DeltaTime)
 
 	if (!PushMoving.IsZero())
 	{
-		AddOffset(FVector(PushMoving, 0));
+		AddOffset(FVector(PushMoving, 0.f));
 		PushMoving *= GameConstants::EntityPushDecrement;
+	}
+
+	FVector2D OverlapOffset(0.f, 0.f);
+	for (const AEntity* i : OverlappingEntities)
+	{
+		FVector2D Delta(GetActorLocation() - i->GetActorLocation());
+		if (!Delta.IsNearlyZero(1.f))
+		{
+			OverlapOffset += GameConstants::EntityOverlapOffsetMultiplier * Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
+		}
+	}
+	if (!OverlapOffset.IsZero())
+	{
+		AddOffset(FVector(OverlapOffset, 0.f));
 	}
 
 	if (!bIsDead && CurrentStatus != FEntityStatus::Stone && CurrentStatus != FEntityStatus::Web)
@@ -313,6 +329,26 @@ void AEntity::StartRun()
 void AEntity::StopRun()
 {
 	bIsRunning = false;
+}
+
+void AEntity::StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+	bool bFromSweep, const FHitResult& SweepResult)
+{
+	AEntity* Entity = Cast<AEntity>(OtherActor);
+	if (Entity && OtherComponent->GetCollisionProfileName() == CollisionComponent->GetCollisionProfileName() && !OverlappingEntities.Contains(Entity))
+	{
+		OverlappingEntities.Add(Entity);
+		UE_LOG(LogTemp, Log, TEXT("%s"), *Entity->GetName());
+	}
+}
+
+void AEntity::StopOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
+{
+	AEntity* Entity = Cast<AEntity>(OtherActor);
+	if (Entity && OverlappingEntities.Contains(Entity))
+	{
+		OverlappingEntities.Remove(Entity);
+	}
 }
 
 bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss)

@@ -22,6 +22,7 @@ const float GameConstants::LiquidValueInTile = 100.f;
 
 const float GameConstants::CalcStatsInterval = 1.f;
 const float GameConstants::EntityPushDecrement = 0.85f;
+const float GameConstants::EntityOverlapOffsetMultiplier = 15.f;
 
 		/* MOB */
 
