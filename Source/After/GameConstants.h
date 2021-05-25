@@ -40,4 +40,8 @@ extern const float MobPainTime; // How long mobs feel pain
 extern const float UnitDamageInterval; // How often units attack entities
 extern const FVector DamageBoxDelta; // The distance between unit edge and its damage box edge
 
+		/* ITEM */
+
+extern const FVector ThrownItemSize; // The size of thrown item
+
 }

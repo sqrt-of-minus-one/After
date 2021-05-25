@@ -39,22 +39,22 @@ void AItem::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-const FItemInfo& AItem::GetItemData()
+const FItemInfo& AItem::GetItemData() const
 {
 	return *ItemData;
 }
 
-const FGameplayTag& AItem::GetId()
+const FGameplayTag& AItem::GetId() const
 {
 	return Id;
 }
 
-int AItem::GetCount()
+int AItem::GetCount() const
 {
 	return Count;
 }
 
-float AItem::GetCondition()
+float AItem::GetCondition() const
 {
 	return Condition;
 }

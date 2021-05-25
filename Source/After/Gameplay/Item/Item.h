@@ -34,18 +34,18 @@ public:
 			/* GENERAL */
 
 	UFUNCTION(BlueprintCallable, Category = "General")
-	const FItemInfo& GetItemData();
+	const FItemInfo& GetItemData() const;
 
 	UFUNCTION(BlueprintCallable, Category = "General")
-	const FGameplayTag& GetId();
+	const FGameplayTag& GetId() const;
 
 	UFUNCTION(BlueprintCallable, Category = "General")
-	int GetCount();
+	int GetCount() const;
 
 			/* STATS */
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
-	float GetCondition();
+	float GetCondition() const;
 
 protected:
 			/* GENERAL */

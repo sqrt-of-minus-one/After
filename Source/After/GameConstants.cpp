@@ -36,3 +36,7 @@ const float GameConstants::MobPainTime = 5.f;
 
 const float GameConstants::UnitDamageInterval = 1.f;
 const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, GameConstants::TileSize.Z / 2);
+
+		/* ITEM */
+
+const FVector GameConstants::ThrownItemSize = GameConstants::TileSize / 4.f;
