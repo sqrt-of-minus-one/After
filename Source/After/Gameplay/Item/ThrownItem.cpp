@@ -12,6 +12,10 @@
 
 #include "Item.h"
 #include "../../GameConstants.h"
+#include "../../Data/Database/Database.h"
+#include "../../AfterGameModeBase.h"
+#include "../Entity/Controller/LastController.h"
+#include "../LogGameplay.h"
 
 AThrownItem::AThrownItem()
 {
@@ -27,6 +31,9 @@ AThrownItem::AThrownItem()
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
 	SpriteComponent->SetupAttachment(GetRootComponent());
+
+	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
+	SelectionSpriteComponent->SetVisibility(false);
 }
 
 void AThrownItem::BeginPlay()
@@ -55,9 +62,13 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		Item = ItemToSet;
 		
 		const FItemInfo& ItemData = Item->GetItemData();
+		SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 		if (ItemData.bUseFlipbook)
 		{
 			FlipbookComponent->SetFlipbook(ItemData.Flipbook);
+			FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+			FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+			FlipbookComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = FlipbookComponent;
 			SpriteComponent->DestroyComponent();
 			SpriteComponent = nullptr;
@@ -65,11 +76,47 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		else
 		{
 			SpriteComponent->SetSprite(ItemData.Sprite);
+			SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+			SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
+			SpriteComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = SpriteComponent;
+			SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 			FlipbookComponent->DestroyComponent();
 			FlipbookComponent = nullptr;
 		}
 
+		ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
+		if (LastController)
+		{
+			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+		}
+		else
+		{
+			UE_LOG(LogGameplay, Error, TEXT("Couldn't find Last Controller"));
+		}
+
+		const UDatabase* Database = GAME_MODE->GetDatabase();
+		if (!Database->GetExtraData().SelectionSprites.Contains(FIntPoint(1, 1)) ||
+			!Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)])
+		{
+			UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size 1x1"));
+		}
+		else
+		{
+			SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[FIntPoint(1, 1)]);
+		}
+
 		return true;
 	}
+}
+
+void AThrownItem::Select()
+{
+	SelectionSpriteComponent->SetVisibility(true);
+}
+
+void AThrownItem::Unselect()
+{
+	SelectionSpriteComponent->SetVisibility(false);
 }

@@ -13,6 +13,8 @@
 #include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/SolidUnit/SolidUnit.h"
+#include "../../Item/ThrownItem.h"
+#include "../../Item/Item.h"
 #include "../../../AfterGameModeBase.h"
 #include "GameplayTagContainer.h"
 #include "../Mob/Animal.h"
@@ -43,6 +45,7 @@ void ALastController::Tick(float DeltaTime)
 
 	AEntity* SelectedEntity = nullptr;
 	AUnit* SelectedUnit = nullptr;
+	AThrownItem* SelectedThrownItem = nullptr;
 	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
@@ -57,6 +60,12 @@ void ALastController::Tick(float DeltaTime)
 
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
 	}
+	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), SelectedThrownItem)
+	{
+		FString ThrownItemName = GAME_MODE->GetLangManager()->GetString(FName(SelectedThrownItem->GetItem()->GetId().ToString() + FString(".name")));
+
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *ThrownItemName));
+	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
@@ -67,7 +76,6 @@ void ALastController::Tick(float DeltaTime)
 void ALastController::Select(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	AUnit* Unit = nullptr;
 	bool bNew = false;
 	AActor* Old = Selected;
 	if (Entity)
@@ -78,12 +86,22 @@ void ALastController::Select(AActor* Actor)
 	}
 	else
 	{
-		Unit = Cast<AUnit>(Actor);
+		AUnit* Unit = Cast<AUnit>(Actor);
 		if (Unit)
 		{
 			Selected = Unit;
 			Unit->Select();
 			bNew = true;
+		}
+		else
+		{
+			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
+			if (ThrownItem)
+			{
+				Selected = ThrownItem;
+				ThrownItem->Select();
+				bNew = true;
+			}
 		}
 	}
 
@@ -123,6 +141,14 @@ void ALastController::Unselect(AActor* Actor)
 				{
 					StopBreak.ExecuteIfBound();
 				}
+			}
+		}
+		else
+		{
+			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
+			if (ThrownItem)
+			{
+				ThrownItem->Unselect();
 			}
 		}
 	}

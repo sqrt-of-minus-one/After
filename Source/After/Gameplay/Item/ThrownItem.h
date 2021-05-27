@@ -43,10 +43,18 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	bool SetItem(AItem* ItemToSet); // Might be called only once
 
+			/* SELECTION */
+
+	UFUNCTION(Category = "Selection")
+	void Select();
+
+	UFUNCTION(Category = "Selection")
+	void Unselect();
+
 protected:
 			/* GENERAL */
 
-	UPROPERTY(BlueprintReadOnly, Category = "General")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "General")
 	AItem* Item;
 
 			/* COMPONENTS */
@@ -62,5 +70,8 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UMeshComponent* MeshComponent;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UPaperSpriteComponent* SelectionSpriteComponent;
 
 };
