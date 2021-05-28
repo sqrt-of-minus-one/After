@@ -27,6 +27,7 @@ ASolidUnit::ASolidUnit() :
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
 	SpriteComponent->SetupAttachment(GetRootComponent());
+	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	BreakSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Break Sprite"));
 	BreakSpriteComponent->SetupAttachment(FlipbookComponent);
@@ -54,9 +55,6 @@ void ASolidUnit::BeginPlay()
 	{
 		DamageBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + GameConstants::DamageBoxDelta);
 	}
-	SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-	BreakSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 
 	if (SolidUnitData->bUseFlipbook)
 	{
@@ -71,6 +69,7 @@ void ASolidUnit::BeginPlay()
 		MeshComponent = SpriteComponent;
 
 		SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
+		SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 		BreakSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 		FlipbookComponent->DestroyComponent();
 		FlipbookComponent = nullptr;

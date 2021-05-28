@@ -28,9 +28,11 @@ AThrownItem::AThrownItem()
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
 	FlipbookComponent->SetupAttachment(GetRootComponent());
+	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
 	SpriteComponent->SetupAttachment(GetRootComponent());
+	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetVisibility(false);
@@ -39,6 +41,8 @@ AThrownItem::AThrownItem()
 void AThrownItem::BeginPlay()
 {
 	Super::BeginPlay();
+
+	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 }
 
 void AThrownItem::Tick(float DeltaTime)
@@ -66,8 +70,6 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		if (ItemData.bUseFlipbook)
 		{
 			FlipbookComponent->SetFlipbook(ItemData.Flipbook);
-			FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-			FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 			FlipbookComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = FlipbookComponent;
 			SpriteComponent->DestroyComponent();
@@ -76,8 +78,6 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		else
 		{
 			SpriteComponent->SetSprite(ItemData.Sprite);
-			SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-			SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 			SpriteComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = SpriteComponent;
 			SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));

@@ -35,6 +35,7 @@ AEntity::AEntity() :
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
 	FlipbookComponent->SetupAttachment(GetRootComponent());
+	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
@@ -64,10 +65,7 @@ void AEntity::BeginPlay()
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
-	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
