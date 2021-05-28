@@ -206,6 +206,8 @@ void Check(FMobInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData,
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Mob %s has wrong minimum and maximum amount of experience (min = %f; max = %f)"), *Tag.ToString(), Data.MinExperience, Data.MaxExperience);
 	}
+
+	// View
 	if (Data.ViewRadius <= 0)
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Mob %s has non-positive value of view radius (%f)"), *Tag.ToString(), Data.ViewRadius);

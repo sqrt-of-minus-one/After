@@ -15,7 +15,8 @@
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
-//#include "../../Item/Item.h"
+#include "../../Item/ThrownItem.h"
+#include "../../Item/Item.h"
 
 ASolidUnit::ASolidUnit() :
 	Breaking(0.f),
@@ -195,7 +196,17 @@ void ASolidUnit::Kill(FDamageType Type, const AActor* Murderer)
 
 void ASolidUnit::Break(/* const UItem* By */)
 {
-	// Todo: Drop
+	for (const FItemDrop& i : SolidUnitData->Drop)
+	{
+		static int SpawnPosition = 0;
+		int Count;
+		if ((i.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < i.Chance) && (Count = FMath::RandRange(i.Min, i.Max)) > 0)
+		{
+			AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(SolidUnitData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+			Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(i.Item).Class.Get()));
+		}
+	}
+
 	GetWorld()->DestroyActor(this);
 }
 

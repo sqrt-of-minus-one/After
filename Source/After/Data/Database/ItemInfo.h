@@ -15,6 +15,7 @@
 class UPaperSprite;
 struct FDatabaseInitData;
 struct FExtraInfo;
+class AItem;
 
 USTRUCT(BlueprintType)
 struct FItemInfo
@@ -23,6 +24,10 @@ struct FItemInfo
 
 public:
 			/* GENERAL */
+
+	// Item's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AItem> Class;
 
 	// Item's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
