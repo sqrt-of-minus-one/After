@@ -66,6 +66,10 @@ protected:
 	UFUNCTION(Category = "View")
 	void EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
 
+			/* DAMAGE */
+
+	virtual void DeathDrop() override;
+
 			/* EVENTS */
 
 //	UDELEGATE(Category = "Events")

@@ -135,6 +135,10 @@ void AEntity::Tick(float DeltaTime)
 		{
 			OverlapOffset += GameConstants::EntityOverlapOffsetMultiplier * Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
 		}
+		else
+		{
+			OverlapOffset += GameConstants::EntityOverlapOffsetMultiplier * FVector2D(FMath::RandRange(-1.f, 1.f), FMath::RandRange(-1.f, 1.f));
+		}
 	}
 	if (!OverlapOffset.IsZero())
 	{
@@ -336,7 +340,6 @@ void AEntity::StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, U
 	if (Entity && OtherComponent->GetCollisionProfileName() == CollisionComponent->GetCollisionProfileName() && !OverlappingEntities.Contains(Entity))
 	{
 		OverlappingEntities.Add(Entity);
-		UE_LOG(LogTemp, Log, TEXT("%s"), *Entity->GetName());
 	}
 }
 

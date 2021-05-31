@@ -1,4 +1,4 @@
-    ////////////////////////////////////////
+﻿    ////////////////////////////////////////
    //        After by SnegirSoft         //
   //                                    //
  //  File: Mob.cpp                     //
@@ -14,9 +14,12 @@
 #include "../../../GameConstants.h"
 #include "../../../AfterGameModeBase.h"
 #include "../Controller/MobController.h"
+#include "../../Item/ThrownItem.h"
+#include "../../Item/Item.h"
 
 AMob::AMob()
 {
+	// Здесь был Шарик
 	AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
 	AIControllerClass = AMobController::StaticClass();
 
@@ -65,6 +68,8 @@ void AMob::BeginPlay()
 		MobController->StopRun.BindUObject(this, &AMob::StopRun);
 		MobController->Attack.BindUObject(this, &AMob::MeleeAttack);
 
+		// Тут быў Шарик
+
 		DamageDelegate.BindUObject(MobController, &AMobController::Damage);
 		BeginDangerDelegate.BindUObject(MobController, &AMobController::BeginDanger);
 		EndDangerDelegate.BindUObject(MobController, &AMobController::EndDanger);
@@ -96,7 +101,7 @@ const FMobInfo& AMob::GetMobData() const
 void AMob::Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push)
 {
 	Super::Damage(Value, Type, Direction, FromWho, Push);
-
+	// Sharik was here
 	DamageDelegate.ExecuteIfBound(Direction, FromWho);
 }
 
@@ -120,4 +125,19 @@ void AMob::BeginView(UPrimitiveComponent* Component, AActor* OtherActor, UPrimit
 void AMob::EndPursue(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
 {
 	EndPursueDelegate.ExecuteIfBound(OtherActor);
+}
+
+void AMob::DeathDrop()
+{
+	// Charik était là
+	for (const FItemDrop& i : MobData->Drop)
+	{
+		static int SpawnPosition = 0;
+		int Count;
+		if ((i.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < i.Chance) && (Count = FMath::RandRange(i.Min, i.Max)) > 0)
+		{
+			AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(EntityData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+			Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(i.Item).Class.Get()));
+		}
+	}
 }
