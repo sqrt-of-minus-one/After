@@ -16,6 +16,7 @@
 
 class AEntity;
 class ASolidUnit;
+class AItem;
 
 UCLASS()
 class AFTER_API ALastController : public APlayerController
@@ -68,6 +69,11 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsBreaking;
 
+			/* INVENTORY */
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	AItem* Item;
+
 			/* CONTROL */
 
 	void MoveX_f(float Value);
@@ -80,4 +86,5 @@ protected:
 	void StopAttack_f();
 	void SpawnCow_tmp();
 	void SwitchLang_tmp();
+	void Throw_f();
 };

@@ -18,9 +18,11 @@
 #include "../../../AfterGameModeBase.h"
 #include "GameplayTagContainer.h"
 #include "../Mob/Animal.h"
+#include "../../../GameConstants.h"
 
 ALastController::ALastController() :
-	bIsBreaking(false)
+	bIsBreaking(false),
+	Item(nullptr)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -70,6 +72,8 @@ void ALastController::Tick(float DeltaTime)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s"), *(Item ? GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))) : FString("None"))));
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 
@@ -176,6 +180,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
 	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
 	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
+	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -217,11 +222,20 @@ void ALastController::StartAttack_f()
 	}
 	else
 	{
-		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-		if (SolidUnit)
+		AThrownItem* ThrownItem = Cast<AThrownItem>(Selected);
+		if (ThrownItem && !Item && FVector::DistSquared(ThrownItem->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
 		{
-			StartBreak.ExecuteIfBound(SolidUnit);
-			bIsBreaking = true;
+			Item = ThrownItem->GetItem();
+			GetWorld()->DestroyActor(ThrownItem);
+		}
+		else
+		{
+			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+			if (SolidUnit)
+			{
+				StartBreak.ExecuteIfBound(SolidUnit);
+				bIsBreaking = true;
+			}
 		}
 	}
 }
@@ -254,4 +268,14 @@ void ALastController::SwitchLang_tmp()
 	}
 	LangManager->SetLang(Lang);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
+}
+
+void ALastController::Throw_f()
+{
+	if (Item)
+	{
+		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+		Drop->SetItem(Item);
+		Item = nullptr;
+	}
 }
