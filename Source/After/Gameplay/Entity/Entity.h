@@ -18,6 +18,7 @@ class UBoxComponent;
 class UPaperFlipbookComponent;
 class UPaperSpriteComponent;
 class UAudioComponent;
+class AItem;
 
 UCLASS()
 class AFTER_API AEntity : public APawn
@@ -139,8 +140,14 @@ protected:
 
 			/* ATTACK */
 
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	float LastAttackTime;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	float LastAttackInterval;
+
 	UFUNCTION(Category = "Attack")
-	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss);
+	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon = nullptr);
 
 	UFUNCTION(Category = "Attack")
 	virtual void RangedAttack(FRotator Direction);

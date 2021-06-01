@@ -53,6 +53,14 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float Push;
 
+	// Maximum distance between attacker and attacked
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackRadius;
+
+	// Minimum time between two attacks
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackInterval;
+
 			/* STATS */
 
 	// Maximum value of item's condition. If negative, item doesn't have condition

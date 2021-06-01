@@ -110,6 +110,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float AttackRadius;
 
+	// Time between two attacks
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackInterval;
+
 	// Projectile that is used in ranged attack (<<projectile>>)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	FGameplayTag RangedProjectile;

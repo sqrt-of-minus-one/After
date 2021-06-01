@@ -36,6 +36,14 @@ void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative push (%f)"), *Tag.ToString(), Data.Push);
 	}
+	if (Data.AttackRadius <= 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has non-positive attack radius (%f)"), *Tag.ToString(), Data.AttackRadius);
+	}
+	if (Data.AttackInterval < 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative attack interval (%f)"), *Tag.ToString(), Data.AttackInterval);
+	}
 
 	// Fuel
 	if (Data.Heat < 0)

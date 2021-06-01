@@ -317,7 +317,7 @@ bool AMobController::Attack_f(AEntity* TargetEntity)
 {
 	if (Attack.IsBound())
 	{
-		return Attack.Execute(TargetEntity, false);
+		return Attack.Execute(TargetEntity, false, nullptr);
 	}
 	else
 	{

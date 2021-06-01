@@ -218,7 +218,7 @@ void ALastController::StartAttack_f()
 	AEntity* Entity = Cast<AEntity>(Selected);
 	if (Entity && Attack.IsBound())
 	{
-		Attack.Execute(Entity, true);
+		Attack.Execute(Entity, true, Item);
 	}
 	else
 	{
