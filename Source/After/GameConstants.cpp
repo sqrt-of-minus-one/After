@@ -40,3 +40,5 @@ const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, GameConstants::T
 		/* ITEM */
 
 const FVector GameConstants::ThrownItemSize = GameConstants::TileSize / 4.f;
+const float GameConstants::ItemConditionDecrease = 1.f;
+const float GameConstants::WrongItemConditionPenalty = 2.f;

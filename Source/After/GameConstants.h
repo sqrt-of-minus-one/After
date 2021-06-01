@@ -43,5 +43,7 @@ extern const FVector DamageBoxDelta; // The distance between unit edge and its d
 		/* ITEM */
 
 extern const FVector ThrownItemSize; // The size of thrown item
+extern const float ItemConditionDecrease; // Decreasing of condition of item that is being used
+extern const float WrongItemConditionPenalty; // Condition of items that is used for destroying wrong units is multiplied by this value
 
 }

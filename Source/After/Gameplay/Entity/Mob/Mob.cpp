@@ -79,13 +79,13 @@ void AMob::BeginPlay()
 		MobController->SetupInput();
 	}
 
-	ViewComponent->SetSphereRadius(MobData->ViewRadius);
 	ViewComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginView);
-	PursueComponent->SetSphereRadius(MobData->PursueRadius);
+	ViewComponent->SetSphereRadius(MobData->ViewRadius);
 	PursueComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndPursue);
-	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 0.f) + EntityData->RunSpeed * GameConstants::MobUpdateDirectionTime);
+	PursueComponent->SetSphereRadius(MobData->PursueRadius);
 	CheckDangerBoxComponent->OnComponentBeginOverlap.AddDynamic(this, &AMob::BeginDanger);
 	CheckDangerBoxComponent->OnComponentEndOverlap.AddDynamic(this, &AMob::EndDanger);
+	CheckDangerBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 0.f) + EntityData->RunSpeed * GameConstants::MobUpdateDirectionTime);
 }
 
 void AMob::Tick(float DeltaTime)

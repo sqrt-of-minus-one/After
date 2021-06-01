@@ -47,6 +47,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetCondition() const;
 
+	UFUNCTION(Category = "Stats")
+	void Use(float ConditionDecrease);
+
 protected:
 			/* GENERAL */
 

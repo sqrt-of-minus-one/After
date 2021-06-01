@@ -58,3 +58,15 @@ float AItem::GetCondition() const
 {
 	return Condition;
 }
+
+void AItem::Use(float ConditionDecrease)
+{
+	/*if (ItemData->MaxCondition > 0.f)
+	{
+		Condition -= ConditionDecrease;
+		if (Condition <= 0.f)
+		{
+			GetWorld()->DestroyActor(this, true);
+		}
+	}*/
+}

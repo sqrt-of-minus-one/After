@@ -73,7 +73,17 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s"), *(Item ? GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))) : FString("None"))));
+	if (Item)
+	{
+		if (Item->GetItemData().MaxCondition > 0.f)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))), Item->GetCondition(), Item->GetItemData().MaxCondition));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))));
+		}
+	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 

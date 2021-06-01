@@ -66,9 +66,9 @@ void AEntity::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	EntityData = &Database->GetEntityData(Id);
 
-	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
 	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 

@@ -103,6 +103,10 @@ void ASolidUnit::Tick(float DeltaTime)
 		for (TPair<int, FDestroyerInfo>& i : Destroyers)
 		{
 			Breaking += DeltaTime * i.Value.SpeedMultiplier;
+			if (i.Value.Item)
+			{
+				i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * (i.Value.bRightTool ? 1.f : GameConstants::WrongItemConditionPenalty));
+			}
 		}
 		if (Breaking >= SolidUnitData->BreakingTime)
 		{
