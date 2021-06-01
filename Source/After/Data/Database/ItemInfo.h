@@ -61,6 +61,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float AttackInterval;
 
+			/* BREAKING */
+
+	// Breaking speed is multiplied by this value
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
+	float BreakingSpeedMultiplier = 1.f;
+
 			/* STATS */
 
 	// Maximum value of item's condition. If negative, item doesn't have condition

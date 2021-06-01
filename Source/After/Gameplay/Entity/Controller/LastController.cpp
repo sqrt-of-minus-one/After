@@ -119,7 +119,7 @@ void ALastController::Select(AActor* Actor)
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
 		if (SolidUnit)
 		{
-			StartBreak.ExecuteIfBound(SolidUnit);
+			StartBreak.ExecuteIfBound(SolidUnit, Item);
 		}
 	}
 }
@@ -233,7 +233,7 @@ void ALastController::StartAttack_f()
 			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 			if (SolidUnit)
 			{
-				StartBreak.ExecuteIfBound(SolidUnit);
+				StartBreak.ExecuteIfBound(SolidUnit, Item);
 				bIsBreaking = true;
 			}
 		}

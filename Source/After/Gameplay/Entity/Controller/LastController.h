@@ -52,7 +52,7 @@ public:
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
 	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
-	TDelegate<void(ASolidUnit*)> StartBreak;
+	TDelegate<void(ASolidUnit*, AItem*)> StartBreak;
 	TDelegate<void()> StopBreak;
 
 	void SetupInput();

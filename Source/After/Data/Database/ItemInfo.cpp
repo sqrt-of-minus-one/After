@@ -45,6 +45,12 @@ void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative attack interval (%f)"), *Tag.ToString(), Data.AttackInterval);
 	}
 
+	// Breaking
+	if (Data.BreakingSpeedMultiplier <= 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has non-positive breaking time multiplier (%f)"), *Tag.ToString(), Data.BreakingSpeedMultiplier);
+	}
+
 	// Fuel
 	if (Data.Heat < 0)
 	{
