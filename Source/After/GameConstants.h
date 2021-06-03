@@ -25,6 +25,7 @@ extern const float LiquidValueInTile; // How much liquid can be contained in one
 
 extern const float CalcStatsInterval; // How often entities calculate their stats
 extern const float EntityPushDecrement; // How quickly knockback decreases
+extern const float EntityOverlapOffsetMultiplier; // Entities repel each other when they overlap
 
 		/* MOB */
 
@@ -38,5 +39,11 @@ extern const float MobPainTime; // How long mobs feel pain
 
 extern const float UnitDamageInterval; // How often units attack entities
 extern const FVector DamageBoxDelta; // The distance between unit edge and its damage box edge
+
+		/* ITEM */
+
+extern const FVector ThrownItemSize; // The size of thrown item
+extern const float ItemConditionDecrease; // Decreasing of condition of item that is being used
+extern const float WrongItemConditionPenalty; // Condition of items that is used for destroying wrong units is multiplied by this value
 
 }

@@ -14,6 +14,7 @@
 
 class UPaperSprite;
 class USoundAttenuation;
+class AThrownItem;
 
 USTRUCT(BlueprintType)
 struct FExtraInfo
@@ -49,5 +50,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UPaperFlipbook* DebugSolidUnitFlipbook;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AThrownItem> ThrownItemClass;
 };
 void Check(FExtraInfo& Data);

@@ -94,6 +94,31 @@ void Check(FSolidUnitInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& Ini
 		}
 	}
 
+	//Drop
+	for (const FItemDrop& i : Data.Drop)
+	{
+		if (!i.Item.IsValid())
+		{
+			UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has an invalid drop (%s)"), *Tag.ToString(), *i.Item.ToString());
+		}
+		if (!IS_TAG_PARENT(i.Item, "item"))
+		{
+			UE_LOG(LogDatabase, Fatal, TEXT("Solid unit %s has a drop with invalid name (%s is not an item)"), *Tag.ToString(), *i.Item.ToString());
+		}
+		if (i.Min < 0 || i.Max < i.Min)
+		{
+			UE_LOG(LogDatabase, Error, TEXT("Solid unit %s has wrong minimum and maximum amount of drop %s (min = %d; max = %d)"), *Tag.ToString(), *i.Item.ToString(), i.Min, i.Max);
+		}
+		if (i.Chance < 0 || i.Chance > 1)
+		{
+			UE_LOG(LogDatabase, Error, TEXT("Solid unit %s has wrong chance of drop %s (%f). It must be between 0 and 1"), *Tag.ToString(), *i.Item.ToString(), i.Chance);
+		}
+	}
+	if (Data.MinExperience < 0 || Data.MaxExperience < Data.MinExperience)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Solid unit %s has wrong minimum and maximum amount of experience (min = %f; max = %f)"), *Tag.ToString(), Data.MinExperience, Data.MaxExperience);
+	}
+
 	// Stats
 	if (Data.MaxHealth <= 0)
 	{

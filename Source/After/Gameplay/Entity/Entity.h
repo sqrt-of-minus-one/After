@@ -18,6 +18,7 @@ class UBoxComponent;
 class UPaperFlipbookComponent;
 class UPaperSpriteComponent;
 class UAudioComponent;
+class AItem;
 
 UCLASS()
 class AFTER_API AEntity : public APawn
@@ -127,10 +128,26 @@ protected:
 	UFUNCTION(Category = "Movement")
 	virtual void StopRun();
 
-			/* ATTACK */
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	TArray<const AEntity*> OverlappingEntities;
 
 	UFUNCTION(Category = "Attack")
-	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss);
+	void StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+		bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION(Category = "Attack")
+	void StopOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index);
+
+			/* ATTACK */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	float LastAttackTime;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	float LastAttackInterval;
+
+	UFUNCTION(Category = "Attack")
+	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon = nullptr);
 
 	UFUNCTION(Category = "Attack")
 	virtual void RangedAttack(FRotator Direction);

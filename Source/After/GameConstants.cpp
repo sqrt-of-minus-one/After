@@ -22,6 +22,7 @@ const float GameConstants::LiquidValueInTile = 100.f;
 
 const float GameConstants::CalcStatsInterval = 1.f;
 const float GameConstants::EntityPushDecrement = 0.85f;
+const float GameConstants::EntityOverlapOffsetMultiplier = 15.f;
 
 		/* MOB */
 
@@ -35,3 +36,9 @@ const float GameConstants::MobPainTime = 5.f;
 
 const float GameConstants::UnitDamageInterval = 1.f;
 const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, GameConstants::TileSize.Z / 2);
+
+		/* ITEM */
+
+const FVector GameConstants::ThrownItemSize = GameConstants::TileSize / 4.f;
+const float GameConstants::ItemConditionDecrease = 1.f;
+const float GameConstants::WrongItemConditionPenalty = 2.f;

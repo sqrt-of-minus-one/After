@@ -94,7 +94,7 @@ void ALast::Tick(float DeltaTime)
 		{
 			if (FVector::DistSquared(DestroyedUnit->GetActorLocation(), GetActorLocation()) <= FMath::Square(EntityData->AttackRadius))
 			{
-				DestroyerId = DestroyedUnit->StartBreaking();
+				DestroyerId = DestroyedUnit->StartBreaking(ItemForBreaking);
 			}
 		}
 	}
@@ -129,10 +129,11 @@ void ALast::ZoomOut()
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
 }
 
-void ALast::StartBreak(ASolidUnit* Target)
+void ALast::StartBreak(ASolidUnit* Target, AItem* Item)
 {
 	StopBreak();
 	DestroyedUnit = Target;
+	ItemForBreaking = Item;
 }
 
 void ALast::StopBreak()

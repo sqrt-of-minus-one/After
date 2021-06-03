@@ -15,7 +15,8 @@
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
-//#include "../../Item/Item.h"
+#include "../../Item/ThrownItem.h"
+#include "../../Item/Item.h"
 
 ASolidUnit::ASolidUnit() :
 	Breaking(0.f),
@@ -27,6 +28,7 @@ ASolidUnit::ASolidUnit() :
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
 	SpriteComponent->SetupAttachment(GetRootComponent());
+	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	BreakSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Break Sprite"));
 	BreakSpriteComponent->SetupAttachment(FlipbookComponent);
@@ -54,9 +56,6 @@ void ASolidUnit::BeginPlay()
 	{
 		DamageBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + GameConstants::DamageBoxDelta);
 	}
-	SpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-	BreakSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 
 	if (SolidUnitData->bUseFlipbook)
 	{
@@ -71,6 +70,7 @@ void ASolidUnit::BeginPlay()
 		MeshComponent = SpriteComponent;
 
 		SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
+		SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 		BreakSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 		FlipbookComponent->DestroyComponent();
 		FlipbookComponent = nullptr;
@@ -98,10 +98,16 @@ void ASolidUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Todo: Items
-	if (Destroyers.Num() != 0 && BreakProfileData->bCanBeBrokenByHand)
+	if (Destroyers.Num() != 0)
 	{
-		Breaking += DeltaTime;
+		for (TPair<int, FDestroyerInfo>& i : Destroyers)
+		{
+			Breaking += DeltaTime * i.Value.SpeedMultiplier;
+			if (i.Value.Item)
+			{
+				i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * (i.Value.bRightTool ? 1.f : GameConstants::WrongItemConditionPenalty));
+			}
+		}
 		if (Breaking >= SolidUnitData->BreakingTime)
 		{
 			Break();
@@ -146,10 +152,47 @@ void ASolidUnit::Damage(float Value, FDamageType Type, const AActor* FromWho)
 	}
 }
 
-int ASolidUnit::StartBreaking(/* const UItem* By */)
+int ASolidUnit::StartBreaking(AItem* By)
 {
 	int DestroyerId = Destroyers.Num();
-	Destroyers.Add(DestroyerId, true);
+	FDestroyerInfo Info;
+	Info.Item = By;
+	if (By)
+	{
+		Info.bRightTool = false;
+		for (const FBreakProfileGroup& i : BreakProfileData->CanBeBrokenBy)
+		{
+			bool bRightForGroup = true;
+			for (const FGameplayTag& j : i.Group)
+			{
+				if (By->GetId() != j && !By->GetItemData().Tags.Contains(j))
+				{
+					bRightForGroup = false;
+					break;
+				}
+			}
+			if (bRightForGroup)
+			{
+				Info.bRightTool = true;
+				break;
+			}
+		}
+		Info.SpeedMultiplier = By->GetItemData().BreakingSpeedMultiplier;
+	}
+	else
+	{
+		Info.bRightTool = false;
+		Info.SpeedMultiplier = 1.f;
+	}
+	if (BreakProfileData->CanBeBrokenBy.Num() == 0)
+	{
+		Info.bRightTool = true;
+	}
+	if (!Info.bRightTool && !BreakProfileData->bCanBeBrokenByHand)
+	{
+		Info.SpeedMultiplier = 0.f;
+	}
+	Destroyers.Add(DestroyerId, Info);
 	return DestroyerId;
 }
 
@@ -188,15 +231,32 @@ void ASolidUnit::Kill(FDamageType Type, const AActor* Murderer)
 //       |               |           111010001                      //
 //       |    WELCOME    |             01001      It's the          //
 //       |      ___      |              | |      binary tree!       //
-//       |     |   |     |              | |                         //
+//       |     |   |     |              |O|                         //
 //       |     |  _|     |              | |    It says to you,      //
 //       |     |   |     |              / \           Hello! :)     //
 //       |     |   |     |             /| |\                        //
 ///////////////////////////////////////ROOT!//////////////////////////
 
-void ASolidUnit::Break(/* const UItem* By */)
+void ASolidUnit::Break()
 {
-	// Todo: Drop
+	for (TPair<int, FDestroyerInfo>& i : Destroyers)
+	{
+		if (i.Value.bRightTool)
+		{
+			for (const FItemDrop& j : SolidUnitData->Drop)
+			{
+				static int SpawnPosition = 0;
+				int Count;
+				if ((j.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < j.Chance) && (Count = FMath::RandRange(j.Min, j.Max)) > 0)
+				{
+					AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(SolidUnitData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+					Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(j.Item).Class.Get()));
+				}
+			}
+			break;
+		}
+	}
+
 	GetWorld()->DestroyActor(this);
 }
 

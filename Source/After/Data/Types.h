@@ -16,7 +16,6 @@
 
 class UPaperFlipbook;
 class USoundBase;
-class UItem;
 
 //// 
 // After any changement of any enum, definition of

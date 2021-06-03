@@ -64,18 +64,21 @@ protected:
 	UFUNCTION(Category = "Zoom")
 	void ZoomOut();
 
-			/* ATTACK */
+			/* BREAKING */
 
-	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	int DestroyerId;
 
-	UPROPERTY(BlueprintReadOnly, Category = "Attack")
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	ASolidUnit* DestroyedUnit;
 
-	UFUNCTION(Category = "Attack")
-	void StartBreak(ASolidUnit* Target);
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	AItem* ItemForBreaking;
 
-	UFUNCTION(Category = "Attack")
+	UFUNCTION(Category = "Breaking")
+	void StartBreak(ASolidUnit* Target, AItem* Item);
+
+	UFUNCTION(Category = "Breaking")
 	void StopBreak();
 
 			/* DAMAGE */

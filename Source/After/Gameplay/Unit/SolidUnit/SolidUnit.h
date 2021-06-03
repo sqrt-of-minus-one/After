@@ -13,7 +13,17 @@
 
 #include "SolidUnit.generated.h"
 
-//class UItem;
+class AItem;
+
+USTRUCT(BlueprintType)
+struct FDestroyerInfo
+{
+	GENERATED_USTRUCT_BODY()
+
+	AItem* Item;
+	bool bRightTool;
+	float SpeedMultiplier;
+};
 
 UCLASS()
 class AFTER_API ASolidUnit : public AUnit
@@ -56,7 +66,7 @@ public:
 
 	// Returns destroyer id
 	UFUNCTION(Category = "Damage")
-	int StartBreaking(/* const UItem* By */);
+	int StartBreaking(AItem* By);
 
 	UFUNCTION(Category = "Damage")
 	void StopBreaking(int DestroyerId);
@@ -80,7 +90,7 @@ protected:
 			/* BREAKING */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
-	TMap<int, /* UItem* */ bool> Destroyers;
+	TMap<int, FDestroyerInfo> Destroyers;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	float Breaking;
@@ -89,7 +99,7 @@ protected:
 	int BreakingStage;
 
 	UFUNCTION(Category = "Damage")
-	void Break(/* const UItem* By */);
+	void Break();
 
 			/* APPEARANCE */
 

@@ -6,6 +6,7 @@
 
 #include "Entity.h"
 
+#include "Kismet/KismetSystemLibrary.h"
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperSpriteComponent.h"
@@ -14,6 +15,7 @@
 #include "../LogGameplay.h"
 #include "../../Data/Database/Database.h"
 #include "Controller/LastController.h"
+#include "../Item/Item.h"
 #include "../../AfterGameModeBase.h"
 #include "../../GameConstants.h"
 
@@ -21,6 +23,8 @@ AEntity::AEntity() :
 	Moving(0.f, 0.f),
 	PushMoving(0.f, 0.f),
 	bIsRunning(false),
+	LastAttackTime(0.f),
+	LastAttackInterval(0.f),
 	bIsDead(false),
 	CurrentStatus(FEntityStatus::Special),  // Must not be default for the first
 	CurrentDirection(FDirection::B),        // call of SetFlipbook to work correct
@@ -35,6 +39,7 @@ AEntity::AEntity() :
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
 	FlipbookComponent->SetupAttachment(GetRootComponent());
+	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
@@ -61,11 +66,10 @@ void AEntity::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	EntityData = &Database->GetEntityData(Id);
 
+	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
+	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
-	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
@@ -123,8 +127,26 @@ void AEntity::Tick(float DeltaTime)
 
 	if (!PushMoving.IsZero())
 	{
-		AddOffset(FVector(PushMoving, 0));
+		AddOffset(FVector(PushMoving, 0.f));
 		PushMoving *= GameConstants::EntityPushDecrement;
+	}
+
+	FVector2D OverlapOffset(0.f, 0.f);
+	for (const AEntity* i : OverlappingEntities)
+	{
+		FVector2D Delta(GetActorLocation() - i->GetActorLocation());
+		if (!Delta.IsNearlyZero(1.f))
+		{
+			OverlapOffset += GameConstants::EntityOverlapOffsetMultiplier * Delta / (Delta.X * Delta.X + Delta.Y * Delta.Y);
+		}
+		else
+		{
+			OverlapOffset += GameConstants::EntityOverlapOffsetMultiplier * FVector2D(FMath::RandRange(-1.f, 1.f), FMath::RandRange(-1.f, 1.f));
+		}
+	}
+	if (!OverlapOffset.IsZero())
+	{
+		AddOffset(FVector(OverlapOffset, 0.f));
 	}
 
 	if (!bIsDead && CurrentStatus != FEntityStatus::Stone && CurrentStatus != FEntityStatus::Web)
@@ -315,23 +337,60 @@ void AEntity::StopRun()
 	bIsRunning = false;
 }
 
-bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss)
+void AEntity::StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
+	bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (CurrentStatus != FEntityStatus::MeleeAttack && Target != this && !bIsDead)
+	AEntity* Entity = Cast<AEntity>(OtherActor);
+	if (Entity && OtherComponent->GetCollisionProfileName() == CollisionComponent->GetCollisionProfileName() && !OverlappingEntities.Contains(Entity))
 	{
-		if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <= FMath::Square(EntityData->AttackRadius))
+		OverlappingEntities.Add(Entity);
+	}
+}
+
+void AEntity::StopOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index)
+{
+	AEntity* Entity = Cast<AEntity>(OtherActor);
+	if (Entity && OverlappingEntities.Contains(Entity))
+	{
+		OverlappingEntities.Remove(Entity);
+	}
+}
+
+bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon)
+{
+	float CurrentTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+	if (Weapon && (Weapon->GetItemData().Damage == 0.f || Weapon->GetItemData().AttackRadius <= 0.f))
+	{
+		Weapon = nullptr;
+	}
+	if (CurrentTime - LastAttackTime > LastAttackInterval && Target != this && !bIsDead)
+	{
+		if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <=
+			FMath::Square(Weapon ? Weapon->GetItemData().AttackRadius : EntityData->AttackRadius))
 		{
 			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 			PlaySound(FEntitySoundType::Attack);
+			LastAttackTime = CurrentTime;
 
 			FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
-			Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
+			if (Weapon)
+			{
+				Target->Damage(Weapon->GetItemData().Damage, Weapon->GetItemData().DamageType, FMath::Atan2(Direction.Y, Direction.X), this, Weapon->GetItemData().Push);
+				LastAttackInterval = Weapon->GetItemData().AttackInterval;
+			}
+			else
+			{
+				Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
+				LastAttackInterval = EntityData->AttackInterval;
+			}
 			return true;
 		}
 		else if (bCanMiss)
 		{
 			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
 			PlaySound(FEntitySoundType::Attack);
+			LastAttackTime = CurrentTime;
+			LastAttackInterval = Weapon ? Weapon->GetItemData().AttackInterval : EntityData->AttackInterval;
 		}
 	}
 	return false;

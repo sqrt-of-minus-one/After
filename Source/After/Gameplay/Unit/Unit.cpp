@@ -29,6 +29,7 @@ AUnit::AUnit()
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
 	FlipbookComponent->SetupAttachment(GetRootComponent());
+	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
 	SelectionSpriteComponent->SetupAttachment(FlipbookComponent);
@@ -59,12 +60,8 @@ void AUnit::BeginPlay()
 	// Get database
 	const UDatabase* Database = GameMode->GetDatabase();
 	UnitData = &Database->GetUnitData(Id);
-	
-	FlipbookComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	FlipbookComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-	SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	DamageBoxComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
-	AudioComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
+
+	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());

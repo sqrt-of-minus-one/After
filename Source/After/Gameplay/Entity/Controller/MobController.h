@@ -15,6 +15,7 @@
 class AEntity;
 class AMob;
 class AUnit;
+class AItem;
 
 UCLASS()
 class AFTER_API AMobController : public AAIController
@@ -56,7 +57,7 @@ public:
 	TDelegate<void(float)> MoveY;
 	TDelegate<void()> StartRun;
 	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*, bool)> Attack;
+	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
 
 	UFUNCTION(Category = "Control")
 	virtual void SetupInput();

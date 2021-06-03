@@ -15,6 +15,7 @@
 class UPaperSprite;
 struct FDatabaseInitData;
 struct FExtraInfo;
+class AItem;
 
 USTRUCT(BlueprintType)
 struct FItemInfo
@@ -23,6 +24,10 @@ struct FItemInfo
 
 public:
 			/* GENERAL */
+
+	// Item's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AItem> Class;
 
 	// Item's tags
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -48,6 +53,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
 	float Push;
 
+	// Maximum distance between attacker and attacked
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackRadius;
+
+	// Minimum time between two attacks
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Attack")
+	float AttackInterval;
+
+			/* BREAKING */
+
+	// Breaking speed is multiplied by this value
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Breaking")
+	float BreakingSpeedMultiplier = 1.f;
+
 			/* STATS */
 
 	// Maximum value of item's condition. If negative, item doesn't have condition
@@ -66,13 +85,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	bool bUseFlipbook = false;
 
-	// The item's flipbook
+	// The item's flipbook when it is in inventory
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperFlipbook* Flipbook;
+	UPaperFlipbook* InventoryFlipbook;
 
-	// The item's sprite
+	// The item's flipbook when it is in the world
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperSprite* Sprite;
+	UPaperFlipbook* WorldFlipbook;
+
+	// The item's sprite when it is in the inventory
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPaperSprite* InventorySprite;
+
+	// The item's sprite when it is in the world
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPaperSprite* WorldSprite;
 };
 void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 

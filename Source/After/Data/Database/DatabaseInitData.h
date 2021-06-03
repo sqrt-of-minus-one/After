@@ -21,6 +21,7 @@ struct FDatabaseInitData
 	struct FItemReplaced
 	{
 		FGameplayTag Item;
+		bool bWorld; // true means world texture; false means inventory texture
 	};
 	struct FProjectileReplaced
 	{

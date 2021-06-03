@@ -87,11 +87,15 @@ void Check(FEntityInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitDa
 	// Attack
 	if (Data.Push < 0)
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative push (%f)"), *Tag.ToString(), Data.AttackRadius);
+		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative push (%f)"), *Tag.ToString(), Data.Push);
 	}
 	if (Data.AttackRadius < 0)
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative attack radius (%f)"), *Tag.ToString(), Data.Push);
+		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative attack radius (%f)"), *Tag.ToString(), Data.AttackRadius);
+	}
+	if (Data.AttackInterval < 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Entity %s has negative attack interval (%f)"), *Tag.ToString(), Data.AttackInterval);
 	}
 	if (Data.RangedProjectile != FGameplayTag::EmptyTag)
 	{
@@ -206,6 +210,8 @@ void Check(FMobInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData,
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Mob %s has wrong minimum and maximum amount of experience (min = %f; max = %f)"), *Tag.ToString(), Data.MinExperience, Data.MaxExperience);
 	}
+
+	// View
 	if (Data.ViewRadius <= 0)
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Mob %s has non-positive value of view radius (%f)"), *Tag.ToString(), Data.ViewRadius);

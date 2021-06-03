@@ -13,12 +13,16 @@
 #include "../../LogGameplay.h"
 #include "../Entity.h"
 #include "../../Unit/SolidUnit/SolidUnit.h"
+#include "../../Item/ThrownItem.h"
+#include "../../Item/Item.h"
 #include "../../../AfterGameModeBase.h"
 #include "GameplayTagContainer.h"
 #include "../Mob/Animal.h"
+#include "../../../GameConstants.h"
 
 ALastController::ALastController() :
-	bIsBreaking(false)
+	bIsBreaking(false),
+	Item(nullptr)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -43,6 +47,7 @@ void ALastController::Tick(float DeltaTime)
 
 	AEntity* SelectedEntity = nullptr;
 	AUnit* SelectedUnit = nullptr;
+	AThrownItem* SelectedThrownItem = nullptr;
 	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
@@ -57,9 +62,27 @@ void ALastController::Tick(float DeltaTime)
 
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
 	}
+	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), SelectedThrownItem)
+	{
+		FString ThrownItemName = GAME_MODE->GetLangManager()->GetString(FName(SelectedThrownItem->GetItem()->GetId().ToString() + FString(".name")));
+
+		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *ThrownItemName));
+	}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
+	}
+	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
+	if (Item)
+	{
+		if (Item->GetItemData().MaxCondition > 0.f)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))), Item->GetCondition(), Item->GetItemData().MaxCondition));
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))));
+		}
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
@@ -67,7 +90,6 @@ void ALastController::Tick(float DeltaTime)
 void ALastController::Select(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	AUnit* Unit = nullptr;
 	bool bNew = false;
 	AActor* Old = Selected;
 	if (Entity)
@@ -78,12 +100,22 @@ void ALastController::Select(AActor* Actor)
 	}
 	else
 	{
-		Unit = Cast<AUnit>(Actor);
+		AUnit* Unit = Cast<AUnit>(Actor);
 		if (Unit)
 		{
 			Selected = Unit;
 			Unit->Select();
 			bNew = true;
+		}
+		else
+		{
+			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
+			if (ThrownItem)
+			{
+				Selected = ThrownItem;
+				ThrownItem->Select();
+				bNew = true;
+			}
 		}
 	}
 
@@ -97,7 +129,7 @@ void ALastController::Select(AActor* Actor)
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
 		if (SolidUnit)
 		{
-			StartBreak.ExecuteIfBound(SolidUnit);
+			StartBreak.ExecuteIfBound(SolidUnit, Item);
 		}
 	}
 }
@@ -125,6 +157,14 @@ void ALastController::Unselect(AActor* Actor)
 				}
 			}
 		}
+		else
+		{
+			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
+			if (ThrownItem)
+			{
+				ThrownItem->Unselect();
+			}
+		}
 	}
 	if (Selected == Actor)
 	{
@@ -150,6 +190,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
 	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
 	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
+	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -187,15 +228,24 @@ void ALastController::StartAttack_f()
 	AEntity* Entity = Cast<AEntity>(Selected);
 	if (Entity && Attack.IsBound())
 	{
-		Attack.Execute(Entity, true);
+		Attack.Execute(Entity, true, Item);
 	}
 	else
 	{
-		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-		if (SolidUnit)
+		AThrownItem* ThrownItem = Cast<AThrownItem>(Selected);
+		if (ThrownItem && !Item && FVector::DistSquared(ThrownItem->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
 		{
-			StartBreak.ExecuteIfBound(SolidUnit);
-			bIsBreaking = true;
+			Item = ThrownItem->GetItem();
+			GetWorld()->DestroyActor(ThrownItem);
+		}
+		else
+		{
+			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+			if (SolidUnit)
+			{
+				StartBreak.ExecuteIfBound(SolidUnit, Item);
+				bIsBreaking = true;
+			}
 		}
 	}
 }
@@ -211,8 +261,7 @@ void ALastController::SpawnCow_tmp()
 	FVector2D Mouse;
 	GetMousePosition(Mouse.X, Mouse.Y);
 	GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-		FVector(Mouse - GetWorld()->GetGameInstance()->GetEngine()->GetGameUserSettings()->GetScreenResolution() / 4, 0.f) + GetPawn()->GetActorLocation(),
-		GetPawn()->GetActorRotation());
+		FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
 }
 
 void ALastController::SwitchLang_tmp()
@@ -229,4 +278,14 @@ void ALastController::SwitchLang_tmp()
 	}
 	LangManager->SetLang(Lang);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
+}
+
+void ALastController::Throw_f()
+{
+	if (Item)
+	{
+		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+		Drop->SetItem(Item);
+		Item = nullptr;
+	}
 }

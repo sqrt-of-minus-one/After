@@ -115,6 +115,20 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TArray<FGameplayTag> Tags;
 
+			/* DROP */
+
+	// Items that may be dropped
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop")
+	TArray<FItemDrop> Drop;
+
+	// Minimum amount of experience
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop")
+	float MinExperience;
+
+	// Maximum amount of experience
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Drop")
+	float MaxExperience;
+
 			/* STATS */
 
 	// Maximum value of the entity's health
