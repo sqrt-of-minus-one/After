@@ -14,7 +14,6 @@
 
 #include "LastController.generated.h"
 
-class UPrimitiveComponent;
 class AEntity;
 class ASolidUnit;
 class AItem;
@@ -39,10 +38,10 @@ public:
 			/* SELECTING */
 
 	UFUNCTION()
-	void Select(UPrimitiveComponent* Component);
+	void Select(AActor* Actor);
 
 	UFUNCTION()
-	void Unselect(UPrimitiveComponent* Component);
+	void Unselect(AActor* Actor);
 
 			/* CONTROL */
 
@@ -64,12 +63,6 @@ protected:
 			/* SELECTING */
 
 	AActor* Selected;
-
-	UFUNCTION()
-	void SelectActor(AActor* Actor);
-
-	UFUNCTION()
-	void UnselectActor(AActor* Actor);
 
 			/* STATE */
 

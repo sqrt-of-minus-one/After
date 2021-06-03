@@ -6,7 +6,7 @@
 
 #include "LastController.h"
 
-#include "Components/PrimitiveComponent.h"
+#include "GameFramework/GameUserSettings.h"
 
 #include "../../../Data/Database/Database.h"
 #include "../../../Data/Lang/LangManager.h"
@@ -87,40 +87,7 @@ void ALastController::Tick(float DeltaTime)
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 
-void ALastController::Select(UPrimitiveComponent* Component)
-{
-	UE_LOG(LogTemp, Log, TEXT("Begin mouse over"));
-	SelectActor(Component->GetOwner());
-}
-
-void ALastController::Unselect(UPrimitiveComponent* Component)
-{
-	UE_LOG(LogTemp, Log, TEXT("End mouse over"));
-	UnselectActor(Component->GetOwner());
-}
-
-void ALastController::SetupInput()
-{
-	if (CurrentInputStack.Num() <= 0)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Input stack is empty"));
-	}
-
-	CurrentInputStack[0]->BindAxis("MoveX", this, &ALastController::MoveX_f);
-	CurrentInputStack[0]->BindAxis("MoveY", this, &ALastController::MoveY_f);
-
-	CurrentInputStack[0]->BindAction("ZoomIn", IE_Pressed, this, &ALastController::ZoomIn_f);
-	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
-	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
-	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
-	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
-	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
-	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
-	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
-	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
-}
-
-void ALastController::SelectActor(AActor* Actor)
+void ALastController::Select(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
 	bool bNew = false;
@@ -154,7 +121,7 @@ void ALastController::SelectActor(AActor* Actor)
 
 	if (bNew && Old)
 	{
-		UnselectActor(Old);
+		Unselect(Old);
 	}
 
 	if (bIsBreaking)
@@ -167,7 +134,7 @@ void ALastController::SelectActor(AActor* Actor)
 	}
 }
 
-void ALastController::UnselectActor(AActor* Actor)
+void ALastController::Unselect(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
 	if (Entity)
@@ -203,6 +170,27 @@ void ALastController::UnselectActor(AActor* Actor)
 	{
 		Selected = nullptr;
 	}
+}
+
+void ALastController::SetupInput()
+{
+	if (CurrentInputStack.Num() <= 0)
+	{
+		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Input stack is empty"));
+	}
+
+	CurrentInputStack[0]->BindAxis("MoveX", this, &ALastController::MoveX_f);
+	CurrentInputStack[0]->BindAxis("MoveY", this, &ALastController::MoveY_f);
+
+	CurrentInputStack[0]->BindAction("ZoomIn", IE_Pressed, this, &ALastController::ZoomIn_f);
+	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
+	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
+	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
+	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
+	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
+	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
 }
 
 void ALastController::MoveX_f(float Value)
