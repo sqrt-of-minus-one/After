@@ -88,8 +88,8 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 		if (LastController)
 		{
-			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
-			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+			CollisionComponent->OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			CollisionComponent->OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
 		}
 		else
 		{

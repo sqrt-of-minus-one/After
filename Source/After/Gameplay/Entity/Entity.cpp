@@ -77,8 +77,8 @@ void AEntity::BeginPlay()
 	{
 		if (EntityData->bSelectable)
 		{
-			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
-			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+			CollisionComponent->OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			CollisionComponent->OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
 
 			if (!Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) ||
 				!Database->GetExtraData().SelectionSprites[EntityData->Size])
