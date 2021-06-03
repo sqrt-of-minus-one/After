@@ -85,13 +85,21 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
 	bool bUseFlipbook = false;
 
-	// The item's flipbook
+	// The item's flipbook when it is in inventory
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperFlipbook* Flipbook;
+	UPaperFlipbook* InventoryFlipbook;
 
-	// The item's sprite
+	// The item's flipbook when it is in the world
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
-	UPaperSprite* Sprite;
+	UPaperFlipbook* WorldFlipbook;
+
+	// The item's sprite when it is in the inventory
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPaperSprite* InventorySprite;
+
+	// The item's sprite when it is in the world
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Appearance")
+	UPaperSprite* WorldSprite;
 };
 void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 

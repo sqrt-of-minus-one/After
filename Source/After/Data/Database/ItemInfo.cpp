@@ -58,17 +58,30 @@ void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 	}
 
 	// Appearance
-	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.Flipbook) : static_cast<bool>(Data.Sprite)))
+	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.InventoryFlipbook) : static_cast<bool>(Data.InventorySprite)))
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Item %s doesn't have sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
-		InitData.ItemReplaced.AddTail({ Tag });
+		UE_LOG(LogDatabase, Error, TEXT("Item %s doesn't have inventory sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
+		InitData.ItemReplaced.AddTail({ Tag, false });
 		if (Data.bUseFlipbook)
 		{
-			Data.Flipbook = ExtraData.DebugItemFlipbook;
+			Data.InventoryFlipbook = ExtraData.DebugItemFlipbook;
 		}
 		else
 		{
-			Data.Sprite = ExtraData.DebugItemSprite;
+			Data.InventorySprite = ExtraData.DebugItemSprite;
+		}
+	}
+	if (!(Data.bUseFlipbook ? static_cast<bool>(Data.WorldFlipbook) : static_cast<bool>(Data.WorldSprite)))
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s doesn't have world sprite or flipbook (also check Use Flipbook flag)"), *Tag.ToString());
+		InitData.ItemReplaced.AddTail({ Tag, true });
+		if (Data.bUseFlipbook)
+		{
+			Data.WorldFlipbook = ExtraData.DebugItemFlipbook;
+		}
+		else
+		{
+			Data.WorldSprite = ExtraData.DebugItemSprite;
 		}
 	}
 }

@@ -69,7 +69,7 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 		if (ItemData.bUseFlipbook)
 		{
-			FlipbookComponent->SetFlipbook(ItemData.Flipbook);
+			FlipbookComponent->SetFlipbook(ItemData.WorldFlipbook);
 			FlipbookComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = FlipbookComponent;
 			SpriteComponent->DestroyComponent();
@@ -77,7 +77,7 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		}
 		else
 		{
-			SpriteComponent->SetSprite(ItemData.Sprite);
+			SpriteComponent->SetSprite(ItemData.WorldSprite);
 			SpriteComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = SpriteComponent;
 			SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));

@@ -339,11 +339,11 @@ void UDatabase::Reset()
 	{
 		if (ItemData[i.Item].bUseFlipbook)
 		{
-			ItemData[i.Item].Flipbook = nullptr;
+			(i.bWorld ? ItemData[i.Item].WorldFlipbook : ItemData[i.Item].InventoryFlipbook) = nullptr;
 		}
 		else
 		{
-			ItemData[i.Item].Sprite = nullptr;
+			(i.bWorld ? ItemData[i.Item].WorldSprite : ItemData[i.Item].InventorySprite) = nullptr;
 		}
 	}
 	for (const auto& i : InitData.ProjectileReplaced)
