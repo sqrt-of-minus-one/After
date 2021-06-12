@@ -43,6 +43,11 @@ public:
 	UFUNCTION()
 	void Unselect(AActor* Actor);
 
+			/* EVENTS */
+
+	UFUNCTION(Category = "Events")
+	virtual void Death(); // Is called when the last becames dead
+
 			/* CONTROL */
 
 	TDelegate<void(float)> MoveX;
@@ -54,6 +59,7 @@ public:
 	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
 	TDelegate<void(ASolidUnit*, AItem*)> StartBreak;
 	TDelegate<void()> StopBreak;
+	TDelegate<void(AItem*)> SetItem;
 
 	void SetupInput();
 
@@ -62,12 +68,16 @@ protected:
 
 			/* SELECTING */
 
+	UPROPERTY(BlueprintReadOnly, Category = "Selecting")
 	AActor* Selected;
 
 			/* STATE */
 
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsBreaking;
+
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsDead;
 
 			/* INVENTORY */
 

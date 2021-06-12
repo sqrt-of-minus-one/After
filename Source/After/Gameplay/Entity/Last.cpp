@@ -52,6 +52,8 @@ void ALast::BeginPlay()
 	LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
 	LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
 	LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
+	LastController->SetItem.BindUObject(this, &ALast::SetItemForBreaking);
+	DeathDelegate.BindUObject(LastController, &ALastController::Death);
 	LastController->SetupInput();
 
 	// Get game mode
@@ -82,7 +84,11 @@ void ALast::Tick(float DeltaTime)
 
 	if (DestroyedUnit)
 	{
-		if (DestroyerId >= 0)
+		if (!IsValid(DestroyedUnit))
+		{
+			StopBreak();
+		}
+		else if (DestroyerId >= 0)
 		{
 			if (FVector::DistSquared(DestroyedUnit->GetActorLocation(), GetActorLocation()) > FMath::Square(EntityData->AttackRadius))
 			{
@@ -129,6 +135,15 @@ void ALast::ZoomOut()
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
 }
 
+void ALast::SetItemForBreaking(AItem* Item)
+{
+	ItemForBreaking = Item;
+	if (IsValid(DestroyedUnit) && DestroyerId >= 0)
+	{
+		DestroyedUnit->SwitchItem(DestroyerId, ItemForBreaking);
+	}
+}
+
 void ALast::StartBreak(ASolidUnit* Target, AItem* Item)
 {
 	StopBreak();
@@ -138,13 +153,20 @@ void ALast::StartBreak(ASolidUnit* Target, AItem* Item)
 
 void ALast::StopBreak()
 {
-	if (DestroyedUnit && DestroyerId >= 0)
+	if (IsValid(DestroyedUnit) && DestroyerId >= 0)
 	{
 		DestroyedUnit->StopBreaking(DestroyerId);
 	}
 
 	DestroyedUnit = nullptr;
 	DestroyerId = -1;
+}
+
+void ALast::Death(FDamageType Type, const AActor* Murderer)
+{
+	Super::Death(Type, Murderer);
+
+	DeathDelegate.ExecuteIfBound();
 }
 
 void ALast::Disappear()

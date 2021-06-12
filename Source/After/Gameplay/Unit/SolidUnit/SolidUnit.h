@@ -65,10 +65,13 @@ public:
 			/* BREAKING */
 
 	// Returns destroyer id
-	UFUNCTION(Category = "Damage")
+	UFUNCTION(Category = "Breaking")
 	int StartBreaking(AItem* By);
 
-	UFUNCTION(Category = "Damage")
+	UFUNCTION(Category = "Breaking")
+	void SwitchItem(int DestroyerId, AItem* By);
+
+	UFUNCTION(Category = "Breaking")
 	void StopBreaking(int DestroyerId);
 
 protected:

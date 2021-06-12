@@ -358,39 +358,42 @@ void AEntity::StopOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UP
 
 bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon)
 {
-	float CurrentTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
-	if (Weapon && (Weapon->GetItemData().Damage == 0.f || Weapon->GetItemData().AttackRadius <= 0.f))
+	if (IsValid(Target))
 	{
-		Weapon = nullptr;
-	}
-	if (CurrentTime - LastAttackTime > LastAttackInterval && Target != this && !bIsDead)
-	{
-		if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <=
-			FMath::Square(Weapon ? Weapon->GetItemData().AttackRadius : EntityData->AttackRadius))
+		float CurrentTime = UKismetSystemLibrary::GetGameTimeInSeconds(GetWorld());
+		if (IsValid(Weapon) && (Weapon->GetItemData().Damage == 0.f || Weapon->GetItemData().AttackRadius <= 0.f))
 		{
-			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
-			PlaySound(FEntitySoundType::Attack);
-			LastAttackTime = CurrentTime;
-
-			FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
-			if (Weapon)
-			{
-				Target->Damage(Weapon->GetItemData().Damage, Weapon->GetItemData().DamageType, FMath::Atan2(Direction.Y, Direction.X), this, Weapon->GetItemData().Push);
-				LastAttackInterval = Weapon->GetItemData().AttackInterval;
-			}
-			else
-			{
-				Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
-				LastAttackInterval = EntityData->AttackInterval;
-			}
-			return true;
+			Weapon = nullptr;
 		}
-		else if (bCanMiss)
+		if (CurrentTime - LastAttackTime > LastAttackInterval && Target != this && !bIsDead)
 		{
-			SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
-			PlaySound(FEntitySoundType::Attack);
-			LastAttackTime = CurrentTime;
-			LastAttackInterval = Weapon ? Weapon->GetItemData().AttackInterval : EntityData->AttackInterval;
+			if (FVector::DistSquared(Target->GetActorLocation(), GetActorLocation()) <=
+				FMath::Square(IsValid(Weapon) ? Weapon->GetItemData().AttackRadius : EntityData->AttackRadius))
+			{
+				SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+				PlaySound(FEntitySoundType::Attack);
+				LastAttackTime = CurrentTime;
+
+				FVector2D Direction = static_cast<FVector2D>(Target->GetActorLocation() - GetActorLocation());
+				if (IsValid(Weapon))
+				{
+					Target->Damage(Weapon->GetItemData().Damage, Weapon->GetItemData().DamageType, FMath::Atan2(Direction.Y, Direction.X), this, Weapon->GetItemData().Push);
+					LastAttackInterval = Weapon->GetItemData().AttackInterval;
+				}
+				else
+				{
+					Target->Damage(EntityData->Damage, EntityData->DamageType, FMath::Atan2(Direction.Y, Direction.X), this, EntityData->Push);
+					LastAttackInterval = EntityData->AttackInterval;
+				}
+				return true;
+			}
+			else if (bCanMiss)
+			{
+				SetFlipbook(CurrentDirection, FEntityStatus::MeleeAttack);
+				PlaySound(FEntitySoundType::Attack);
+				LastAttackTime = CurrentTime;
+				LastAttackInterval = IsValid(Weapon) ? Weapon->GetItemData().AttackInterval : EntityData->AttackInterval;
+			}
 		}
 	}
 	return false;

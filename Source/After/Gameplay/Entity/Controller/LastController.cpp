@@ -22,6 +22,7 @@
 
 ALastController::ALastController() :
 	bIsBreaking(false),
+	bIsDead(false),
 	Item(nullptr)
 {
 	SetShowMouseCursor(true);
@@ -43,12 +44,19 @@ void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	if (Item && Item->IsPendingKill())
+	{
+		Item = nullptr;
+		SetItem.ExecuteIfBound(Item);
+	}
+
+
 	const ALangManager* LangManager = GAME_MODE->GetLangManager();
 
 	AEntity* SelectedEntity = nullptr;
 	AUnit* SelectedUnit = nullptr;
 	AThrownItem* SelectedThrownItem = nullptr;
-	if (SelectedEntity = Cast<AEntity>(Selected), SelectedEntity)
+	if (SelectedEntity = Cast<AEntity>(Selected), IsValid(SelectedEntity))
 	{
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
 
@@ -56,13 +64,13 @@ void ALastController::Tick(float DeltaTime)
 
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *EntityName));
 	}
-	else if (SelectedUnit = Cast<AUnit>(Selected), SelectedUnit)
+	else if (SelectedUnit = Cast<AUnit>(Selected), IsValid(SelectedUnit))
 	{
 		FString UnitName = GAME_MODE->GetLangManager()->GetString(FName(SelectedUnit->GetId().ToString() + FString(".name")));
 
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
 	}
-	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), SelectedThrownItem)
+	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), IsValid(SelectedThrownItem))
 	{
 		FString ThrownItemName = GAME_MODE->GetLangManager()->GetString(FName(SelectedThrownItem->GetItem()->GetId().ToString() + FString(".name")));
 
@@ -73,7 +81,7 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	if (Item)
+	if (IsValid(Item))
 	{
 		if (Item->GetItemData().MaxCondition > 0.f)
 		{
@@ -92,7 +100,7 @@ void ALastController::Select(AActor* Actor)
 	AEntity* Entity = Cast<AEntity>(Actor);
 	bool bNew = false;
 	AActor* Old = Selected;
-	if (Entity)
+	if (IsValid(Entity))
 	{
 		Selected = Entity;
 		Entity->Select();
@@ -101,7 +109,7 @@ void ALastController::Select(AActor* Actor)
 	else
 	{
 		AUnit* Unit = Cast<AUnit>(Actor);
-		if (Unit)
+		if (IsValid(Unit))
 		{
 			Selected = Unit;
 			Unit->Select();
@@ -110,7 +118,7 @@ void ALastController::Select(AActor* Actor)
 		else
 		{
 			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (ThrownItem)
+			if (IsValid(ThrownItem))
 			{
 				Selected = ThrownItem;
 				ThrownItem->Select();
@@ -127,7 +135,7 @@ void ALastController::Select(AActor* Actor)
 	if (bIsBreaking)
 	{
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
-		if (SolidUnit)
+		if (IsValid(SolidUnit))
 		{
 			StartBreak.ExecuteIfBound(SolidUnit, Item);
 		}
@@ -137,14 +145,14 @@ void ALastController::Select(AActor* Actor)
 void ALastController::Unselect(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	if (Entity)
+	if (IsValid(Entity))
 	{
 		Entity->Unselect();
 	}
 	else
 	{
 		AUnit* Unit = Cast<AUnit>(Actor);
-		if (Unit)
+		if (IsValid(Unit))
 		{
 			Unit->Unselect();
 
@@ -160,7 +168,7 @@ void ALastController::Unselect(AActor* Actor)
 		else
 		{
 			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (ThrownItem)
+			if (IsValid(ThrownItem))
 			{
 				ThrownItem->Unselect();
 			}
@@ -170,6 +178,22 @@ void ALastController::Unselect(AActor* Actor)
 	{
 		Selected = nullptr;
 	}
+}
+
+void ALastController::Death()
+{
+	// Unbinds all the delegate but zoom.
+	// UnBind function doesn't work and I don't know why. That's why empty lambdas are used.
+	StopAttack_f();
+	MoveX.BindLambda([](float) {});
+	MoveY.BindLambda([](float) {});
+	StartRun.BindLambda([]() {});
+	StopRun.BindLambda([]() {});
+	Attack.BindLambda([](AEntity*, bool, AItem*) { return false; });
+	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
+	StopBreak.BindLambda([]() {});
+	SetItem.BindLambda([](AItem*) {});
+	bIsDead = true;
 }
 
 void ALastController::SetupInput()
@@ -225,26 +249,30 @@ void ALastController::StopRun_f()
 
 void ALastController::StartAttack_f()
 {
-	AEntity* Entity = Cast<AEntity>(Selected);
-	if (Entity && Attack.IsBound())
+	if (!bIsDead)
 	{
-		Attack.Execute(Entity, true, Item);
-	}
-	else
-	{
-		AThrownItem* ThrownItem = Cast<AThrownItem>(Selected);
-		if (ThrownItem && !Item && FVector::DistSquared(ThrownItem->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+		AEntity* Entity = Cast<AEntity>(Selected);
+		if (IsValid(Entity) && Attack.IsBound())
 		{
-			Item = ThrownItem->GetItem();
-			GetWorld()->DestroyActor(ThrownItem);
+			Attack.Execute(Entity, true, Item);
 		}
 		else
 		{
-			ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-			if (SolidUnit)
+			AThrownItem* ThrownItem = Cast<AThrownItem>(Selected);
+			if (IsValid(ThrownItem) && !Item &&
+				FVector::DistSquared(ThrownItem->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
 			{
-				StartBreak.ExecuteIfBound(SolidUnit, Item);
-				bIsBreaking = true;
+				Item = ThrownItem->GetItem();
+				GetWorld()->DestroyActor(ThrownItem);
+			}
+			else
+			{
+				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+				if (IsValid(SolidUnit))
+				{
+					StartBreak.ExecuteIfBound(SolidUnit, Item);
+					bIsBreaking = true;
+				}
 			}
 		}
 	}
@@ -282,10 +310,11 @@ void ALastController::SwitchLang_tmp()
 
 void ALastController::Throw_f()
 {
-	if (Item)
+	if (!bIsDead && IsValid(Item))
 	{
 		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
 		Drop->SetItem(Item);
 		Item = nullptr;
+		SetItem.ExecuteIfBound(Item);
 	}
 }

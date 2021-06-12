@@ -57,7 +57,7 @@ AItem* AThrownItem::GetItem() const
 
 bool AThrownItem::SetItem(AItem* ItemToSet)
 {
-	if (Item)
+	if (Item || (ItemToSet && ItemToSet->IsPendingKill()))
 	{
 		return false;
 	}

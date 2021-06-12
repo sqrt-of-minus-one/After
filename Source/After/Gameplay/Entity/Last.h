@@ -76,12 +76,17 @@ protected:
 	AItem* ItemForBreaking;
 
 	UFUNCTION(Category = "Breaking")
+	void SetItemForBreaking(AItem* Item);
+
+	UFUNCTION(Category = "Breaking")
 	void StartBreak(ASolidUnit* Target, AItem* Item);
 
 	UFUNCTION(Category = "Breaking")
 	void StopBreak();
 
 			/* DAMAGE */
+
+	virtual void Death(FDamageType Type, const AActor* Murderer) override;
 	
 	virtual void Disappear() override;
 
@@ -91,6 +96,11 @@ protected:
 	float Satiety;
 
 	virtual void CalculateStats() override;
+
+			/* EVENTS */
+
+//	UDELEGATE(Category = "Events")
+	TDelegate<void()> DeathDelegate;
 
 			/* COMPONENTS */
 
