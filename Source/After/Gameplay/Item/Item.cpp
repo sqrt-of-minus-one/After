@@ -54,6 +54,22 @@ int AItem::GetCount() const
 	return Count;
 }
 
+int AItem::SetCount(int NewCount)
+{
+	if (NewCount <= 0)
+	{
+		Count = 0;
+		Destroy();
+		return 0;
+	}
+	else
+	{
+		int ActualCount = FMath::Clamp(NewCount, 0, ItemData->StackSize);
+		Count = ActualCount;
+		return ActualCount;
+	}
+}
+
 float AItem::GetCondition() const
 {
 	return Condition;

@@ -379,6 +379,7 @@ bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon)
 				{
 					Target->Damage(Weapon->GetItemData().Damage, Weapon->GetItemData().DamageType, FMath::Atan2(Direction.Y, Direction.X), this, Weapon->GetItemData().Push);
 					LastAttackInterval = Weapon->GetItemData().AttackInterval;
+					Weapon->Use(GameConstants::ItemConditionDecrease);
 				}
 				else
 				{
