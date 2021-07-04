@@ -33,7 +33,7 @@ void UInventoryComponent::Init(int Size)
 	}
 }
 
-const AItem* UInventoryComponent::Get(int Index) const
+AItem* UInventoryComponent::Get(int Index) const
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num())
 	{

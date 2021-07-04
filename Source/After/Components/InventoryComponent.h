@@ -35,7 +35,7 @@ public:
 	void Init(int Size);
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	const AItem* Get(int Index) const;
+	AItem* Get(int Index) const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Remove(int Index, int Count);
@@ -51,7 +51,7 @@ public:
 protected:
 			/* INVENTORY */
 
-	UPROPERTY(Category = "Inventory")
+	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bInitialized;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
