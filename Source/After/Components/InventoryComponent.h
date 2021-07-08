@@ -36,6 +36,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int GetCurrentSize() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	float GetFullness() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;

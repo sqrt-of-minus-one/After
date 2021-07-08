@@ -24,8 +24,6 @@ void ACrate::BeginPlay()
 {
 	Super::BeginPlay();
 
-	UE_LOG(LogTemp, Log, TEXT("Hello!"));
-
 	// Get game mode
 	AAfterGameModeBase* GameMode = GAME_MODE;
 	if (!GameMode)

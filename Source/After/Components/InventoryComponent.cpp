@@ -39,6 +39,11 @@ int UInventoryComponent::GetCurrentSize() const
 	return Inventory.Num();
 }
 
+float UInventoryComponent::GetFullness() const
+{
+	return Fullness;
+}
+
 AItem* UInventoryComponent::Get(int Index) const
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num())
