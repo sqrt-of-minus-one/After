@@ -36,6 +36,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FCrateInfo& GetCrateData() const;
 
+			/* INTERACTION */
+
+	virtual void Interact() override;
+
 			/* CONTENT */
 
 	UFUNCTION(BlueprintCallable, Category = "Content")

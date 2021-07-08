@@ -6,9 +6,11 @@
 
 #include "Crate.h"
 
-#include "../../../Components/InventoryComponent.h"
+#include "Blueprint/UserWidget.h"
 
+#include "../../../Components/InventoryComponent.h"
 #include "../../../Data/Database/Database.h"
+#include "../../../Gui/WidgetInitializer.h"
 #include "../../LogGameplay.h"
 #include "../../../AfterGameModeBase.h"
 #include "../../../GameConstants.h"
@@ -21,6 +23,8 @@ ACrate::ACrate()
 void ACrate::BeginPlay()
 {
 	Super::BeginPlay();
+
+	UE_LOG(LogTemp, Log, TEXT("Hello!"));
 
 	// Get game mode
 	AAfterGameModeBase* GameMode = GAME_MODE;
@@ -39,6 +43,19 @@ void ACrate::BeginPlay()
 void ACrate::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void ACrate::Interact()
+{
+	Super::Interact();
+
+	AAfterGameModeBase* GameMode = GAME_MODE;
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), GameMode->GetWidgetInitializer()->GetCrateInventoryWidget());
+	GameMode->GetWidgetInitializer()->CrateInventoryInit(Widget, this);
+	if (Widget)
+	{
+		Widget->AddToViewport(1);
+	}
 }
 
 const FCrateInfo& ACrate::GetCrateData() const

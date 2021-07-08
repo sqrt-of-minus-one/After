@@ -94,7 +94,7 @@ protected:
 	void StopRun_f();
 	void StartAttack_f();
 	void StopAttack_f();
-	void SpawnCow_tmp();
+	void Interact_f();
 	void SwitchLang_tmp();
 	void Throw_f();
 };

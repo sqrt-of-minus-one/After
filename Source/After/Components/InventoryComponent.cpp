@@ -128,6 +128,6 @@ int UInventoryComponent::Put(AItem* Item)
 	}
 	else
 	{
-		return 0;
+		return -1;
 	}
 }

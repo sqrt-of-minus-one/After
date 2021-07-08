@@ -212,7 +212,7 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
 	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
 	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
-	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::SpawnCow_tmp);
+	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::Interact_f);
 	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
 	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
 }
@@ -284,12 +284,18 @@ void ALastController::StopAttack_f()
 	bIsBreaking = false;
 }
 
-void ALastController::SpawnCow_tmp()
+void ALastController::Interact_f()
 {
-	FVector2D Mouse;
-	GetMousePosition(Mouse.X, Mouse.Y);
-	GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-		FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+	if (IsValid(SolidUnit))
+	{
+		SolidUnit->Interact();
+	}
+	else
+	{
+		GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
+			FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+	}
 }
 
 void ALastController::SwitchLang_tmp()
