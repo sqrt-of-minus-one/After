@@ -42,9 +42,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	int GetCount() const;
 
-	// Returns the actual new count
+	// Returns true if count was successfully changed
 	UFUNCTION(BlueprintCallable, Category = "General")
-	int SetCount(int NewCount);
+	bool SetCount(int NewCount);
 
 			/* STATS */
 

@@ -32,17 +32,16 @@ public:
 public:
 			/* INVENTORY */
 
-	void Init(int Size);
+	void Init(float Size);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int GetCurrentSize() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	AItem* Remove(int Index, int Count);
-	
-	// Returns how many items were put into inventory
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int PutTo(AItem* Item, int Index);
+	AItem* Take(int Index, int Count);
 	
 	// Returns how many items were put into inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -53,6 +52,12 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
 	bool bInitialized;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	float Fullness;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	float MaxFullness;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TArray<AItem*> Inventory;

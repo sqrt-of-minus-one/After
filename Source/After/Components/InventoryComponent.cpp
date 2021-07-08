@@ -9,7 +9,8 @@
 #include "../Gameplay/Item/Item.h"
 
 UInventoryComponent::UInventoryComponent() :
-	bInitialized(false)
+	bInitialized(false),
+	Fullness(0.f)
 {
 	PrimaryComponentTick.bCanEverTick = false;
 }
@@ -24,13 +25,18 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UInventoryComponent::Init(int Size)
+void UInventoryComponent::Init(float Size)
 {
 	if (!bInitialized)
 	{
-		Inventory.SetNum(Size);
+		MaxFullness = Size;
 		bInitialized = true;
 	}
+}
+
+int UInventoryComponent::GetCurrentSize() const
+{
+	return Inventory.Num();
 }
 
 AItem* UInventoryComponent::Get(int Index) const
@@ -45,7 +51,7 @@ AItem* UInventoryComponent::Get(int Index) const
 	}
 }
 
-AItem* UInventoryComponent::Remove(int Index, int Count)
+AItem* UInventoryComponent::Take(int Index, int Count)
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
 	{
@@ -53,13 +59,16 @@ AItem* UInventoryComponent::Remove(int Index, int Count)
 		{
 			AItem* Item = Inventory[Index];
 			Inventory[Index] = nullptr;
+			Fullness -= Item->GetItemData().Weight * Item->GetCount();
 			return Item;
 		}
 		else // Remove part of the stack
 		{
 			AItem* Item = GetWorld()->SpawnActor<AItem>(Inventory[Index]->GetClass());
-			int ActualCount = Item->SetCount(Count);
-			Inventory[Index]->SetCount(Inventory[Index]->GetCount() - ActualCount);
+			Item->SetCount(Count);
+			// Item should not be stackable (because otherwise "if" would have been true
+			Inventory[Index]->SetCount(Inventory[Index]->GetCount() - Count);
+			Fullness -= Item->GetItemData().Weight * Count;
 			return Item;
 		}
 	}
@@ -69,62 +78,37 @@ AItem* UInventoryComponent::Remove(int Index, int Count)
 	}
 }
 
-int UInventoryComponent::PutTo(AItem* Item, int Index)
-{
-	if (bInitialized && Index >= 0 && Index < Inventory.Num())
-	{
-		if (IsValid(Inventory[Index])) // Inventory cell is filled
-		{
-			if (Inventory[Index]->GetId() == Item->GetId()) // Item being added and item in the cell are the same
-			{
-				int Count = Inventory[Index]->SetCount(Inventory[Index]->GetCount() + Item->GetCount());
-				Item->SetCount(Item->GetCount() - Count);
-				return Count;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		else // Inventory cell is empty
-		{
-			Inventory[Index] = Item;
-			return Item->GetCount();
-		}
-	}
-	else
-	{
-		return 0;
-	}
-}
-
 int UInventoryComponent::Put(AItem* Item)
 {
 	if (bInitialized)
 	{
-		int Ret = 0;
-		for (int i = 0; i < Inventory.Num(); i++) // Try to add items in filled cells
+		int Count = FMath::Min(Item->GetCount(), static_cast<int>((MaxFullness - Fullness) / Item->GetItemData().Weight));
+		if (Count <= 0) // Missing space
 		{
-			if (IsValid(Inventory[i])) // If the cell is filled
+			return 0;
+		}
+		else
+		{
+			if (Item->GetItemData().bIsStackable)
 			{
-				int FirstCount = Item->GetCount();
-				int Count = PutTo(Item, i); // Try to put the items
-				Ret += Count;
-				if (Count >= FirstCount) // If all of the items were put
+				for (int i = 0; i < Inventory.Num(); i++)
 				{
-					return Ret;
+					if (Inventory[i]->GetId() == Item->GetId())
+					{
+						Inventory[i]->SetCount(Inventory[i]->GetCount() + Count);
+						Fullness += Item->GetItemData().Weight * Count;
+						Item->SetCount(Item->GetCount() - Count);
+						return Count;
+					}
 				}
 			}
+			AItem* NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
+			NewItem->SetCount(Count);
+			Fullness += Item->GetItemData().Weight * Count;
+			Inventory.Add(NewItem);
+			Item->SetCount(Item->GetCount() - Count);
+			return Count;
 		}
-		for (AItem* i : Inventory) // Try to add items in empty cells
-		{
-			if (!IsValid(i)) // If the cell is empty
-			{
-				i = Item;
-				return Ret + Item->GetCount();
-			}
-		}
-		return Ret;
 	}
 	else
 	{

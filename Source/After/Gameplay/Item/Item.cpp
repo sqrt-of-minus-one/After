@@ -54,19 +54,22 @@ int AItem::GetCount() const
 	return Count;
 }
 
-int AItem::SetCount(int NewCount)
+bool AItem::SetCount(int NewCount)
 {
 	if (NewCount <= 0)
 	{
 		Count = 0;
 		Destroy();
-		return 0;
+		return true;
+	}
+	else if (ItemData->bIsStackable)
+	{
+		Count = NewCount;
+		return true;
 	}
 	else
 	{
-		int ActualCount = FMath::Clamp(NewCount, 0, ItemData->StackSize);
-		Count = ActualCount;
-		return ActualCount;
+		return false;
 	}
 }
 
