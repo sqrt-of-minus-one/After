@@ -71,6 +71,8 @@ void ALast::BeginPlay()
 	LastData = &Database->GetLastData(Id);
 
 	Satiety = LastData->MaxSatiety;
+
+	InventoryComponent->Init(LastData->InventorySize);
 }
 
 void ALast::Tick(float DeltaTime)
@@ -117,6 +119,11 @@ const FLastInfo& ALast::GetLastData() const
 float ALast::GetSatiety() const
 {
 	return Satiety;
+}
+
+UPlayerInventoryComponent* ALast::GetInventory()
+{
+	return InventoryComponent;
 }
 
 void ALast::Weak()

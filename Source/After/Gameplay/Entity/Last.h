@@ -46,6 +46,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetSatiety() const;
 
+			/* INVENTORY */
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UPlayerInventoryComponent* GetInventory();
+
 			/* TELEPATHY */
 
 	UFUNCTION(Category = "Telepathy")

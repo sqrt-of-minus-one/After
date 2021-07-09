@@ -44,6 +44,11 @@ float UInventoryComponent::GetFullness() const
 	return Fullness;
 }
 
+float UInventoryComponent::GetMaxFullness() const
+{
+	return MaxFullness;
+}
+
 AItem* UInventoryComponent::Get(int Index) const
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num())

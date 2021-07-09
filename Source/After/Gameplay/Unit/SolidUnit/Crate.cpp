@@ -43,13 +43,13 @@ void ACrate::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ACrate::Interact()
+void ACrate::Interact(ALast* Last)
 {
-	Super::Interact();
+	Super::Interact(Last);
 
 	AAfterGameModeBase* GameMode = GAME_MODE;
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), GameMode->GetWidgetInitializer()->GetCrateInventoryWidget());
-	GameMode->GetWidgetInitializer()->CrateInventoryInit(Widget, this);
+	GameMode->GetWidgetInitializer()->CrateInventoryInit(Widget, this, Last);
 	if (Widget)
 	{
 		Widget->AddToViewport(1);

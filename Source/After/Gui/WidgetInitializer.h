@@ -32,7 +32,7 @@ public:
 	TSubclassOf<UUserWidget> GetCrateInventoryWidget() const;
 
 	UFUNCTION(BlueprintImplementableEvent)
-	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate);
+	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate, ALast* Last);
 
 protected:
 	

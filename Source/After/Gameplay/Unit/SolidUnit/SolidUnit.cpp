@@ -139,7 +139,7 @@ float ASolidUnit::GetHealth() const
 	return Health;
 }
 
-void ASolidUnit::Interact()
+void ASolidUnit::Interact(ALast* Last)
 {
 	// This should be pure virtual, but it's Unreal...
 }

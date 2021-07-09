@@ -14,6 +14,7 @@
 #include "SolidUnit.generated.h"
 
 class AItem;
+class ALast;
 
 USTRUCT(BlueprintType)
 struct FDestroyerInfo
@@ -55,7 +56,7 @@ public:
 			/* INTERACTION */
 
 	UFUNCTION(Category = "Interaction")
-	virtual void Interact();
+	virtual void Interact(ALast* Last);
 
 			/* DAMAGE */
 

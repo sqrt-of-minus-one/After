@@ -34,11 +34,15 @@ public:
 
 	void Init(float Size);
 
+	// Current number of cells
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int GetCurrentSize() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	float GetFullness() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	float GetMaxFullness() const;
 	
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;

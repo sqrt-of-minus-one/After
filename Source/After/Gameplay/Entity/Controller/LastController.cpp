@@ -11,7 +11,7 @@
 #include "../../../Data/Database/Database.h"
 #include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
-#include "../Entity.h"
+#include "../Last.h"
 #include "../../Unit/SolidUnit/SolidUnit.h"
 #include "../../Item/ThrownItem.h"
 #include "../../Item/Item.h"
@@ -289,7 +289,7 @@ void ALastController::Interact_f()
 	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 	if (IsValid(SolidUnit))
 	{
-		SolidUnit->Interact();
+		SolidUnit->Interact(Cast<ALast>(GetPawn()));
 	}
 	else
 	{
