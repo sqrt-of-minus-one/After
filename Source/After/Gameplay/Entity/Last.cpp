@@ -17,6 +17,7 @@
 #include "../../AfterGameModeBase.h"
 #include "../../GameConstants.h"
 #include "../Unit/SolidUnit/SolidUnit.h"
+#include "../../Components/Inventory/PlayerInventoryComponent.h"
 
 ALast::ALast() :
 	DestroyerId(-1),
@@ -32,6 +33,8 @@ ALast::ALast() :
 
 	CameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
 	CameraComponent->SetupAttachment(SpringArmComponent);
+
+	InventoryComponent = CreateDefaultSubobject<UPlayerInventoryComponent>(TEXT("Inventory"));
 }
 
 void ALast::BeginPlay()

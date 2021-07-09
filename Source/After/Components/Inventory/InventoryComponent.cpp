@@ -6,7 +6,7 @@
 
 #include "InventoryComponent.h"
 
-#include "../Gameplay/Item/Item.h"
+#include "../../Gameplay/Item/Item.h"
 
 UInventoryComponent::UInventoryComponent() :
 	bInitialized(false),

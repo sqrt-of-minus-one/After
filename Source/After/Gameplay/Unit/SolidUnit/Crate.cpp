@@ -8,7 +8,7 @@
 
 #include "Blueprint/UserWidget.h"
 
-#include "../../../Components/InventoryComponent.h"
+#include "../../../Components/Inventory/InventoryComponent.h"
 #include "../../../Data/Database/Database.h"
 #include "../../../Gui/WidgetInitializer.h"
 #include "../../LogGameplay.h"

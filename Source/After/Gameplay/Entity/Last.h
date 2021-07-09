@@ -16,7 +16,7 @@ struct FLastInfo;
 class ASolidUnit;
 class USpringArmComponent;
 class UCameraComponent;
-//class UPlayerInventoryComponent;
+class UPlayerInventoryComponent;
 //class USkillsComponent;
 
 UCLASS()
@@ -99,7 +99,6 @@ protected:
 
 			/* EVENTS */
 
-//	UDELEGATE(Category = "Events")
 	TDelegate<void()> DeathDelegate;
 
 			/* COMPONENTS */
@@ -110,8 +109,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-//	UPlayerInventoryComponent* InventoryComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UPlayerInventoryComponent* InventoryComponent;
 
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 //	USkillsComponent* SkillsComponent;

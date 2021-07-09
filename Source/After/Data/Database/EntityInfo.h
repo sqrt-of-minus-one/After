@@ -178,6 +178,12 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	TSubclassOf<ALast> Class;
 
+			/* INVENTORY */
+
+	// Player's inventory size
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	float InventorySize;
+
 			/* STATS */
 
 	// Maximum value of the satiety
