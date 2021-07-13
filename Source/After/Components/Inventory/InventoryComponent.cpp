@@ -7,6 +7,7 @@
 #include "InventoryComponent.h"
 
 #include "../../Gameplay/Item/Item.h"
+#include "PlayerInventoryComponent.h"
 
 UInventoryComponent::UInventoryComponent() :
 	bInitialized(false),
@@ -68,7 +69,7 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 		if (Count >= Inventory[Index]->GetCount()) // Remove the whole stack
 		{
 			AItem* Item = Inventory[Index];
-			Inventory[Index] = nullptr;
+			Inventory.RemoveAt(Index);
 			Fullness -= Item->GetItemData().Weight * Item->GetCount();
 			return Item;
 		}
@@ -118,6 +119,66 @@ int UInventoryComponent::Put(AItem* Item)
 			Inventory.Add(NewItem);
 			Item->SetCount(Item->GetCount() - Count);
 			return Count;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int UInventoryComponent::MoveToInventory(int Index, int Count, UInventoryComponent* InventoryComponent)
+{
+	if (bInitialized)
+	{
+		if (Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
+		{
+			float Weight = Inventory[Index]->GetItemData().Weight;
+			int Moved = InventoryComponent->Put(Inventory[Index]);
+			if (Moved >= Count)
+			{
+				Inventory.RemoveAt(Index);
+				Fullness -= Count * Weight;
+			}
+			else
+			{
+				Fullness -= Moved * Weight;
+			}
+			return Moved;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+int UInventoryComponent::MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent)
+{
+	if (bInitialized)
+	{
+		if (Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
+		{
+			float Weight = Inventory[Index]->GetItemData().Weight;
+			int Moved = InventoryComponent->Put(Inventory[Index]);
+			if (Moved >= Count)
+			{
+				Inventory.RemoveAt(Index);
+				Fullness -= Count * Weight;
+			}
+			else
+			{
+				Fullness -= Moved * Weight;
+			}
+			return Moved;
+		}
+		else
+		{
+			return 0;
 		}
 	}
 	else

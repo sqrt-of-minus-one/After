@@ -12,6 +12,7 @@
 #include "InventoryComponent.generated.h"
 
 class AItem;
+class UPlayerInventoryComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class AFTER_API UInventoryComponent : public UActorComponent
@@ -53,6 +54,12 @@ public:
 	// Returns how many items were put into inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int Put(AItem* Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int MoveToInventory(int Index, int Count, UInventoryComponent* InventoryComponent);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
 protected:
 			/* INVENTORY */

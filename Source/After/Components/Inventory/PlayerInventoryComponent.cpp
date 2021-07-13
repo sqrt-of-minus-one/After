@@ -42,9 +42,9 @@ void UPlayerInventoryComponent::Init(float Size)
 	bInitialized = true;
 }
 
-int UPlayerInventoryComponent::GetFullness() const
+float UPlayerInventoryComponent::GetFullness() const
 {
-	int Res = Inventory->GetFullness();
+	float Res = Inventory->GetFullness();
 
 	const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
 	const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
@@ -59,9 +59,9 @@ int UPlayerInventoryComponent::GetFullness() const
 	return Res;
 }
 
-int UPlayerInventoryComponent::GetMaxFullness() const
+float UPlayerInventoryComponent::GetMaxFullness() const
 {
-	int Res = Inventory->GetMaxFullness();;
+	float Res = Inventory->GetMaxFullness();;
 
 	const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
 	const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;

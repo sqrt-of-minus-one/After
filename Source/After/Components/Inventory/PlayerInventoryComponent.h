@@ -40,10 +40,10 @@ public:
 	void Init(float Size);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int GetFullness() const;
+	float GetFullness() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int GetMaxFullness() const;
+	float GetMaxFullness() const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInventoryComponent* GetInventory() const;
