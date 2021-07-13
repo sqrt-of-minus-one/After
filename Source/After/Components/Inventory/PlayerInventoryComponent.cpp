@@ -91,24 +91,36 @@ UInventoryComponent* UPlayerInventoryComponent::GetClothesInventory(FClothesType
 	return ClothesInventory[Type];
 }
 
-int UPlayerInventoryComponent::Put(AItem* Item)
+int UPlayerInventoryComponent::Put(AItem* Item, int Count)
 {
-	int FirstCount = Item->GetCount();
-	int Count = FirstCount;
-	Count -= Inventory->Put(Item);
+	int FirstCount = Count;
+	int MoveCount = FirstCount;
+	MoveCount -= Inventory->Put(Item, MoveCount);
 
 	TMap<FClothesType, AItem*>& ClothesRef = Clothes;
 	TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
-	for_enum<FClothesType>([&Count, &ClothesRef, &ClothesInventoryRef, Item](FClothesType i, bool& out_continue)
+	for_enum<FClothesType>([&MoveCount, &ClothesRef, &ClothesInventoryRef, Item](FClothesType i, bool& out_continue)
 	{
-		if (Count <= 0)
+		if (MoveCount <= 0)
 		{
 			out_continue = false;
 		}
 		else if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
 		{
-			Count -= ClothesInventoryRef[i]->Put(Item);
+			MoveCount -= ClothesInventoryRef[i]->Put(Item, MoveCount);
 		}
 	});
-	return FirstCount - Count;
+	return FirstCount - MoveCount;
+}
+
+int UPlayerInventoryComponent::PutAll(AItem* Item)
+{
+	if (IsValid(Item))
+	{
+		return Put(Item, Item->GetCount());
+	}
+	else
+	{
+		return Put(Item, 0);
+	}
 }

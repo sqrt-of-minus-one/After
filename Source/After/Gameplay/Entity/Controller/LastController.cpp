@@ -271,7 +271,7 @@ void ALastController::StartAttack_f()
 			{
 				ALast* Last = Cast<ALast>(GetPawn());
 				int Count = ThrownItem->GetItem()->GetCount();
-				if (Last->GetInventory()->Put(ThrownItem->GetItem()) >= Count)
+				if (Last->GetInventory()->PutAll(ThrownItem->GetItem()) >= Count)
 				{
 					GetWorld()->DestroyActor(ThrownItem);
 				}

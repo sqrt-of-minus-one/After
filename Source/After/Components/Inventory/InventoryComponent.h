@@ -50,10 +50,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Take(int Index, int Count);
-	
+
 	// Returns how many items were put into inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int Put(AItem* Item);
+	int Put(AItem* Item, int Count);
+	
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int PutAll(AItem* Item);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToInventory(int Index, int Count, UInventoryComponent* InventoryComponent);

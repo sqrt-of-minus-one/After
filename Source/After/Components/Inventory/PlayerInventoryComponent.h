@@ -55,7 +55,10 @@ public:
 	UInventoryComponent* GetClothesInventory(FClothesType Type) const;
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	int Put(AItem* Item);
+	int Put(AItem* Item, int Count);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int PutAll(AItem* Item);
 
 protected:
 			/* INVENTORY */

@@ -89,12 +89,12 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 	}
 }
 
-int UInventoryComponent::Put(AItem* Item)
+int UInventoryComponent::Put(AItem* Item, int Count)
 {
 	if (bInitialized)
 	{
-		int Count = FMath::Min(Item->GetCount(), static_cast<int>((MaxFullness - Fullness) / Item->GetItemData().Weight));
-		if (Count <= 0) // Missing space
+		int MoveCount = FMath::Min3(Count, Item->GetCount(), static_cast<int>((MaxFullness - Fullness) / Item->GetItemData().Weight));
+		if (MoveCount <= 0) // Missing space
 		{
 			return 0;
 		}
@@ -106,24 +106,36 @@ int UInventoryComponent::Put(AItem* Item)
 				{
 					if (Inventory[i]->GetId() == Item->GetId())
 					{
-						Inventory[i]->SetCount(Inventory[i]->GetCount() + Count);
-						Fullness += Item->GetItemData().Weight * Count;
-						Item->SetCount(Item->GetCount() - Count);
-						return Count;
+						Inventory[i]->SetCount(Inventory[i]->GetCount() + MoveCount);
+						Fullness += Item->GetItemData().Weight * MoveCount;
+						Item->SetCount(Item->GetCount() - MoveCount);
+						return MoveCount;
 					}
 				}
 			}
 			AItem* NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
-			NewItem->SetCount(Count);
-			Fullness += Item->GetItemData().Weight * Count;
+			NewItem->SetCount(MoveCount);
+			Fullness += Item->GetItemData().Weight * MoveCount;
 			Inventory.Add(NewItem);
-			Item->SetCount(Item->GetCount() - Count);
-			return Count;
+			Item->SetCount(Item->GetCount() - MoveCount);
+			return MoveCount;
 		}
 	}
 	else
 	{
 		return -1;
+	}
+}
+
+int UInventoryComponent::PutAll(AItem* Item)
+{
+	if (IsValid(Item))
+	{
+		return Put(Item, Item->GetCount());
+	}
+	else
+	{
+		return Put(Item, 0);
 	}
 }
 
@@ -133,12 +145,13 @@ int UInventoryComponent::MoveToInventory(int Index, int Count, UInventoryCompone
 	{
 		if (Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
 		{
+			int FirstCount = Inventory[Index]->GetCount();
 			float Weight = Inventory[Index]->GetItemData().Weight;
-			int Moved = InventoryComponent->Put(Inventory[Index]);
-			if (Moved >= Count)
+			int Moved = InventoryComponent->Put(Inventory[Index], Count);
+			if (Moved >= FirstCount)
 			{
 				Inventory.RemoveAt(Index);
-				Fullness -= Count * Weight;
+				Fullness -= FirstCount * Weight;
 			}
 			else
 			{
@@ -163,12 +176,13 @@ int UInventoryComponent::MoveToPlayerInventory(int Index, int Count, UPlayerInve
 	{
 		if (Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
 		{
+			int FirstCount = Inventory[Index]->GetCount();
 			float Weight = Inventory[Index]->GetItemData().Weight;
-			int Moved = InventoryComponent->Put(Inventory[Index]);
-			if (Moved >= Count)
+			int Moved = InventoryComponent->Put(Inventory[Index], Count);
+			if (Moved >= FirstCount)
 			{
 				Inventory.RemoveAt(Index);
-				Fullness -= Count * Weight;
+				Fullness -= FirstCount * Weight;
 			}
 			else
 			{
