@@ -25,3 +25,8 @@ TSubclassOf<UUserWidget> AWidgetInitializer::GetCrateInventoryWidget() const
 {
 	return CrateInventoryWidget;
 }
+
+TSubclassOf<UUserWidget> AWidgetInitializer::GetPlayerMenuWidget() const
+{
+	return PlayerMenuWidget;
+}

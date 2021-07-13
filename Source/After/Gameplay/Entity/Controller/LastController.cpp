@@ -7,6 +7,7 @@
 #include "LastController.h"
 
 #include "GameFramework/GameUserSettings.h"
+#include "Blueprint/UserWidget.h"
 
 #include "../../../Data/Database/Database.h"
 #include "../../../Data/Lang/LangManager.h"
@@ -18,6 +19,7 @@
 #include "../../../AfterGameModeBase.h"
 #include "GameplayTagContainer.h"
 #include "../Mob/Animal.h"
+#include "../../../Gui/WidgetInitializer.h"
 #include "../../../GameConstants.h"
 
 ALastController::ALastController() :
@@ -215,6 +217,10 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::Interact_f);
 	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
 	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
+	CurrentInputStack[0]->BindAction("PlayerMenu", IE_Pressed, this, &ALastController::Menu_f);
+	CurrentInputStack[0]->BindAction("Inventory", IE_Pressed, this, &ALastController::Inventory_f);
+	CurrentInputStack[0]->BindAction("Crafting", IE_Pressed, this, &ALastController::Crafting_f);
+	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -287,7 +293,8 @@ void ALastController::StopAttack_f()
 void ALastController::Interact_f()
 {
 	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-	if (IsValid(SolidUnit))
+	if (IsValid(SolidUnit) &&
+		FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
 	{
 		SolidUnit->Interact(Cast<ALast>(GetPawn()));
 	}
@@ -322,5 +329,36 @@ void ALastController::Throw_f()
 		Drop->SetItem(Item);
 		Item = nullptr;
 		SetItem.ExecuteIfBound(Item);
+	}
+}
+
+void ALastController::Menu_f()
+{
+	OpenMenu(FMenuType::Menu);
+}
+
+void ALastController::Inventory_f()
+{
+	OpenMenu(FMenuType::Inventory);
+}
+
+void ALastController::Crafting_f()
+{
+	OpenMenu(FMenuType::Crafting);
+}
+
+void ALastController::Skills_f()
+{
+	OpenMenu(FMenuType::Skills);
+}
+
+void ALastController::OpenMenu(FMenuType Type)
+{
+	AAfterGameModeBase* GameMode = GAME_MODE;
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), GameMode->GetWidgetInitializer()->GetPlayerMenuWidget());
+	GameMode->GetWidgetInitializer()->PlayerMenuInit(Widget, Cast<ALast>(GetPawn()), Type);
+	if (Widget)
+	{
+		Widget->AddToViewport(1);
 	}
 }

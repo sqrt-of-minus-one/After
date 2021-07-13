@@ -10,6 +10,8 @@
 #include "GameFramework/Actor.h"
 #include "WidgetInitializer.generated.h"
 
+enum class FMenuType : uint8;
+
 UCLASS()
 class AFTER_API AWidgetInitializer : public AActor
 {
@@ -34,9 +36,18 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate, ALast* Last);
 
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<UUserWidget> GetPlayerMenuWidget() const;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerMenuInit(UUserWidget* Widget, ALast* Last, FMenuType Type);
+
 protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> CrateInventoryWidget;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> PlayerMenuWidget;
 
 };

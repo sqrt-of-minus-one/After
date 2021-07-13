@@ -18,6 +18,15 @@ class AEntity;
 class ASolidUnit;
 class AItem;
 
+UENUM(BlueprintType)
+enum class FMenuType : uint8
+{
+	Menu,
+	Inventory,
+	Crafting,
+	Skills
+};
+
 UCLASS()
 class AFTER_API ALastController : public APlayerController
 {
@@ -97,4 +106,10 @@ protected:
 	void Interact_f();
 	void SwitchLang_tmp();
 	void Throw_f();
+	void Menu_f();
+	void Inventory_f();
+	void Crafting_f();
+	void Skills_f();
+
+	void OpenMenu(FMenuType Type);
 };
