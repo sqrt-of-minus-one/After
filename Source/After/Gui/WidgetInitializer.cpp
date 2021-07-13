@@ -6,7 +6,10 @@
 
 #include "WidgetInitializer.h"
 
-AWidgetInitializer::AWidgetInitializer()
+#include "Blueprint/UserWidget.h"
+
+AWidgetInitializer::AWidgetInitializer() :
+	CurrentWidget(nullptr)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
@@ -21,12 +24,35 @@ void AWidgetInitializer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-TSubclassOf<UUserWidget> AWidgetInitializer::GetCrateInventoryWidget() const
+void AWidgetInitializer::DisplayCrateInventoryWidget(ACrate* Crate, ALast* Last)
 {
-	return CrateInventoryWidget;
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CrateInventoryWidget);
+	CrateInventoryInit(Widget, Crate, Last);
+	if (IsValid(Widget))
+	{
+		if (IsValid(CurrentWidget))
+		{
+			CurrentWidget->RemoveFromParent();
+		}
+		Widget->AddToViewport(1);
+		CurrentWidget = Widget;
+	}
 }
 
-TSubclassOf<UUserWidget> AWidgetInitializer::GetPlayerMenuWidget() const
+void AWidgetInitializer::DisplayPlayerMenuWidget(ALast* Last, FMenuType Type)
 {
-	return PlayerMenuWidget;
+	if (IsValid(CurrentWidget))
+	{
+		CurrentWidget->RemoveFromParent();
+		CurrentWidget = nullptr;
+		return;
+	}
+
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), PlayerMenuWidget);
+	PlayerMenuInit(Widget, Last, Type);
+	if (IsValid(Widget))
+	{
+		Widget->AddToViewport(1);
+		CurrentWidget = Widget;
+	}
 }

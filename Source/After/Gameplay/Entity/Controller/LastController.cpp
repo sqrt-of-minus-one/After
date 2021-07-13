@@ -7,7 +7,6 @@
 #include "LastController.h"
 
 #include "GameFramework/GameUserSettings.h"
-#include "Blueprint/UserWidget.h"
 
 #include "../../../Data/Database/Database.h"
 #include "../../../Data/Lang/LangManager.h"
@@ -339,31 +338,20 @@ void ALastController::Throw_f()
 
 void ALastController::Menu_f()
 {
-	OpenMenu(FMenuType::Menu);
+	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Menu);
 }
 
 void ALastController::Inventory_f()
 {
-	OpenMenu(FMenuType::Inventory);
+	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Inventory);
 }
 
 void ALastController::Crafting_f()
 {
-	OpenMenu(FMenuType::Crafting);
+	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Crafting);
 }
 
 void ALastController::Skills_f()
 {
-	OpenMenu(FMenuType::Skills);
-}
-
-void ALastController::OpenMenu(FMenuType Type)
-{
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), GameMode->GetWidgetInitializer()->GetPlayerMenuWidget());
-	GameMode->GetWidgetInitializer()->PlayerMenuInit(Widget, Cast<ALast>(GetPawn()), Type);
-	if (Widget)
-	{
-		Widget->AddToViewport(1);
-	}
+	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Skills);
 }

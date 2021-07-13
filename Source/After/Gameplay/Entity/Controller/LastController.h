@@ -110,6 +110,4 @@ protected:
 	void Inventory_f();
 	void Crafting_f();
 	void Skills_f();
-
-	void OpenMenu(FMenuType Type);
 };

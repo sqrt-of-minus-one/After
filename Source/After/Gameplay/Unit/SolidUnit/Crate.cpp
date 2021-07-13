@@ -6,8 +6,6 @@
 
 #include "Crate.h"
 
-#include "Blueprint/UserWidget.h"
-
 #include "../../../Components/Inventory/InventoryComponent.h"
 #include "../../../Data/Database/Database.h"
 #include "../../../Gui/WidgetInitializer.h"
@@ -47,13 +45,7 @@ void ACrate::Interact(ALast* Last)
 {
 	Super::Interact(Last);
 
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), GameMode->GetWidgetInitializer()->GetCrateInventoryWidget());
-	GameMode->GetWidgetInitializer()->CrateInventoryInit(Widget, this, Last);
-	if (Widget)
-	{
-		Widget->AddToViewport(1);
-	}
+	GAME_MODE->GetWidgetInitializer()->DisplayCrateInventoryWidget(this, Last);
 }
 
 const FCrateInfo& ACrate::GetCrateData() const

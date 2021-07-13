@@ -31,23 +31,26 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
-	TSubclassOf<UUserWidget> GetCrateInventoryWidget() const;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate, ALast* Last);
+	void DisplayCrateInventoryWidget(ACrate* Crate, ALast* Last);
 
 	UFUNCTION(BlueprintCallable)
-	TSubclassOf<UUserWidget> GetPlayerMenuWidget() const;
-
-	UFUNCTION(BlueprintImplementableEvent)
-	void PlayerMenuInit(UUserWidget* Widget, ALast* Last, FMenuType Type);
+	void DisplayPlayerMenuWidget(ALast* Last, FMenuType Type);
 
 protected:
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	UUserWidget* CurrentWidget;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> CrateInventoryWidget;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> PlayerMenuWidget;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate, ALast* Last);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void PlayerMenuInit(UUserWidget* Widget, ALast* Last, FMenuType Type);
 
 };
