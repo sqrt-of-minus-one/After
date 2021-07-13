@@ -90,8 +90,8 @@ protected:
 
 			/* INVENTORY */
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	AItem* Item;
+	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	//AItem* Item;
 
 			/* CONTROL */
 

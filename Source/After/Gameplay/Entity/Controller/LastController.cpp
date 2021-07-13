@@ -13,6 +13,7 @@
 #include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
 #include "../Last.h"
+#include "../../../Components/Inventory/PlayerInventoryComponent.h"
 #include "../../Unit/SolidUnit/SolidUnit.h"
 #include "../../Item/ThrownItem.h"
 #include "../../Item/Item.h"
@@ -24,8 +25,8 @@
 
 ALastController::ALastController() :
 	bIsBreaking(false),
-	bIsDead(false),
-	Item(nullptr)
+	bIsDead(false)
+	//Item(nullptr)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -36,9 +37,9 @@ void ALastController::BeginPlay()
 	Super::BeginPlay();
 
 	EntityPawn = Cast<AEntity>(GetPawn());
-	if (!EntityPawn)
+	if (!IsValid(EntityPawn))
 	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity"));
+		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity or does not exist"));
 	}
 }
 
@@ -46,11 +47,11 @@ void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (Item && Item->IsPendingKill())
+	/*if (Item && Item->IsPendingKill())
 	{
 		Item = nullptr;
 		SetItem.ExecuteIfBound(Item);
-	}
+	}*/
 
 
 	const ALangManager* LangManager = GAME_MODE->GetLangManager();
@@ -83,7 +84,7 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	if (IsValid(Item))
+	/*if (IsValid(Item))
 	{
 		if (Item->GetItemData().MaxCondition > 0.f)
 		{
@@ -93,7 +94,7 @@ void ALastController::Tick(float DeltaTime)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))));
 		}
-	}
+	}*/
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 
@@ -139,7 +140,7 @@ void ALastController::Select(AActor* Actor)
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
 		if (IsValid(SolidUnit))
 		{
-			StartBreak.ExecuteIfBound(SolidUnit, Item);
+			StartBreak.ExecuteIfBound(SolidUnit, nullptr /* Todo */);
 		}
 	}
 }
@@ -260,23 +261,27 @@ void ALastController::StartAttack_f()
 		AEntity* Entity = Cast<AEntity>(Selected);
 		if (IsValid(Entity) && Attack.IsBound())
 		{
-			Attack.Execute(Entity, true, Item);
+			Attack.Execute(Entity, true, nullptr /* Todo */);
 		}
 		else
 		{
 			AThrownItem* ThrownItem = Cast<AThrownItem>(Selected);
-			if (IsValid(ThrownItem) && !Item &&
+			if (IsValid(ThrownItem) &&
 				FVector::DistSquared(ThrownItem->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
 			{
-				Item = ThrownItem->GetItem();
-				GetWorld()->DestroyActor(ThrownItem);
+				ALast* Last = Cast<ALast>(GetPawn());
+				int Count = ThrownItem->GetItem()->GetCount();
+				if (Last->GetInventory()->Put(ThrownItem->GetItem()) >= Count)
+				{
+					GetWorld()->DestroyActor(ThrownItem);
+				}
 			}
 			else
 			{
 				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 				if (IsValid(SolidUnit))
 				{
-					StartBreak.ExecuteIfBound(SolidUnit, Item);
+					StartBreak.ExecuteIfBound(SolidUnit, nullptr /* Todo */);
 					bIsBreaking = true;
 				}
 			}
@@ -323,13 +328,13 @@ void ALastController::SwitchLang_tmp()
 
 void ALastController::Throw_f()
 {
-	if (!bIsDead && IsValid(Item))
+	/*if (!bIsDead && IsValid(Item))
 	{
 		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
 		Drop->SetItem(Item);
 		Item = nullptr;
 		SetItem.ExecuteIfBound(Item);
-	}
+	}*/
 }
 
 void ALastController::Menu_f()
