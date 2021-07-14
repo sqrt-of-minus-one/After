@@ -184,6 +184,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	float InventorySize;
 
+	// Player's hotbar size
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	int HotbarSize;
+
 			/* STATS */
 
 	// Maximum value of the satiety

@@ -45,22 +45,27 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	float GetMaxFullness() const;
 	
+	// Do not change item! Use Take() and Put() methods
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;
 
+	// Remove some items from the inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Take(int Index, int Count);
 
-	// Returns how many items were put into inventory
+	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int Put(AItem* Item, int Count);
-	
+
+	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int PutAll(AItem* Item);
 
+	// Returns how many items were moved (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToInventory(int Index, int Count, UInventoryComponent* InventoryComponent);
 
+	// Returns how many items were moved (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
@@ -78,4 +83,8 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TArray<AItem*> Inventory;
+
+private:
+	template<typename T>
+	int MoveToInventory_(int Index, int Count, T* InventoryComponent);
 };

@@ -178,6 +178,10 @@ void Check(FLastInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 	{
 		UE_LOG(LogDatabase, Error, TEXT("Last %s has non-positive inventory size (%f)"), *Tag.ToString(), Data.InventorySize);
 	}
+	if (Data.HotbarSize <= 0)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Last %s has non-positive hotbar size (%d)"), *Tag.ToString(), Data.HotbarSize);
+	}
 
 	// Stats
 	if (Data.MaxSatiety <= 0)

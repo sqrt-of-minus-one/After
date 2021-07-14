@@ -72,7 +72,7 @@ void ALast::BeginPlay()
 
 	Satiety = LastData->MaxSatiety;
 
-	InventoryComponent->Init(LastData->InventorySize);
+	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
 }
 
 void ALast::Tick(float DeltaTime)

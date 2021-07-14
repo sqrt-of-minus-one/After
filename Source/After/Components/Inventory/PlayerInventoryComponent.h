@@ -37,7 +37,7 @@ public:
 			/* INVENTORY */
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void Init(float Size);
+	void Init(float Size, int HotbarSize);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	float GetFullness() const;
@@ -54,11 +54,23 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	UInventoryComponent* GetClothesInventory(FClothesType Type) const;
 
+	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int Put(AItem* Item, int Count);
 
+	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int PutAll(AItem* Item);
+
+			/* HOTBAR */
+
+	// Do not change item!
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	AItem* GetHotbarItem(int Index) const;
+
+	// You cannot put into hotbar items that are in clothes
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	void SetHotbarItem(int HotbarIndex, int ItemIndex);
 
 protected:
 			/* INVENTORY */
@@ -74,5 +86,10 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TMap<FClothesType, UInventoryComponent*> ClothesInventory;
+
+			/* HOTBAR */
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Hotbar")
+	TArray<int> Hotbar;
 
 };
