@@ -306,7 +306,7 @@ void ALastController::StartAttack_f()
 		AEntity* Entity = Cast<AEntity>(Selected);
 		if (IsValid(Entity) && Attack.IsBound())
 		{
-			Attack.Execute(Entity, true, nullptr /* Todo */);
+			Attack.Execute(Entity, true, Inventory->GetHotbarItem(HotbarSlot));
 		}
 		else
 		{
