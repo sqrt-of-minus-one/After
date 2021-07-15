@@ -17,6 +17,7 @@
 class AEntity;
 class ASolidUnit;
 class AItem;
+class UPlayerInventoryComponent;
 
 UENUM(BlueprintType)
 enum class FMenuType : uint8
@@ -72,8 +73,19 @@ public:
 
 	void SetupInput();
 
+			/* INVENTORY */
+
+	bool bWasValid;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int GetHotbarSlot();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetHotbarSlot(int Slot);
+
 protected:
 	AEntity* EntityPawn;
+	UPlayerInventoryComponent* Inventory;
 
 			/* SELECTING */
 
@@ -90,8 +102,8 @@ protected:
 
 			/* INVENTORY */
 
-	//UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	//AItem* Item;
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	int HotbarSlot;
 
 			/* CONTROL */
 

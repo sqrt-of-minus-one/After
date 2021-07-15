@@ -152,6 +152,11 @@ AItem* UPlayerInventoryComponent::GetHotbarItem(int Index) const
 	}
 }
 
+int UPlayerInventoryComponent::GetHotbarItemIndex(int Index) const
+{
+	return Hotbar[Index];
+}
+
 void UPlayerInventoryComponent::SetHotbarItem(int HotbarIndex, int ItemIndex)
 {
 	Hotbar[HotbarIndex] = ItemIndex;

@@ -68,6 +68,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	AItem* GetHotbarItem(int Index) const;
 
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	int GetHotbarItemIndex(int Index) const;
+
 	// You cannot put into hotbar items that are in clothes
 	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	void SetHotbarItem(int HotbarIndex, int ItemIndex);

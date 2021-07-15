@@ -15,6 +15,7 @@
 #include "../../Data/Lang/LangManager.h"
 #include "Controller/LastController.h"
 #include "../../AfterGameModeBase.h"
+#include "../../Gui/WidgetInitializer.h"
 #include "../../GameConstants.h"
 #include "../Unit/SolidUnit/SolidUnit.h"
 #include "../../Components/Inventory/PlayerInventoryComponent.h"
@@ -73,6 +74,8 @@ void ALast::BeginPlay()
 	Satiety = LastData->MaxSatiety;
 
 	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
+
+	GameMode->GetWidgetInitializer()->DisplayMainWidget(this);
 }
 
 void ALast::Tick(float DeltaTime)

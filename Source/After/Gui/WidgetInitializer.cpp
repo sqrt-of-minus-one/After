@@ -24,6 +24,16 @@ void AWidgetInitializer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AWidgetInitializer::DisplayMainWidget(ALast* Last)
+{
+	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), MainWidget);
+	MainInit(Widget, Last);
+	if (IsValid(Widget))
+	{
+		Widget->AddToViewport(0);
+	}
+}
+
 void AWidgetInitializer::DisplayCrateInventoryWidget(ACrate* Crate, ALast* Last)
 {
 	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), CrateInventoryWidget);

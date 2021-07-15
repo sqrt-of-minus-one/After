@@ -12,6 +12,7 @@
 #include "../../../Data/Lang/LangManager.h"
 #include "../../LogGameplay.h"
 #include "../Last.h"
+#include "../../../Components/Inventory/InventoryComponent.h"
 #include "../../../Components/Inventory/PlayerInventoryComponent.h"
 #include "../../Unit/SolidUnit/SolidUnit.h"
 #include "../../Item/ThrownItem.h"
@@ -24,8 +25,8 @@
 
 ALastController::ALastController() :
 	bIsBreaking(false),
-	bIsDead(false)
-	//Item(nullptr)
+	bIsDead(false),
+	HotbarSlot(0)
 {
 	SetShowMouseCursor(true);
 	bEnableMouseOverEvents = true;
@@ -40,17 +41,37 @@ void ALastController::BeginPlay()
 	{
 		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity or does not exist"));
 	}
+	Inventory = Cast<ALast>(GetPawn())->GetInventory();
+
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	bWasValid = IsValid(HotbarItem);
+	if (bWasValid)
+	{
+		SetItem.ExecuteIfBound(HotbarItem);
+	}
 }
 
 void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	/*if (Item && Item->IsPendingKill())
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	if (bWasValid)
 	{
-		Item = nullptr;
-		SetItem.ExecuteIfBound(Item);
-	}*/
+		if (!IsValid(HotbarItem))
+		{
+			SetItem.ExecuteIfBound(nullptr);
+			bWasValid = false;
+		}
+	}
+	else
+	{
+		if (IsValid(HotbarItem))
+		{
+			SetItem.ExecuteIfBound(HotbarItem);
+			bWasValid = true;
+		}
+	}
 
 
 	const ALangManager* LangManager = GAME_MODE->GetLangManager();
@@ -83,17 +104,17 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	/*if (IsValid(Item))
+	if (bWasValid)
 	{
-		if (Item->GetItemData().MaxCondition > 0.f)
+		if (HotbarItem->GetItemData().MaxCondition > 0.f)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))), Item->GetCondition(), Item->GetItemData().MaxCondition));
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))), HotbarItem->GetCondition(), HotbarItem->GetItemData().MaxCondition));
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(Item->GetId().ToString() + FString(".name"))));
+			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))));
 		}
-	}*/
+	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
 }
 
@@ -223,6 +244,31 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
 }
 
+int ALastController::GetHotbarSlot()
+{
+	return HotbarSlot;
+}
+
+void ALastController::SetHotbarSlot(int Slot)
+{
+	if (Slot >= 0 && Slot < Cast<ALast>(GetPawn())->GetLastData().HotbarSize)
+	{
+		HotbarSlot = Slot;
+		AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+		if (IsValid(HotbarItem))
+		{
+			SetItem.ExecuteIfBound(HotbarItem);
+			bWasValid = true;
+		}
+		else if (bWasValid)
+		{
+			SetItem.ExecuteIfBound(HotbarItem);
+			bWasValid = false;
+		}
+
+	}
+}
+
 void ALastController::MoveX_f(float Value)
 {
 	MoveX.ExecuteIfBound(Value);
@@ -280,7 +326,7 @@ void ALastController::StartAttack_f()
 				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 				if (IsValid(SolidUnit))
 				{
-					StartBreak.ExecuteIfBound(SolidUnit, nullptr /* Todo */);
+					StartBreak.ExecuteIfBound(SolidUnit, Inventory->GetHotbarItem(HotbarSlot));
 					bIsBreaking = true;
 				}
 			}
@@ -327,13 +373,12 @@ void ALastController::SwitchLang_tmp()
 
 void ALastController::Throw_f()
 {
-	/*if (!bIsDead && IsValid(Item))
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	if (!bIsDead && IsValid(HotbarItem))
 	{
 		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-		Drop->SetItem(Item);
-		Item = nullptr;
-		SetItem.ExecuteIfBound(Item);
-	}*/
+		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
+	}
 }
 
 void ALastController::Menu_f()

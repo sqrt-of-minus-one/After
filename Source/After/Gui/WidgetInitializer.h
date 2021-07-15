@@ -31,6 +31,9 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
+	void DisplayMainWidget(ALast* Last);
+
+	UFUNCTION(BlueprintCallable)
 	void DisplayCrateInventoryWidget(ACrate* Crate, ALast* Last);
 
 	UFUNCTION(BlueprintCallable)
@@ -42,10 +45,16 @@ protected:
 	UUserWidget* CurrentWidget;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> MainWidget;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> CrateInventoryWidget;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> PlayerMenuWidget;
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void MainInit(UUserWidget* Widget, ALast* Last);
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void CrateInventoryInit(UUserWidget* Widget, ACrate* Crate, ALast* Last);
