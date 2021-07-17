@@ -17,6 +17,16 @@
 class AEntity;
 class ASolidUnit;
 class AItem;
+class UPlayerInventoryComponent;
+
+UENUM(BlueprintType)
+enum class FMenuType : uint8
+{
+	Menu,
+	Inventory,
+	Crafting,
+	Skills
+};
 
 UCLASS()
 class AFTER_API ALastController : public APlayerController
@@ -43,6 +53,11 @@ public:
 	UFUNCTION()
 	void Unselect(AActor* Actor);
 
+			/* EVENTS */
+
+	UFUNCTION(Category = "Events")
+	virtual void Death(); // Is called when the last becames dead
+
 			/* CONTROL */
 
 	TDelegate<void(float)> MoveX;
@@ -54,14 +69,27 @@ public:
 	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
 	TDelegate<void(ASolidUnit*, AItem*)> StartBreak;
 	TDelegate<void()> StopBreak;
+	TDelegate<void(AItem*)> SetItem;
 
 	void SetupInput();
 
+			/* INVENTORY */
+
+	bool bWasValid;
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int GetHotbarSlot();
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void SetHotbarSlot(int Slot);
+
 protected:
 	AEntity* EntityPawn;
+	UPlayerInventoryComponent* Inventory;
 
 			/* SELECTING */
 
+	UPROPERTY(BlueprintReadOnly, Category = "Selecting")
 	AActor* Selected;
 
 			/* STATE */
@@ -69,10 +97,13 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsBreaking;
 
+	UPROPERTY(BlueprintReadOnly, Category = "State")
+	bool bIsDead;
+
 			/* INVENTORY */
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	AItem* Item;
+	int HotbarSlot;
 
 			/* CONTROL */
 
@@ -84,7 +115,11 @@ protected:
 	void StopRun_f();
 	void StartAttack_f();
 	void StopAttack_f();
-	void SpawnCow_tmp();
+	void Interact_f();
 	void SwitchLang_tmp();
 	void Throw_f();
+	void Menu_f();
+	void Inventory_f();
+	void Crafting_f();
+	void Skills_f();
 };

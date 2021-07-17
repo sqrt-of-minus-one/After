@@ -141,7 +141,7 @@ void AUnit::StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPri
 	bool bFromSweep, const FHitResult& SweepResult)
 {
 	AEntity* Entity = Cast<AEntity>(OtherActor);
-	if (Entity && !Attacked.Contains(Entity))
+	if (IsValid(Entity) && !Attacked.Contains(Entity))
 	{
 		Attacked.Add(Entity);
 		if (!GetWorld()->GetTimerManager().IsTimerActive(AttackTimer))
@@ -170,7 +170,10 @@ void AUnit::Attack()
 {
 	for (AEntity* i : Attacked)
 	{
-		// Direction is zero, because unit cannot push entity (direction is not important)
-		i->Damage(UnitData->Damage, UnitData->DamageType, 0.f, this);
+		if (IsValid(i))
+		{
+			// Direction is zero, because unit cannot push entity (direction is not important)
+			i->Damage(UnitData->Damage, UnitData->DamageType, 0.f, this);
+		}
 	}
 }

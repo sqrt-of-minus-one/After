@@ -215,7 +215,7 @@ void Check(FCrateInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitDat
 	// Inventory
 	if (Data.InventorySize <= 0)
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Crate %s has non-positive inventory size (%d)"), *Tag.ToString(), Data.InventorySize);
+		UE_LOG(LogDatabase, Error, TEXT("Crate %s has non-positive inventory size (%f)"), *Tag.ToString(), Data.InventorySize);
 	}
 }
 

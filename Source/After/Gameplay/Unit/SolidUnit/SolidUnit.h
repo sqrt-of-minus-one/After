@@ -14,6 +14,7 @@
 #include "SolidUnit.generated.h"
 
 class AItem;
+class ALast;
 
 USTRUCT(BlueprintType)
 struct FDestroyerInfo
@@ -55,7 +56,7 @@ public:
 			/* INTERACTION */
 
 	UFUNCTION(Category = "Interaction")
-	virtual void Interact();
+	virtual void Interact(ALast* Last);
 
 			/* DAMAGE */
 
@@ -65,10 +66,13 @@ public:
 			/* BREAKING */
 
 	// Returns destroyer id
-	UFUNCTION(Category = "Damage")
+	UFUNCTION(Category = "Breaking")
 	int StartBreaking(AItem* By);
 
-	UFUNCTION(Category = "Damage")
+	UFUNCTION(Category = "Breaking")
+	void SwitchItem(int DestroyerId, AItem* By);
+
+	UFUNCTION(Category = "Breaking")
 	void StopBreaking(int DestroyerId);
 
 protected:

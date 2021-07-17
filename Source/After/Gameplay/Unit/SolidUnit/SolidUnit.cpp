@@ -102,10 +102,13 @@ void ASolidUnit::Tick(float DeltaTime)
 	{
 		for (TPair<int, FDestroyerInfo>& i : Destroyers)
 		{
-			Breaking += DeltaTime * i.Value.SpeedMultiplier;
-			if (i.Value.Item)
+			if (!i.Value.Item || !i.Value.Item->IsPendingKill())
 			{
-				i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * (i.Value.bRightTool ? 1.f : GameConstants::WrongItemConditionPenalty));
+				Breaking += DeltaTime * i.Value.SpeedMultiplier;
+				if (i.Value.Item)
+				{
+					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * (i.Value.bRightTool ? 1.f : GameConstants::WrongItemConditionPenalty));
+				}
 			}
 		}
 		if (Breaking >= SolidUnitData->BreakingTime)
@@ -136,7 +139,7 @@ float ASolidUnit::GetHealth() const
 	return Health;
 }
 
-void ASolidUnit::Interact()
+void ASolidUnit::Interact(ALast* Last)
 {
 	// This should be pure virtual, but it's Unreal...
 }
@@ -155,45 +158,54 @@ void ASolidUnit::Damage(float Value, FDamageType Type, const AActor* FromWho)
 int ASolidUnit::StartBreaking(AItem* By)
 {
 	int DestroyerId = Destroyers.Num();
-	FDestroyerInfo Info;
-	Info.Item = By;
-	if (By)
+	Destroyers.Add(DestroyerId, FDestroyerInfo());
+	SwitchItem(DestroyerId, By);
+	return DestroyerId;
+}
+
+void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
+{
+	if (Destroyers.Contains(DestroyerId))
 	{
-		Info.bRightTool = false;
-		for (const FBreakProfileGroup& i : BreakProfileData->CanBeBrokenBy)
+		FDestroyerInfo Info;
+		Info.Item = By;
+		if (By)
 		{
-			bool bRightForGroup = true;
-			for (const FGameplayTag& j : i.Group)
+			Info.bRightTool = false;
+			for (const FBreakProfileGroup& i : BreakProfileData->CanBeBrokenBy)
 			{
-				if (By->GetId() != j && !By->GetItemData().Tags.Contains(j))
+				bool bRightForGroup = true;
+				for (const FGameplayTag& j : i.Group)
 				{
-					bRightForGroup = false;
+					if (By->GetId() != j && !By->GetItemData().Tags.Contains(j))
+					{
+						bRightForGroup = false;
+						break;
+					}
+				}
+				if (bRightForGroup)
+				{
+					Info.bRightTool = true;
 					break;
 				}
 			}
-			if (bRightForGroup)
-			{
-				Info.bRightTool = true;
-				break;
-			}
+			Info.SpeedMultiplier = By->GetItemData().BreakingSpeedMultiplier;
 		}
-		Info.SpeedMultiplier = By->GetItemData().BreakingSpeedMultiplier;
+		else
+		{
+			Info.bRightTool = false;
+			Info.SpeedMultiplier = 1.f;
+		}
+		if (BreakProfileData->CanBeBrokenBy.Num() == 0)
+		{
+			Info.bRightTool = true;
+		}
+		if (!Info.bRightTool && !BreakProfileData->bCanBeBrokenByHand)
+		{
+			Info.SpeedMultiplier = 0.f;
+		}
+		Destroyers[DestroyerId] = Info;
 	}
-	else
-	{
-		Info.bRightTool = false;
-		Info.SpeedMultiplier = 1.f;
-	}
-	if (BreakProfileData->CanBeBrokenBy.Num() == 0)
-	{
-		Info.bRightTool = true;
-	}
-	if (!Info.bRightTool && !BreakProfileData->bCanBeBrokenByHand)
-	{
-		Info.SpeedMultiplier = 0.f;
-	}
-	Destroyers.Add(DestroyerId, Info);
-	return DestroyerId;
 }
 
 void ASolidUnit::StopBreaking(int DestroyerId)

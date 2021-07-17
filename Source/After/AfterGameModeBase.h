@@ -12,8 +12,12 @@
 
 #include "AfterGameModeBase.generated.h"
 
+class UUserWidget;
+class ACrate;
+class ALast;
 class UDatabase;
 class ALangManager;
+class AWidgetInitializer;
 
 #define GAME_MODE Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())
 
@@ -28,6 +32,8 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	ALast* LastPawn;
+
 			/* DATA */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
@@ -39,10 +45,22 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Data")
 	ALangManager* LangManager;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
+	TSubclassOf<AWidgetInitializer> WidgetInitializerClass;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Data")
+	AWidgetInitializer* WidgetInitializer;
+
 public:
+	void SetLast(ALast* Last);
+
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;
 
+	UFUNCTION(BlueprintCallable, Category = "Data")
 	ALangManager* GetLangManager();
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	AWidgetInitializer* GetWidgetInitializer();
 };

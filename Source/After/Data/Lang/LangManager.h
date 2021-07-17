@@ -30,12 +30,12 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UFUNCTION(BlueprintImplementableEvent, Category = "Language")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Language")
 	FString GetString(const FName& Key) const;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Language")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Language")
 	FLangs GetLang() const;
 
-	UFUNCTION(BlueprintImplementableEvent, Category = "Language")
+	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Language")
 	bool SetLang(FLangs LangCode);
 };

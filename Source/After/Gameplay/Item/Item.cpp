@@ -54,6 +54,25 @@ int AItem::GetCount() const
 	return Count;
 }
 
+bool AItem::SetCount(int NewCount)
+{
+	if (NewCount <= 0)
+	{
+		Count = 0;
+		Destroy();
+		return true;
+	}
+	else if (ItemData->bIsStackable)
+	{
+		Count = NewCount;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 float AItem::GetCondition() const
 {
 	return Condition;
@@ -61,12 +80,12 @@ float AItem::GetCondition() const
 
 void AItem::Use(float ConditionDecrease)
 {
-	/*if (ItemData->MaxCondition > 0.f)
+	if (ItemData->MaxCondition > 0.f)
 	{
 		Condition -= ConditionDecrease;
 		if (Condition <= 0.f)
 		{
-			GetWorld()->DestroyActor(this, true);
+			Destroy();
 		}
-	}*/
+	}
 }

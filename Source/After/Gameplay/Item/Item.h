@@ -42,6 +42,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	int GetCount() const;
 
+	// Returns true if count was successfully changed
+	UFUNCTION(BlueprintCallable, Category = "General")
+	bool SetCount(int NewCount);
+
 			/* STATS */
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")

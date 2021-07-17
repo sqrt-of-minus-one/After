@@ -223,9 +223,9 @@ struct FCrateInfo
 public:
 			/* INVENTORY */
 
-	// The crate's volume
+	// The maximum weight that can be placed inside the crate
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	int InventorySize;
+	float InventorySize;
 };
 void Check(FCrateInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 

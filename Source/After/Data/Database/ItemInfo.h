@@ -35,9 +35,13 @@ public:
 
 			/* INVENTORY */
 
-	// How many items can be placed in one inventory cell
+	// Weight of the item
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
-	int StackSize = 100;
+	float Weight = .5f;
+
+	// If true, items are displayed in one list element in inventory GUI
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	bool bIsStackable = true;
 
 			/* ATTACK */
 

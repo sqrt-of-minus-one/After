@@ -26,9 +26,13 @@ void Check(FItemInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData
 	}
 
 	// Inventory
-	if (Data.StackSize <= 0)
+	if (Data.Weight < 0)
 	{
-		UE_LOG(LogDatabase, Error, TEXT("Item %s has non-positive stack size (%d)"), *Tag.ToString(), Data.StackSize);
+		UE_LOG(LogDatabase, Error, TEXT("Item %s has negative weight (%f)"), *Tag.ToString(), Data.Weight);
+	}
+	if (Data.bIsStackable && Data.MaxCondition > 0.f)
+	{
+		UE_LOG(LogDatabase, Error, TEXT("Item %s is stackable and has condition"), *Tag.ToString());
 	}
 
 	// Attack

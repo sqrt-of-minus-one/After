@@ -37,7 +37,7 @@ void AMobController::Tick(float DeltaTime)
 void AMobController::Damage(float Direction, AActor* FromWho)
 {
 	AEntity* EntityAttacker = Cast<AEntity>(FromWho);
-	if (EntityAttacker)
+	if (IsValid(EntityAttacker))
 	{
 		Attacker = EntityAttacker;
 		bHasGoal = true;
@@ -56,7 +56,7 @@ void AMobController::Damage(float Direction, AActor* FromWho)
 	else
 	{
 		const AUnit* UnitAttacker = Cast<AUnit>(FromWho);
-		if (UnitAttacker && !DangerousUnits.Contains(UnitAttacker))
+		if (IsValid(UnitAttacker) && !DangerousUnits.Contains(UnitAttacker))
 		{
 			DangerousUnits.AddTail(UnitAttacker);
 			bHasGoal = true;
@@ -68,7 +68,7 @@ void AMobController::Damage(float Direction, AActor* FromWho)
 void AMobController::BeginDanger(const AActor* Actor)
 {
 	const AUnit* Unit = Cast<AUnit>(Actor);
-	if (Unit && Unit->GetUnitData().bSeemsDangerous && !DangerousUnits.Contains(Unit))
+	if (IsValid(Unit) && Unit->GetUnitData().bSeemsDangerous && !DangerousUnits.Contains(Unit))
 	{
 		DangerousUnits.AddTail(Unit);
 		bHasGoal = true;
@@ -96,7 +96,7 @@ void AMobController::EndDanger(const AActor* Actor)
 void AMobController::BeginView(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	if (Entity && !Entity->IsDead())
+	if (IsValid(Entity) && !Entity->IsDead())
 	{
 		const UDatabase* Database = GAME_MODE->GetDatabase();
 		const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
@@ -110,7 +110,7 @@ void AMobController::BeginView(AActor* Actor)
 		}
 		else if (FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database) && MobPawn->GetEntityData().Damage != 0)
 		{
-			if (!Target)
+			if (!IsValid(Target))
 			{
 				Target = Entity;
 				bHasGoal = true;
@@ -168,7 +168,7 @@ void AMobController::EndPursue(AActor* Actor)
 void AMobController::SetupInput()
 {
 	MobPawn = Cast<AMob>(GetPawn());
-	if (!MobPawn)
+	if (!IsValid(MobPawn))
 	{
 		UE_LOG(LogGameplay, Error, TEXT("Mob Controller: The pawn is not a mob"));
 		return;
@@ -240,9 +240,8 @@ void AMobController::UpdateDirection()
 			}
 			Direction.Normalize();
 			Move_f(Direction);
-			return;
 		}
-		else if (Target)
+		else if (IsValid(Target))
 		{
 			Direction = FVector2D(Target->GetActorLocation() - MobPawn->GetActorLocation());
 			Attack_f(Target);
@@ -268,13 +267,9 @@ void AMobController::UpdateDirection()
 					PossibleTargets.RemoveNode(PossibleTargets.GetHead());
 				}
 			}
-			return;
 		}
 	}
-
-	// else
-
-	if (FMath::RandBool())
+	else if (FMath::RandBool())
 	{
 		Move_f(FVector2D(FMath::RandRange(-1, 1), FMath::RandRange(-1, 1)));
 	}
@@ -287,7 +282,7 @@ void AMobController::UpdateDirection()
 void AMobController::StopPain()
 {
 	Attacker = nullptr;
-	if (!Target && RunningAwayFrom.Num() == 0)
+	if (!IsValid(Target) && RunningAwayFrom.Num() == 0)
 	{
 		SetRun_f(false);
 		if (DangerousUnits.Num() == 0)

@@ -16,7 +16,7 @@ struct FLastInfo;
 class ASolidUnit;
 class USpringArmComponent;
 class UCameraComponent;
-//class UPlayerInventoryComponent;
+class UPlayerInventoryComponent;
 //class USkillsComponent;
 
 UCLASS()
@@ -45,6 +45,11 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetSatiety() const;
+
+			/* INVENTORY */
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UPlayerInventoryComponent* GetInventory();
 
 			/* TELEPATHY */
 
@@ -76,12 +81,17 @@ protected:
 	AItem* ItemForBreaking;
 
 	UFUNCTION(Category = "Breaking")
+	void SetItemForBreaking(AItem* Item);
+
+	UFUNCTION(Category = "Breaking")
 	void StartBreak(ASolidUnit* Target, AItem* Item);
 
 	UFUNCTION(Category = "Breaking")
 	void StopBreak();
 
 			/* DAMAGE */
+
+	virtual void Death(FDamageType Type, const AActor* Murderer) override;
 	
 	virtual void Disappear() override;
 
@@ -92,6 +102,10 @@ protected:
 
 	virtual void CalculateStats() override;
 
+			/* EVENTS */
+
+	TDelegate<void()> DeathDelegate;
+
 			/* COMPONENTS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
@@ -100,8 +114,8 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UCameraComponent* CameraComponent;
 
-//	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-//	UPlayerInventoryComponent* InventoryComponent;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
+	UPlayerInventoryComponent* InventoryComponent;
 
 //	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 //	USkillsComponent* SkillsComponent;
