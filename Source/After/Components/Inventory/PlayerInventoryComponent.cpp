@@ -40,7 +40,7 @@ void UPlayerInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 void UPlayerInventoryComponent::Init(float Size, int HotbarSize)
 {
 	Inventory->Init(Size);
-	Hotbar.SetNum(Size);
+	Hotbar.SetNum(HotbarSize);
 	for (int& i : Hotbar)
 	{
 		i = -1;
@@ -50,38 +50,52 @@ void UPlayerInventoryComponent::Init(float Size, int HotbarSize)
 
 float UPlayerInventoryComponent::GetFullness() const
 {
-	float Res = Inventory->GetFullness();
-
-	// References for lambda
-	const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
-	const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
-	for_enum<FClothesType>([&Res, &ClothesRef, &ClothesInventoryRef](FClothesType i, bool& out_continue)
+	if (bInitialized)
 	{
-		if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
-		{
-			Res += ClothesInventoryRef[i]->GetFullness();
-		}
-	});
+		float Res = Inventory->GetFullness();
 
-	return Res;
+		// References for lambda
+		const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
+		const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
+		for_enum<FClothesType>([&Res, &ClothesRef, &ClothesInventoryRef](FClothesType i, bool& out_continue)
+		{
+			if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
+			{
+				Res += ClothesInventoryRef[i]->GetFullness();
+			}
+		});
+
+		return Res;
+	}
+	else
+	{
+		return 0.f;
+	}
 }
 
 float UPlayerInventoryComponent::GetMaxFullness() const
 {
-	float Res = Inventory->GetMaxFullness();;
-
-	// References for lambda
-	const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
-	const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
-	for_enum<FClothesType>([&Res, &ClothesRef, &ClothesInventoryRef](FClothesType i, bool& out_continue)
+	if (bInitialized)
 	{
-		if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
-		{
-			Res += ClothesInventoryRef[i]->GetMaxFullness();
-		}
-	});
+		float Res = Inventory->GetMaxFullness();;
 
-	return Res;
+		// References for lambda
+		const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
+		const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
+		for_enum<FClothesType>([&Res, &ClothesRef, &ClothesInventoryRef](FClothesType i, bool& out_continue)
+		{
+			if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
+			{
+				Res += ClothesInventoryRef[i]->GetMaxFullness();
+			}
+		});
+
+		return Res;
+	}
+	else
+	{
+		return 0.f;
+	}
 }
 
 UInventoryComponent* UPlayerInventoryComponent::GetInventory() const
@@ -91,41 +105,62 @@ UInventoryComponent* UPlayerInventoryComponent::GetInventory() const
 
 AItem* UPlayerInventoryComponent::GetClothes(FClothesType Type) const
 {
-	return Clothes[Type];
+	if (bInitialized)
+	{
+		return Clothes[Type];
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 UInventoryComponent* UPlayerInventoryComponent::GetClothesInventory(FClothesType Type) const
 {
-	return ClothesInventory[Type];
+	if (bInitialized)
+	{
+		return ClothesInventory[Type];
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 int UPlayerInventoryComponent::Put(AItem* Item, int Count)
 {
-	// Original count of items
-	int FirstCount = Count;
-
-	// How many items are left
-	int MoveCount = FirstCount;
-
-	// Try to put items into main inventory
-	MoveCount -= Inventory->Put(Item, MoveCount);
-
-	// References for lambda
-	TMap<FClothesType, AItem*>& ClothesRef = Clothes;
-	TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
-	// Try to put items into clothes
-	for_enum<FClothesType>([&MoveCount, &ClothesRef, &ClothesInventoryRef, Item](FClothesType i, bool& out_continue)
+	if (bInitialized)
 	{
-		if (MoveCount <= 0) // If all of the items were put
+		// Original count of items
+		int FirstCount = Count;
+
+		// How many items are left
+		int MoveCount = FirstCount;
+
+		// Try to put items into main inventory
+		MoveCount -= Inventory->Put(Item, MoveCount);
+
+		// References for lambda
+		TMap<FClothesType, AItem*>& ClothesRef = Clothes;
+		TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
+		// Try to put items into clothes
+		for_enum<FClothesType>([&MoveCount, &ClothesRef, &ClothesInventoryRef, Item](FClothesType i, bool& out_continue)
 		{
-			out_continue = false;
-		}
-		else if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
-		{
-			MoveCount -= ClothesInventoryRef[i]->Put(Item, MoveCount);
-		}
-	});
-	return FirstCount - MoveCount;
+			if (MoveCount <= 0) // If all of the items were put
+			{
+				out_continue = false;
+			}
+			else if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
+			{
+				MoveCount -= ClothesInventoryRef[i]->Put(Item, MoveCount);
+			}
+		});
+		return FirstCount - MoveCount;
+	}
+	else
+	{
+		return 0;
+	}
 }
 
 int UPlayerInventoryComponent::PutAll(AItem* Item)
@@ -142,7 +177,7 @@ int UPlayerInventoryComponent::PutAll(AItem* Item)
 
 AItem* UPlayerInventoryComponent::GetHotbarItem(int Index) const
 {
-	if (Index >= 0 && Index < Hotbar.Num())
+	if (bInitialized && Index >= 0 && Index < Hotbar.Num())
 	{
 		return Inventory->Get(Hotbar[Index]);
 	}
@@ -154,10 +189,20 @@ AItem* UPlayerInventoryComponent::GetHotbarItem(int Index) const
 
 int UPlayerInventoryComponent::GetHotbarItemIndex(int Index) const
 {
-	return Hotbar[Index];
+	if (bInitialized && Index >= 0 && Index < Hotbar.Num())
+	{
+		return Hotbar[Index];
+	}
+	else
+	{
+		return -1;
+	}
 }
 
 void UPlayerInventoryComponent::SetHotbarItem(int HotbarIndex, int ItemIndex)
 {
-	Hotbar[HotbarIndex] = ItemIndex;
+	if (bInitialized)
+	{
+		Hotbar[HotbarIndex] = ItemIndex;
+	}
 }

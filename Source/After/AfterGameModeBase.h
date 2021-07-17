@@ -14,6 +14,7 @@
 
 class UUserWidget;
 class ACrate;
+class ALast;
 class UDatabase;
 class ALangManager;
 class AWidgetInitializer;
@@ -30,6 +31,8 @@ public:
 	
 protected:
 	virtual void BeginPlay() override;
+
+	ALast* LastPawn;
 
 			/* DATA */
 
@@ -49,6 +52,8 @@ protected:
 	AWidgetInitializer* WidgetInitializer;
 
 public:
+	void SetLast(ALast* Last);
+
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;

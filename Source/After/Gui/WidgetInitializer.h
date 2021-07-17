@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
 	UUserWidget* CurrentWidget;
 	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly)
+	bool bIsMainWidgetCreated;
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<UUserWidget> MainWidget;
 	

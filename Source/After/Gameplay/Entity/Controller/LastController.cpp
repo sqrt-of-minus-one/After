@@ -251,7 +251,7 @@ int ALastController::GetHotbarSlot()
 
 void ALastController::SetHotbarSlot(int Slot)
 {
-	if (Slot >= 0 && Slot < Cast<ALast>(GetPawn())->GetLastData().HotbarSize)
+	if (IsValid(Inventory) && Slot >= 0 && Slot < Cast<ALast>(GetPawn())->GetLastData().HotbarSize)
 	{
 		HotbarSlot = Slot;
 		AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
@@ -265,7 +265,6 @@ void ALastController::SetHotbarSlot(int Slot)
 			SetItem.ExecuteIfBound(HotbarItem);
 			bWasValid = false;
 		}
-
 	}
 }
 

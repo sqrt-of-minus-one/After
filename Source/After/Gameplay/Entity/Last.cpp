@@ -75,7 +75,7 @@ void ALast::BeginPlay()
 
 	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
 
-	GameMode->GetWidgetInitializer()->DisplayMainWidget(this);
+	GameMode->SetLast(this);
 }
 
 void ALast::Tick(float DeltaTime)

@@ -9,7 +9,8 @@
 #include "Blueprint/UserWidget.h"
 
 AWidgetInitializer::AWidgetInitializer() :
-	CurrentWidget(nullptr)
+	CurrentWidget(nullptr),
+	bIsMainWidgetCreated(false)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
@@ -26,11 +27,15 @@ void AWidgetInitializer::Tick(float DeltaTime)
 
 void AWidgetInitializer::DisplayMainWidget(ALast* Last)
 {
-	UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), MainWidget);
-	MainInit(Widget, Last);
-	if (IsValid(Widget))
+	if (!bIsMainWidgetCreated)
 	{
-		Widget->AddToViewport(0);
+		UUserWidget* Widget = CreateWidget<UUserWidget>(GetWorld(), MainWidget);
+		MainInit(Widget, Last);
+		if (IsValid(Widget))
+		{
+			Widget->AddToViewport(0);
+		}
+		bIsMainWidgetCreated = true;
 	}
 }
 
