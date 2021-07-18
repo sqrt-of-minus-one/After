@@ -19,6 +19,8 @@ class UDatabase;
 class ALangManager;
 class AWidgetInitializer;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEntityStatsEvent);
+
 #define GAME_MODE Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())
 
 UCLASS()
@@ -63,4 +65,17 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Data")
 	AWidgetInitializer* GetWidgetInitializer();
+
+			/* ENTITIES */
+
+	// Is called when entities should calculate their stats
+	UPROPERTY(BlueprintAssignable, Category = "Entities")
+	FEntityStatsEvent OnEntityStats;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Entities")
+	FTimerHandle EntityStatsTimer;
+
+	UFUNCTION(Category = "Entities")
+	void EntityStatsExec();
+
 };

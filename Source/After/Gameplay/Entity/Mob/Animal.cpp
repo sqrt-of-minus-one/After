@@ -42,7 +42,7 @@ const FAnimalInfo& AAnimal::GetAnimalData() const
 	return *AnimalData;
 }
 
-void AAnimal::Death(FDamageType Type, const AActor* Murderer)
+void AAnimal::Death(FDamageType Type, AActor* Murderer)
 {
 	bShouldMutate = Cast<AMutant>(Murderer) || Type == FDamageType::Radiation;
 	Super::Death(Type, Murderer);

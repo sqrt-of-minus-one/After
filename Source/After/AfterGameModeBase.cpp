@@ -12,6 +12,7 @@
 #include "Gameplay/Entity/Last.h"
 #include "Data/Database/LogDatabase.h"
 #include "Data/Lang/LogLang.h"
+#include "GameConstants.h"
 
 AAfterGameModeBase::~AAfterGameModeBase()
 {
@@ -38,6 +39,8 @@ void AAfterGameModeBase::BeginPlay()
 	{
 		WidgetInitializer->DisplayMainWidget(LastPawn);
 	}
+
+	GetWorld()->GetTimerManager().SetTimer(EntityStatsTimer, this, &AAfterGameModeBase::EntityStatsExec, GameConstants::CalcStatsInterval, true);
 }
 
 void AAfterGameModeBase::SetLast(ALast* Last)
@@ -62,4 +65,9 @@ ALangManager* AAfterGameModeBase::GetLangManager()
 AWidgetInitializer* AAfterGameModeBase::GetWidgetInitializer()
 {
 	return WidgetInitializer;
+}
+
+void AAfterGameModeBase::EntityStatsExec()
+{
+	OnEntityStats.Broadcast();
 }

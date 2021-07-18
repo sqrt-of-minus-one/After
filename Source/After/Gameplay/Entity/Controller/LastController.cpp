@@ -126,7 +126,6 @@ void ALastController::Select(AActor* Actor)
 	if (IsValid(Entity))
 	{
 		Selected = Entity;
-		Entity->Select();
 		bNew = true;
 	}
 	else
@@ -135,7 +134,6 @@ void ALastController::Select(AActor* Actor)
 		if (IsValid(Unit))
 		{
 			Selected = Unit;
-			Unit->Select();
 			bNew = true;
 		}
 		else
@@ -144,15 +142,9 @@ void ALastController::Select(AActor* Actor)
 			if (IsValid(ThrownItem))
 			{
 				Selected = ThrownItem;
-				ThrownItem->Select();
 				bNew = true;
 			}
 		}
-	}
-
-	if (bNew && Old)
-	{
-		Unselect(Old);
 	}
 
 	if (bIsBreaking)
@@ -167,35 +159,10 @@ void ALastController::Select(AActor* Actor)
 
 void ALastController::Unselect(AActor* Actor)
 {
-	AEntity* Entity = Cast<AEntity>(Actor);
-	if (IsValid(Entity))
+	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
+	if (bIsBreaking && SolidUnit)
 	{
-		Entity->Unselect();
-	}
-	else
-	{
-		AUnit* Unit = Cast<AUnit>(Actor);
-		if (IsValid(Unit))
-		{
-			Unit->Unselect();
-
-			if (bIsBreaking)
-			{
-				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Unit);
-				if (SolidUnit)
-				{
-					StopBreak.ExecuteIfBound();
-				}
-			}
-		}
-		else
-		{
-			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (IsValid(ThrownItem))
-			{
-				ThrownItem->Unselect();
-			}
-		}
+		StopBreak.ExecuteIfBound();
 	}
 	if (Selected == Actor)
 	{

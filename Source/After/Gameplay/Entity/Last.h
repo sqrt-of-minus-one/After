@@ -91,7 +91,7 @@ protected:
 
 			/* DAMAGE */
 
-	virtual void Death(FDamageType Type, const AActor* Murderer) override;
+	virtual void Death(FDamageType Type, AActor* Murderer) override;
 	
 	virtual void Disappear() override;
 

@@ -175,7 +175,7 @@ void ALast::StopBreak()
 	DestroyerId = -1;
 }
 
-void ALast::Death(FDamageType Type, const AActor* Murderer)
+void ALast::Death(FDamageType Type, AActor* Murderer)
 {
 	Super::Death(Type, Murderer);
 

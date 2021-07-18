@@ -20,6 +20,12 @@ class UPaperSpriteComponent;
 class UAudioComponent;
 class AItem;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeathEvent, FDamageType, Type, AActor*, Murderer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FDamageReceivedEvent, float, Value, FDamageType, Type, float, Direction, AActor*, FromWho, float, Push);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChangedEvent, float, NewHealth);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOxygenChangedEvent, float, NewOxygen);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnergyChangedEvent, float, NewEnergy);
+
 UCLASS()
 class AFTER_API AEntity : public APawn
 {
@@ -50,16 +56,33 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetHealth() const;
 
+	// Is called when entity's health changes
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FHealthChangedEvent OnHealthChanged;
+
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetOxygen() const;
+
+	// Is called when entity's oxygen changes
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FOxygenChangedEvent OnOxygenChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetEnergy() const;
 
+	// Is called when entity's energy changes
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FEnergyChangedEvent OnEnergyChanged;
+
 			/* DAMAGE */
 
+	// Deal damage to the entity
 	UFUNCTION(Category = "Damage")
 	virtual void Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push = 0.f);
+
+	// Is called when entity receives a damage
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FDamageReceivedEvent OnDamage;
 
 	UFUNCTION(Category = "Damage")
 	virtual void Stone(float Duration);
@@ -69,19 +92,12 @@ public:
 
 	UFUNCTION(Category = "Damage")
 	bool IsDead();
-
-			/* SELECTION */
-
-	UFUNCTION(Category = "Selection")
-	void Select();
-
-	UFUNCTION(Category = "Selection")
-	void Unselect();
+	
+	// Is called when entity dies
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FDeathEvent OnDeath;
 
 protected:
-	UFUNCTION()
-	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
-
 			/* GENERAL */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -91,19 +107,19 @@ protected:
 
 			/* EFFECTS */
 	
-	// Time remaining until the end of poison effect
 	UPROPERTY(BlueprintReadOnly, Category = "Effects")
-	FTimerHandle PoisonTimer;
+	bool bIsUnderPoison;
 
-	// Time remaining until the end of radiation effect
 	UPROPERTY(BlueprintReadOnly, Category = "Effects")
-	FTimerHandle RadiationTimer;
+	bool bIsUnderRadiation;
 
 			/* MOVEMENT */
 
+	// The entity's own movement
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector2D Moving;
 
+	// Movement because of a push
 	UPROPERTY(BlueprintReadOnly, Category = "Movement")
 	FVector2D PushMoving;
 
@@ -128,8 +144,7 @@ protected:
 	UFUNCTION(Category = "Movement")
 	virtual void StopRun();
 
-	UPROPERTY(BlueprintReadOnly, Category = "Attack")
-	TArray<const AEntity*> OverlappingEntities;
+	TDoubleLinkedList<const AEntity*> OverlappingEntities;
 
 	UFUNCTION(Category = "Attack")
 	void StartOverlap(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
@@ -146,6 +161,8 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	float LastAttackInterval;
 
+	// If entity can miss, attack animation will be played even if target is 
+	// too far. In this cast entity won't be able to attack for a while
 	UFUNCTION(Category = "Attack")
 	virtual bool MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon = nullptr);
 
@@ -155,7 +172,7 @@ protected:
 			/* DAMAGE */
 
 	UFUNCTION(Category = "Damage")
-	virtual void Death(FDamageType Type, const AActor* Murderer);
+	virtual void Death(FDamageType Type, AActor* Murderer);
 
 	// Is called when death animation stops
 	UFUNCTION(Category = "Damage")
@@ -170,9 +187,6 @@ protected:
 			/* STATS */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
-	FTimerHandle StatsTimer;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Stats")
 	float Health;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")
@@ -184,27 +198,44 @@ protected:
 	UFUNCTION(Category = "Stats")
 	virtual void CalculateStats();
 
+			/* SELECTION */
+
+	// Entity is selected when it is under a mouse cursor
+	UFUNCTION(Category = "Selection")
+	void Select(AActor* Actor);
+
+	// Entity is selected when it is under a mouse cursor
+	UFUNCTION(Category = "Selection")
+	void Unselect(AActor* Actor);
+
 			/* APPEARANCE */
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FTimerHandle FixedFlipbookTimer;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
+	bool bIsFlipbookFixed;
+	
+	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FEntityStatus CurrentStatus;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	FDirection CurrentDirection;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
-	bool bIsFlipbookFixed;
 
 	UFUNCTION(Category = "Appearance")
 	virtual void SetFlipbook(FDirection Direction, FEntityStatus Status, float Time = 1.f);
+
+	UFUNCTION(Category = "Appearance")
+	void UnfixFlipbook();
 
 			/* AUDIO */
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Audio")
 	FTimerHandle AudioTimer;
+
+	// Plays passive sound and sets timer for next playing
+	UFUNCTION(Category = "Audio")
+	void PlayPassiveSound();
 
 	UFUNCTION(Category = "Audio")
 	virtual void PlaySound(FEntitySoundType Sound);
