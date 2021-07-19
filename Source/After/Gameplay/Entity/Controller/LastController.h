@@ -8,16 +8,24 @@
 
 #include "CoreMinimal.h"
 
-#include <functional>
-
 #include "GameFramework/PlayerController.h"
 
 #include "LastController.generated.h"
 
 class AEntity;
+class ALast;
 class ASolidUnit;
 class AItem;
 class UPlayerInventoryComponent;
+
+DECLARE_DELEGATE_OneParam(FMovingDelegate, float);
+DECLARE_DELEGATE(FZoomDelegate);
+DECLARE_DELEGATE(FRunningDelegate);
+DECLARE_DELEGATE_RetVal_ThreeParams(bool, FAttackDelegate, AEntity*, bool, AItem*);
+DECLARE_DELEGATE_TwoParams(FStartBreakDelegate, ASolidUnit*, AItem*);
+DECLARE_DELEGATE(FStopBreakDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemChangedEvent, AItem*, NewItem);
 
 UENUM(BlueprintType)
 enum class FMenuType : uint8
@@ -42,51 +50,52 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnPossess(APawn* InPawn) override;
+
+	virtual void OnUnPossess() override;
+
 	// ==================================================
 
 public:
 			/* SELECTING */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Select(AActor* Actor);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Unselect(AActor* Actor);
-
-			/* EVENTS */
-
-	UFUNCTION(Category = "Events")
-	virtual void Death(); // Is called when the last becames dead
 
 			/* CONTROL */
 
-	TDelegate<void(float)> MoveX;
-	TDelegate<void(float)> MoveY;
-	TDelegate<void()> ZoomIn;
-	TDelegate<void()> ZoomOut;
-	TDelegate<void()> StartRun;
-	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
-	TDelegate<void(ASolidUnit*, AItem*)> StartBreak;
-	TDelegate<void()> StopBreak;
-	TDelegate<void(AItem*)> SetItem;
+	FMovingDelegate MoveX;
+	FMovingDelegate MoveY;
+	FZoomDelegate ZoomIn;
+	FZoomDelegate ZoomOut;
+	FRunningDelegate StartRun;
+	FRunningDelegate StopRun;
+	FAttackDelegate Attack;
+	FStartBreakDelegate StartBreak;
+	FStopBreakDelegate StopBreak;
 
+	UFUNCTION(Category = "Control")
 	void SetupInput();
 
-			/* INVENTORY */
+			/* HOTBAR */
 
-	bool bWasValid;
+	UPROPERTY(BlueprintAssignable, Category = "Hotbar")
+	FOnItemChangedEvent OnItemChanged;
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	// Do not change item!
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	AItem* GetSelectedItem();
+
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	int GetHotbarSlot();
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	void SetHotbarSlot(int Slot);
 
 protected:
-	AEntity* EntityPawn;
-	UPlayerInventoryComponent* Inventory;
-
 			/* SELECTING */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Selecting")
@@ -100,12 +109,26 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsDead;
 
-			/* INVENTORY */
+	UFUNCTION(Category = "State")
+	void Death(FDamageType Type, AActor* Murderer); // Is called when the last dies
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+			/* HOTBAR */
+
+	bool bWasItemValid;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Hotbar")
 	int HotbarSlot;
 
 			/* CONTROL */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	AEntity* EntityPawn;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	ALast* LastPawn;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	UPlayerInventoryComponent* Inventory;
 
 	void MoveX_f(float Value);
 	void MoveY_f(float Value);
@@ -116,10 +139,10 @@ protected:
 	void StartAttack_f();
 	void StopAttack_f();
 	void Interact_f();
-	void SwitchLang_tmp();
 	void Throw_f();
 	void Menu_f();
 	void Inventory_f();
 	void Crafting_f();
 	void Skills_f();
+	void SwitchLang_tmp();
 };

@@ -68,7 +68,6 @@ void AEntity::BeginPlay()
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
-//	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
@@ -330,7 +329,7 @@ bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon)
 		
 		if (CurrentTime - LastAttackTime > LastAttackInterval && Target != this && !bIsDead)
 		{
-			// Items with zero damage or negative attack radius cannot be used as weapons
+			// Items with zero damage or non-positive attack radius cannot be used as weapons
 			if (IsValid(Weapon) && (Weapon->GetItemData().Damage == 0.f || Weapon->GetItemData().AttackRadius <= 0.f))
 			{
 				Weapon = nullptr;
@@ -374,6 +373,7 @@ void AEntity::RangedAttack(FRotator Direction)
 
 void AEntity::Death(FDamageType Type, AActor* Murderer)
 {
+	GAME_MODE->OnEntityStats.RemoveAll(this);
 	SetFlipbook(CurrentDirection, FEntityStatus::Death);
 	PlaySound(FEntitySoundType::Death);
 	bIsDead = true;

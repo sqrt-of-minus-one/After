@@ -36,44 +36,33 @@ void ALastController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EntityPawn = Cast<AEntity>(GetPawn());
-	if (!IsValid(EntityPawn))
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity or does not exist"));
-	}
-	Inventory = Cast<ALast>(GetPawn())->GetInventory();
-
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	bWasValid = IsValid(HotbarItem);
-	if (bWasValid)
-	{
-		SetItem.ExecuteIfBound(HotbarItem);
-	}
+	SetupInput();
 }
 
 void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// Todo: use events (AItem and UInventoryComponent)
 	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (bWasValid)
+	if (bWasItemValid)
 	{
 		if (!IsValid(HotbarItem))
 		{
-			SetItem.ExecuteIfBound(nullptr);
-			bWasValid = false;
+			OnItemChanged.Broadcast(nullptr);
+			bWasItemValid = false;
 		}
 	}
 	else
 	{
 		if (IsValid(HotbarItem))
 		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = true;
+			OnItemChanged.Broadcast(HotbarItem);
+			bWasItemValid = true;
 		}
 	}
 
-
+// Debug output
 	const ALangManager* LangManager = GAME_MODE->GetLangManager();
 
 	AEntity* SelectedEntity = nullptr;
@@ -104,7 +93,7 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	if (bWasValid)
+	if (bWasItemValid)
 	{
 		if (HotbarItem->GetItemData().MaxCondition > 0.f)
 		{
@@ -116,13 +105,54 @@ void ALastController::Tick(float DeltaTime)
 		}
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
+// End debug output
+}
+
+void ALastController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	EntityPawn = Cast<AEntity>(InPawn);
+	if (IsValid(EntityPawn))
+	{
+		LastPawn = Cast<ALast>(InPawn);
+		if (IsValid(LastPawn))
+		{
+			Inventory = LastPawn->GetInventory();
+
+			AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+			bWasItemValid = IsValid(HotbarItem);
+			if (bWasItemValid)
+			{
+				OnItemChanged.Broadcast(HotbarItem);
+			}
+		}
+		else
+		{
+			Inventory = nullptr;
+		}
+
+		EntityPawn->OnDeath.AddDynamic(this, &ALastController::Death);
+	}
+	else
+	{
+		UE_LOG(LogGameplay, Error, TEXT("Last Controller: Pawn is not an entity or does not exist"));
+	}
+}
+
+void ALastController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	UE_LOG(LogGameplay, Log, TEXT("Hello. I'm last controller. And I don't want to control any more. I'm tired. I want to leave. I've unpossessed. Bye."));
 }
 
 void ALastController::Select(AActor* Actor)
 {
-	AEntity* Entity = Cast<AEntity>(Actor);
 	bool bNew = false;
 	AActor* Old = Selected;
+
+	AEntity* Entity = Cast<AEntity>(Actor);
 	if (IsValid(Entity))
 	{
 		Selected = Entity;
@@ -152,7 +182,7 @@ void ALastController::Select(AActor* Actor)
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
 		if (IsValid(SolidUnit))
 		{
-			StartBreak.ExecuteIfBound(SolidUnit, nullptr /* Todo */);
+			StartBreak.ExecuteIfBound(SolidUnit, GetSelectedItem());
 		}
 	}
 }
@@ -168,22 +198,6 @@ void ALastController::Unselect(AActor* Actor)
 	{
 		Selected = nullptr;
 	}
-}
-
-void ALastController::Death()
-{
-	// Unbinds all the delegate but zoom.
-	// UnBind function doesn't work and I don't know why. That's why empty lambdas are used.
-	StopAttack_f();
-	MoveX.BindLambda([](float) {});
-	MoveY.BindLambda([](float) {});
-	StartRun.BindLambda([]() {});
-	StopRun.BindLambda([]() {});
-	Attack.BindLambda([](AEntity*, bool, AItem*) { return false; });
-	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
-	StopBreak.BindLambda([]() {});
-	SetItem.BindLambda([](AItem*) {});
-	bIsDead = true;
 }
 
 void ALastController::SetupInput()
@@ -211,6 +225,18 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
 }
 
+AItem* ALastController::GetSelectedItem()
+{
+	if (IsValid(Inventory))
+	{
+		return Inventory->GetHotbarItem(HotbarSlot);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
 int ALastController::GetHotbarSlot()
 {
 	return HotbarSlot;
@@ -224,15 +250,30 @@ void ALastController::SetHotbarSlot(int Slot)
 		AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
 		if (IsValid(HotbarItem))
 		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = true;
+			OnItemChanged.Broadcast(HotbarItem);
+			bWasItemValid = true;
 		}
-		else if (bWasValid)
+		else if (bWasItemValid)
 		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = false;
+			OnItemChanged.Broadcast(HotbarItem);
+			bWasItemValid = false;
 		}
 	}
+}
+
+void ALastController::Death(FDamageType Type, AActor* Murderer)
+{
+	// Unbinds all the delegate but zoom.
+	// UnBind function doesn't work and I don't know why. That's why empty lambdas are used.
+	StopAttack_f();
+	MoveX.BindLambda([](float) {});
+	MoveY.BindLambda([](float) {});
+	StartRun.BindLambda([]() {});
+	StopRun.BindLambda([]() {});
+	Attack.BindLambda([](AEntity*, bool, AItem*) { return false; });
+	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
+	StopBreak.BindLambda([]() {});
+	bIsDead = true;
 }
 
 void ALastController::MoveX_f(float Value)
@@ -308,16 +349,62 @@ void ALastController::StopAttack_f()
 
 void ALastController::Interact_f()
 {
-	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-	if (IsValid(SolidUnit) &&
-		FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+	if (!bIsDead)
 	{
-		SolidUnit->Interact(Cast<ALast>(GetPawn()));
+		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+		if (IsValid(SolidUnit) &&
+			FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+		{
+			SolidUnit->Interact(Cast<ALast>(GetPawn()));
+		}
+		else // Tmp
+		{
+			// Spawn a caw
+			GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
+				FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+		}
 	}
-	else
+}
+
+void ALastController::Throw_f()
+{
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	if (!bIsDead && IsValid(HotbarItem))
 	{
-		GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-			FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
+		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
+	}
+}
+
+void ALastController::Menu_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Menu);
+	}
+}
+
+void ALastController::Inventory_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Inventory);
+	}
+}
+
+void ALastController::Crafting_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Crafting);
+	}
+}
+
+void ALastController::Skills_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Skills);
 	}
 }
 
@@ -335,34 +422,4 @@ void ALastController::SwitchLang_tmp()
 	}
 	LangManager->SetLang(Lang);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
-}
-
-void ALastController::Throw_f()
-{
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (!bIsDead && IsValid(HotbarItem))
-	{
-		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
-	}
-}
-
-void ALastController::Menu_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Menu);
-}
-
-void ALastController::Inventory_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Inventory);
-}
-
-void ALastController::Crafting_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Crafting);
-}
-
-void ALastController::Skills_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Skills);
 }
