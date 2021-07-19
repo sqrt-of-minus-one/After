@@ -110,6 +110,7 @@ void AEntity::BeginPlay()
 
 	if (EntityData->Sounds.Sounds[FEntitySoundType::Passive].Sounds.Num() != 0)
 	{
+		FTimerHandle AudioTimer;
 		GetWorld()->GetTimerManager().SetTimer(AudioTimer, this, &AEntity::PlayPassiveSound,
 			FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
 	}
@@ -424,6 +425,7 @@ void AEntity::SetFlipbook(FDirection Direction, FEntityStatus Status, float Time
 		if (bIsStatusFixing)
 		{
 			bIsFlipbookFixed = true;
+			FTimerHandle FixedFlipbookTimer;
 			GetWorld()->GetTimerManager().SetTimer(FixedFlipbookTimer, this, &AEntity::UnfixFlipbook,
 				(Status == FEntityStatus::Stone || Status == FEntityStatus::Web) ? Time : FlipbookComponent->GetFlipbookLength(), false);
 		}
@@ -452,7 +454,8 @@ void AEntity::UnfixFlipbook()
 void AEntity::PlayPassiveSound()
 {
 	PlaySound(FEntitySoundType::Passive);
-	GetWorld()->GetTimerManager().SetTimer(AudioTimer, AudioDelegate, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
+	FTimerHandle AudioTimer;
+	GetWorld()->GetTimerManager().SetTimer(AudioTimer, this, &AEntity::PlayPassiveSound, FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
 }
 
 void AEntity::PlaySound(FEntitySoundType Sound)

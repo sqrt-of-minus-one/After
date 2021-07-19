@@ -18,16 +18,9 @@ AAlien::AAlien()
 void AAlien::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Get game mode
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	if (!GameMode)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
-	}
 
 	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	AlienData = &Database->GetAlienData(Id);
 }
 

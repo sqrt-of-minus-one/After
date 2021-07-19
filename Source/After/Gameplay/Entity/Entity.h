@@ -211,9 +211,6 @@ protected:
 			/* APPEARANCE */
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
-	FTimerHandle FixedFlipbookTimer;
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
 	bool bIsFlipbookFixed;
 	
 	UPROPERTY(BlueprintReadOnly, Category = "Appearance")
@@ -229,9 +226,6 @@ protected:
 	void UnfixFlipbook();
 
 			/* AUDIO */
-	
-	UPROPERTY(BlueprintReadOnly, Category = "Audio")
-	FTimerHandle AudioTimer;
 
 	// Plays passive sound and sets timer for next playing
 	UFUNCTION(Category = "Audio")
@@ -253,7 +247,4 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UAudioComponent* AudioComponent;
-
-private:
-	FTimerDelegate AudioDelegate;
 };

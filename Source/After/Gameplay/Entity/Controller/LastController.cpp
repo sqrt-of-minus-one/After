@@ -200,31 +200,6 @@ void ALastController::Unselect(AActor* Actor)
 	}
 }
 
-void ALastController::SetupInput()
-{
-	if (CurrentInputStack.Num() <= 0)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Input stack is empty"));
-	}
-
-	CurrentInputStack[0]->BindAxis("MoveX", this, &ALastController::MoveX_f);
-	CurrentInputStack[0]->BindAxis("MoveY", this, &ALastController::MoveY_f);
-
-	CurrentInputStack[0]->BindAction("ZoomIn", IE_Pressed, this, &ALastController::ZoomIn_f);
-	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
-	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
-	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
-	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
-	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
-	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::Interact_f);
-	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
-	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
-	CurrentInputStack[0]->BindAction("PlayerMenu", IE_Pressed, this, &ALastController::Menu_f);
-	CurrentInputStack[0]->BindAction("Inventory", IE_Pressed, this, &ALastController::Inventory_f);
-	CurrentInputStack[0]->BindAction("Crafting", IE_Pressed, this, &ALastController::Crafting_f);
-	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
-}
-
 AItem* ALastController::GetSelectedItem()
 {
 	if (IsValid(Inventory))
@@ -274,6 +249,31 @@ void ALastController::Death(FDamageType Type, AActor* Murderer)
 	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
 	StopBreak.BindLambda([]() {});
 	bIsDead = true;
+}
+
+void ALastController::SetupInput()
+{
+	if (CurrentInputStack.Num() <= 0)
+	{
+		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Input stack is empty"));
+	}
+
+	CurrentInputStack[0]->BindAxis("MoveX", this, &ALastController::MoveX_f);
+	CurrentInputStack[0]->BindAxis("MoveY", this, &ALastController::MoveY_f);
+
+	CurrentInputStack[0]->BindAction("ZoomIn", IE_Pressed, this, &ALastController::ZoomIn_f);
+	CurrentInputStack[0]->BindAction("ZoomOut", IE_Pressed, this, &ALastController::ZoomOut_f);
+	CurrentInputStack[0]->BindAction("Run", IE_Pressed, this, &ALastController::StartRun_f);
+	CurrentInputStack[0]->BindAction("Run", IE_Released, this, &ALastController::StopRun_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Pressed, this, &ALastController::StartAttack_f);
+	CurrentInputStack[0]->BindAction("Attack", IE_Released, this, &ALastController::StopAttack_f);
+	CurrentInputStack[0]->BindAction("Interact", IE_Pressed, this, &ALastController::Interact_f);
+	CurrentInputStack[0]->BindAction("SwitchLang", IE_Pressed, this, &ALastController::SwitchLang_tmp);
+	CurrentInputStack[0]->BindAction("Throw", IE_Pressed, this, &ALastController::Throw_f);
+	CurrentInputStack[0]->BindAction("PlayerMenu", IE_Pressed, this, &ALastController::Menu_f);
+	CurrentInputStack[0]->BindAction("Inventory", IE_Pressed, this, &ALastController::Inventory_f);
+	CurrentInputStack[0]->BindAction("Crafting", IE_Pressed, this, &ALastController::Crafting_f);
+	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
 }
 
 void ALastController::MoveX_f(float Value)
@@ -371,6 +371,7 @@ void ALastController::Throw_f()
 	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
 	if (!bIsDead && IsValid(HotbarItem))
 	{
+		// Todo: Spawn thrown item in special function
 		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
 		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
 	}

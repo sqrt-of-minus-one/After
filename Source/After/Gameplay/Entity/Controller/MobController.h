@@ -10,12 +10,12 @@
 
 #include "AIController.h"
 
+#include "ControllerTypes.h"
+
 #include "MobController.generated.h"
 
-class AEntity;
 class AMob;
 class AUnit;
-class AItem;
 
 UCLASS()
 class AFTER_API AMobController : public AAIController
@@ -31,77 +31,74 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnPossess(APawn* InPawn) override;
+
 	// ==================================================
 
 public:
-			/* EVENTS */
-
-	UFUNCTION(Category = "Events")
-	virtual void Damage(float Direction, AActor* FromWho); // Is called when the entity receives a damage
-
-	UFUNCTION(Category = "Events")
-	virtual void BeginDanger(const AActor* Actor); // Something has entered in danger sphere
-
-	UFUNCTION(Category = "Events")
-	virtual void EndDanger(const AActor* Actor); // Something has left danger sphere
-
-	UFUNCTION(Category = "Events")
-	virtual void BeginView(AActor* Actor); // Something has entered in view sphere
-
-	UFUNCTION(Category = "Events")
-	virtual void EndPursue(AActor* Actor); // Something has left pursue sphere
-
 			/* CONTROL */
 
-	TDelegate<void(float)> MoveX;
-	TDelegate<void(float)> MoveY;
-	TDelegate<void()> StartRun;
-	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
-
-	UFUNCTION(Category = "Control")
-	virtual void SetupInput();
+	FMovingDelegate MoveX;
+	FMovingDelegate MoveY;
+	FRunningDelegate StartRun;
+	FRunningDelegate StopRun;
+	FAttackDelegate Attack;
 
 protected:
-	virtual void OnUnPossess() override;
-
 			/* GENERAL */
 
 	UPROPERTY(BlueprintReadOnly, Category = "General")
 	AMob* MobPawn;
 
-	UFUNCTION(Category = "General")
-	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
+			/* EVENTS */
+
+	// Is called when the entity receives a damage
+	UFUNCTION(Category = "Events")
+	virtual void Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push);
+
+	// Something has entered in danger sphere
+	UFUNCTION(Category = "Events")
+	virtual void BeginDanger(AActor* Actor);
+
+	// Something has left danger sphere
+	UFUNCTION(Category = "Events")
+	virtual void EndDanger(AActor* Actor);
+
+	// Something has entered in view sphere
+	UFUNCTION(Category = "Events")
+	virtual void BeginView(AActor* Actor);
+
+	// Something has left pursue sphere
+	UFUNCTION(Category = "Events")
+	virtual void EndPursue(AActor* Actor);
 
 			/* TARGETS */
 
+	// The mob wants to attack its target
 	UPROPERTY(BlueprintReadOnly, Category = "Targets")
 	AEntity* Target;
 	
+	// Entities that can become targets when current target will be lost or will die
 	TDoubleLinkedList<AEntity*> PossibleTargets;
+
+	// The mob is running away from these entities
 	TDoubleLinkedList<const AEntity*> RunningAwayFrom;
+
+	// Dangerous units that are seen by the mob
 	TDoubleLinkedList<const AUnit*> DangerousUnits;
 
+	// The entity who has attacked the mob
 	UPROPERTY(BlueprintReadOnly, Category = "Targets")
-	const AEntity* Attacker;
+	AEntity* Attacker;
 
-			/* TIMERS */
-
-	UPROPERTY(BlueprintReadOnly, Category = "Timers")
-	FTimerHandle ChangeStateTimer;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Timers")
-	FTimerHandle MobPainTimer;
-
-			/* DELEGATES */
-
-	FTimerDelegate ChangeStateDelegate;
-	
 			/* BEHAVIOUR */
 
-	// Whether mob moves in specified direction
+	// Whether mob is moving in specified direction
 	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
 	bool bHasGoal;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Behaviour")
+	FTimerHandle ChangeStateTimer;
 
 	UFUNCTION(Category = "Behaviour")
 	void UpdateDirection();

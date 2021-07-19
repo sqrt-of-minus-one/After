@@ -10,18 +10,15 @@
 
 #include "GameFramework/PlayerController.h"
 
+#include "ControllerTypes.h"
+
 #include "LastController.generated.h"
 
-class AEntity;
 class ALast;
 class ASolidUnit;
-class AItem;
 class UPlayerInventoryComponent;
 
-DECLARE_DELEGATE_OneParam(FMovingDelegate, float);
 DECLARE_DELEGATE(FZoomDelegate);
-DECLARE_DELEGATE(FRunningDelegate);
-DECLARE_DELEGATE_RetVal_ThreeParams(bool, FAttackDelegate, AEntity*, bool, AItem*);
 DECLARE_DELEGATE_TwoParams(FStartBreakDelegate, ASolidUnit*, AItem*);
 DECLARE_DELEGATE(FStopBreakDelegate);
 
@@ -77,9 +74,6 @@ public:
 	FStartBreakDelegate StartBreak;
 	FStopBreakDelegate StopBreak;
 
-	UFUNCTION(Category = "Control")
-	void SetupInput();
-
 			/* HOTBAR */
 
 	UPROPERTY(BlueprintAssignable, Category = "Hotbar")
@@ -129,6 +123,9 @@ protected:
 
 	UPROPERTY(BlueprintReadOnly, Category = "Control")
 	UPlayerInventoryComponent* Inventory;
+
+	UFUNCTION(Category = "Control")
+	void SetupInput();
 
 	void MoveX_f(float Value);
 	void MoveY_f(float Value);

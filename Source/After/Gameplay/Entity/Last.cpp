@@ -42,26 +42,6 @@ void ALast::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ALastController* LastController = Cast<ALastController>(GetController());
-	if (IsValid(LastController))
-	{
-		LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
-		LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
-		LastController->ZoomIn.BindUObject(this, &ALast::ZoomIn);
-		LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
-		LastController->StartRun.BindUObject(this, &ALast::StartRun);
-		LastController->StopRun.BindUObject(this, &ALast::StopRun);
-		LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
-		LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
-		LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
-
-		LastController->OnItemChanged.AddDynamic(this, &ALast::SetItem);
-	}
-	else
-	{
-		UE_LOG(LogGameplay, Error, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
-	}
-
 	// Get database
 	const UDatabase* Database = GAME_MODE->GetDatabase();
 	LastData = &Database->GetLastData(Id);
@@ -107,6 +87,31 @@ void ALast::Tick(float DeltaTime)
 				DestroyerId = DestroyedUnit->StartBreaking(ItemForBreaking);
 			}
 		}
+	}
+}
+
+void ALast::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	ALastController* LastController = Cast<ALastController>(NewController);
+	if (IsValid(LastController))
+	{
+		LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
+		LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
+		LastController->ZoomIn.BindUObject(this, &ALast::ZoomIn);
+		LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
+		LastController->StartRun.BindUObject(this, &ALast::StartRun);
+		LastController->StopRun.BindUObject(this, &ALast::StopRun);
+		LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
+		LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
+		LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
+
+		LastController->OnItemChanged.AddDynamic(this, &ALast::SetItem);
+	}
+	else
+	{
+		UE_LOG(LogGameplay, Error, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
 	}
 }
 
