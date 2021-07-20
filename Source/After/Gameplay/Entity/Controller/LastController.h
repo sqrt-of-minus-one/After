@@ -10,14 +10,17 @@
 
 #include "GameFramework/PlayerController.h"
 
-#include "ControllerTypes.h"
-
 #include "LastController.generated.h"
 
+class AEntity;
 class ALast;
 class ASolidUnit;
+class AItem;
 class UPlayerInventoryComponent;
 
+DECLARE_DELEGATE_OneParam(FLastMovingDelegate, float);
+DECLARE_DELEGATE(FLastRunningDelegate);
+DECLARE_DELEGATE_RetVal_ThreeParams(bool, FLastAttackDelegate, AEntity*, bool, AItem*);
 DECLARE_DELEGATE(FZoomDelegate);
 DECLARE_DELEGATE_TwoParams(FStartBreakDelegate, ASolidUnit*, AItem*);
 DECLARE_DELEGATE(FStopBreakDelegate);
@@ -64,13 +67,13 @@ public:
 
 			/* CONTROL */
 
-	FMovingDelegate MoveX;
-	FMovingDelegate MoveY;
+	FLastMovingDelegate MoveX;
+	FLastMovingDelegate MoveY;
 	FZoomDelegate ZoomIn;
 	FZoomDelegate ZoomOut;
-	FRunningDelegate StartRun;
-	FRunningDelegate StopRun;
-	FAttackDelegate Attack;
+	FLastRunningDelegate StartRun;
+	FLastRunningDelegate StopRun;
+	FLastAttackDelegate Attack;
 	FStartBreakDelegate StartBreak;
 	FStopBreakDelegate StopBreak;
 

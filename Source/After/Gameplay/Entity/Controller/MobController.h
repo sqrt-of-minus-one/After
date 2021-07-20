@@ -10,12 +10,16 @@
 
 #include "AIController.h"
 
-#include "ControllerTypes.h"
-
 #include "MobController.generated.h"
 
 class AMob;
 class AUnit;
+class AEntity;
+class AItem;
+
+DECLARE_DELEGATE_OneParam(FMobMovingDelegate, float);
+DECLARE_DELEGATE(FMobRunningDelegate);
+DECLARE_DELEGATE_RetVal_ThreeParams(bool, FMobAttackDelegate, AEntity*, bool, AItem*);
 
 UCLASS()
 class AFTER_API AMobController : public AAIController
@@ -38,11 +42,11 @@ public:
 public:
 			/* CONTROL */
 
-	FMovingDelegate MoveX;
-	FMovingDelegate MoveY;
-	FRunningDelegate StartRun;
-	FRunningDelegate StopRun;
-	FAttackDelegate Attack;
+	FMobMovingDelegate MoveX;
+	FMobMovingDelegate MoveY;
+	FMobRunningDelegate StartRun;
+	FMobRunningDelegate StopRun;
+	FMobAttackDelegate Attack;
 
 protected:
 			/* GENERAL */

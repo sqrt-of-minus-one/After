@@ -9,7 +9,6 @@
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperSpriteComponent.h"
-#include "Components/AudioComponent.h"
 
 #include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
@@ -29,30 +28,19 @@ ASolidUnit::ASolidUnit() :
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
 	SpriteComponent->SetupAttachment(GetRootComponent());
 	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
-
-	BreakSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Break Sprite"));
-	BreakSpriteComponent->SetupAttachment(FlipbookComponent);
-	BreakSpriteComponent->SetVisibility(false);
 }
 
 void ASolidUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Get game mode
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	if (!GameMode)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
-	}
-
 	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	SolidUnitData = &Database->GetSolidUnitData(Id);
 	BreakProfileData = &Database->GetBreakProfileData(SolidUnitData->BreakProfile);
 
 	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f));
-	if (DamageBoxComponent) // Damage box can be destroyed by AUnit::BeginPlay
+	if (IsValid(DamageBoxComponent)) // Damage box can be destroyed by AUnit::BeginPlay
 	{
 		DamageBoxComponent->SetBoxExtent(GameConstants::TileSize * FVector(SolidUnitData->Size, 1.f) + GameConstants::DamageBoxDelta);
 	}
@@ -71,7 +59,6 @@ void ASolidUnit::BeginPlay()
 
 		SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 		SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
-		BreakSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 		FlipbookComponent->DestroyComponent();
 		FlipbookComponent = nullptr;
 
@@ -80,14 +67,14 @@ void ASolidUnit::BeginPlay()
 
 	if (UnitData->bSelectable)
 	{
-		if (!Database->GetExtraData().SelectionSprites.Contains(SolidUnitData->Size) ||
-			!Database->GetExtraData().SelectionSprites[SolidUnitData->Size])
+		if (Database->GetExtraData().SelectionSprites.Contains(SolidUnitData->Size) ||
+			Database->GetExtraData().SelectionSprites[SolidUnitData->Size])
 		{
-			UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
+			SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[SolidUnitData->Size]);
 		}
 		else
 		{
-			SelectionSpriteComponent->SetSprite(Database->GetExtraData().SelectionSprites[SolidUnitData->Size]);
+			UE_LOG(LogGameplay, Error, TEXT("Database doesn't contain selection sprite with size %dx%d"), SolidUnitData->Size.X, SolidUnitData->Size.Y);
 		}
 	}
 
@@ -102,12 +89,17 @@ void ASolidUnit::Tick(float DeltaTime)
 	{
 		for (TPair<int, FDestroyerInfo>& i : Destroyers)
 		{
-			if (!i.Value.Item || !i.Value.Item->IsPendingKill())
+			// Entities can use hands. In this cast i.Value.Item == nullptr
+			Breaking += DeltaTime * i.Value.SpeedMultiplier;
+			if (IsValid(i.Value.Item))
 			{
-				Breaking += DeltaTime * i.Value.SpeedMultiplier;
-				if (i.Value.Item)
+				if (i.Value.bIsToolRight)
 				{
-					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * (i.Value.bRightTool ? 1.f : GameConstants::WrongItemConditionPenalty));
+					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease);
+				}
+				else
+				{
+					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * GameConstants::WrongItemConditionPenalty);
 				}
 			}
 		}
@@ -144,7 +136,7 @@ void ASolidUnit::Interact(ALast* Last)
 	// This should be pure virtual, but it's Unreal...
 }
 
-void ASolidUnit::Damage(float Value, FDamageType Type, const AActor* FromWho)
+void ASolidUnit::Damage(float Value, FDamageType Type, AActor* FromWho)
 {
 	Health -= Value * SolidUnitData->DamageResist[Type];
 
@@ -153,11 +145,18 @@ void ASolidUnit::Damage(float Value, FDamageType Type, const AActor* FromWho)
 		Health = 0.f;
 		Kill(Type, FromWho);
 	}
+
+	OnDamage.Broadcast(Value, Type, FromWho);
+	OnHealthChanged.Broadcast(Health);
 }
 
 int ASolidUnit::StartBreaking(AItem* By)
 {
 	int DestroyerId = Destroyers.Num();
+	while (Destroyers.Contains(DestroyerId))
+	{
+		DestroyerId--;
+	}
 	Destroyers.Add(DestroyerId, FDestroyerInfo());
 	SwitchItem(DestroyerId, By);
 	return DestroyerId;
@@ -169,9 +168,9 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 	{
 		FDestroyerInfo Info;
 		Info.Item = By;
-		if (By)
+		if (IsValid(By))
 		{
-			Info.bRightTool = false;
+			Info.bIsToolRight = false;
 			for (const FBreakProfileGroup& i : BreakProfileData->CanBeBrokenBy)
 			{
 				bool bRightForGroup = true;
@@ -185,7 +184,7 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 				}
 				if (bRightForGroup)
 				{
-					Info.bRightTool = true;
+					Info.bIsToolRight = true;
 					break;
 				}
 			}
@@ -193,14 +192,14 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 		}
 		else
 		{
-			Info.bRightTool = false;
+			Info.bIsToolRight = false;
 			Info.SpeedMultiplier = 1.f;
 		}
 		if (BreakProfileData->CanBeBrokenBy.Num() == 0)
 		{
-			Info.bRightTool = true;
+			Info.bIsToolRight = true;
 		}
-		if (!Info.bRightTool && !BreakProfileData->bCanBeBrokenByHand)
+		if (!Info.bIsToolRight && !BreakProfileData->bCanBeBrokenByHand)
 		{
 			Info.SpeedMultiplier = 0.f;
 		}
@@ -210,20 +209,18 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 
 void ASolidUnit::StopBreaking(int DestroyerId)
 {
-	if (Destroyers.Contains(DestroyerId))
+	Destroyers.Remove(DestroyerId);
+	if (Destroyers.Num() == 0)
 	{
-		Destroyers.Remove(DestroyerId);
-		if (Destroyers.Num() == 0)
-		{
-			Breaking = 0.f;
-			BreakingStage = -1;
-			SetAppearance(-1);
-		}
+		Breaking = 0.f;
+		BreakingStage = -1;
+		SetAppearance(-1);
 	}
 }
 
-void ASolidUnit::Kill(FDamageType Type, const AActor* Murderer)
+void ASolidUnit::Kill(FDamageType Type, AActor* Murderer)
 {
+	OnDeath.Broadcast(Type, Murderer);
 	GetWorld()->DestroyActor(this);
 }
 
@@ -253,7 +250,7 @@ void ASolidUnit::Break()
 {
 	for (TPair<int, FDestroyerInfo>& i : Destroyers)
 	{
-		if (i.Value.bRightTool)
+		if (i.Value.bIsToolRight)
 		{
 			for (const FItemDrop& j : SolidUnitData->Drop)
 			{
@@ -261,6 +258,7 @@ void ASolidUnit::Break()
 				int Count;
 				if ((j.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < j.Chance) && (Count = FMath::RandRange(j.Min, j.Max)) > 0)
 				{
+					// Todo: Spawn thrown item in special function
 					AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(SolidUnitData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
 					Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(j.Item).Class.Get()));
 				}
@@ -268,6 +266,8 @@ void ASolidUnit::Break()
 			break;
 		}
 	}
+
+	OnUnitDestroyed.Broadcast();
 
 	GetWorld()->DestroyActor(this);
 }
@@ -283,15 +283,5 @@ void ASolidUnit::SetAppearance(int Stage)
 	else
 	{
 		SpriteComponent->SetSprite(Stage < 0 ? SolidUnitData->Sprite : SolidUnitData->BreakSprites[Stage]);
-	}
-}
-
-void ASolidUnit::PlaySound(FSolidUnitSoundType Sound)
-{
-	int Size = SolidUnitData->Sounds.Sounds[Sound].Sounds.Num();
-	if (Size != 0)
-	{
-		AudioComponent->SetSound(SolidUnitData->Sounds.Sounds[Sound].Sounds[FMath::RandRange(0, Size - 1)]);
-		AudioComponent->Play();
 	}
 }

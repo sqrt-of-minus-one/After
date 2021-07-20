@@ -19,7 +19,6 @@ class AMob;
 class UBoxComponent;
 class UPaperFlipbookComponent;
 class UPaperSpriteComponent;
-class UAudioComponent;
 
 UCLASS()
 class AFTER_API AUnit : public AActor
@@ -46,18 +45,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FGameplayTag& GetId() const;
 
-			/* SELECTION */
-
-	UFUNCTION()
-	void Select();
-
-	UFUNCTION()
-	void Unselect();
-
 protected:
-	UFUNCTION()
-	void ClearTimers(AActor* Actor, EEndPlayReason::Type Reason);
-
 			/* GENERAL */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
@@ -65,14 +53,20 @@ protected:
 
 	const FUnitInfo* UnitData;
 
+			/* SELECTION */
+
+	UFUNCTION(Category = "Selection")
+	void Select(AActor* Actor);
+
+	UFUNCTION(Category = "Selection")
+	void Unselect(AActor* Actor);
+
 			/* ATTACK */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Attack")
 	FTimerHandle AttackTimer;
 
-	// Entities that are being attacked by this unit
-	UPROPERTY(BlueprintReadOnly, Category = "Attack")
-	TArray<AEntity*> Attacked;
+	TDoubleLinkedList<AEntity*> Attacked;
 
 	// Add new entity to the Attacked array
 	UFUNCTION(Category = "Attack")
@@ -87,11 +81,6 @@ protected:
 	UFUNCTION(Category = "Attack")
 	void Attack();
 
-			/* AUDIO */
-
-	UPROPERTY(BlueprintReadOnly, Category = "Audio")
-	FTimerHandle AudioTimer;
-
 			/* COMPONENTS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
@@ -105,7 +94,4 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UBoxComponent* DamageBoxComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	UAudioComponent* AudioComponent;
 };

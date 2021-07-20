@@ -16,13 +16,18 @@
 class AItem;
 class ALast;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FUnitDeathEvent, FDamageType, Type, AActor*, Murderer);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_ThreeParams(FUnitDamageReceivedEvent, float, Value, FDamageType, Type, AActor*, FromWho);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDestroyedEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FUnitStatsChangedEvent, float, NewValue);
+
 USTRUCT(BlueprintType)
 struct FDestroyerInfo
 {
 	GENERATED_USTRUCT_BODY()
 
 	AItem* Item;
-	bool bRightTool;
+	bool bIsToolRight;
 	float SpeedMultiplier;
 };
 
@@ -50,6 +55,9 @@ public:
 
 			/* STATS */
 
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FUnitStatsChangedEvent OnHealthChanged;
+
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetHealth() const;
 
@@ -60,8 +68,14 @@ public:
 
 			/* DAMAGE */
 
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FUnitDamageReceivedEvent OnDamage;
+
 	UFUNCTION(BlueprintCallable, Category = "Damage")
-	virtual void Damage(float Value, FDamageType Type, const AActor* FromWho);
+	virtual void Damage(float Value, FDamageType Type, AActor* FromWho);
+
+	UPROPERTY(BlueprintAssignable, Category = "Damage")
+	FUnitDeathEvent OnDeath;
 
 			/* BREAKING */
 
@@ -89,9 +103,12 @@ protected:
 			/* DAMAGE */
 
 	UFUNCTION(Category = "Damage")
-	virtual void Kill(FDamageType Type, const AActor* Murderer);
+	virtual void Kill(FDamageType Type, AActor* Murderer);
 
 			/* BREAKING */
+
+	UPROPERTY(BlueprintAssignable, Category = "Breaking")
+	FDestroyedEvent OnUnitDestroyed;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	TMap<int, FDestroyerInfo> Destroyers;
@@ -107,22 +124,14 @@ protected:
 
 			/* APPEARANCE */
 
-	// -1 = is not being breaked
+	// -1 = is not being broken
 	UFUNCTION(Category = "Appearance")
 	void SetAppearance(int Stage);
-
-			/* AUDIO */
-	
-	UFUNCTION(Category = "Audio")
-	void PlaySound(FSolidUnitSoundType Sound);
 
 			/* COMPONENTS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UPaperSpriteComponent* SpriteComponent;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
-	UPaperSpriteComponent* BreakSpriteComponent;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")
 	UMeshComponent* MeshComponent;

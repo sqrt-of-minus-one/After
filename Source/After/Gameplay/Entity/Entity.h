@@ -21,10 +21,8 @@ class UAudioComponent;
 class AItem;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FDeathEvent, FDamageType, Type, AActor*, Murderer);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FDamageReceivedEvent, float, Value, FDamageType, Type, float, Direction, AActor*, FromWho, float, Push);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FHealthChangedEvent, float, NewHealth);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOxygenChangedEvent, float, NewOxygen);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FEnergyChangedEvent, float, NewEnergy);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FiveParams(FEntityDamageReceivedEvent, float, Value, FDamageType, Type, float, Direction, AActor*, FromWho, float, Push);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FStatsChangedEvent, float, NewValue);
 
 UCLASS()
 class AFTER_API AEntity : public APawn
@@ -58,21 +56,21 @@ public:
 
 	// Is called when entity's health changes
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
-	FHealthChangedEvent OnHealthChanged;
+	FStatsChangedEvent OnHealthChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetOxygen() const;
 
 	// Is called when entity's oxygen changes
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
-	FOxygenChangedEvent OnOxygenChanged;
+	FStatsChangedEvent OnOxygenChanged;
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetEnergy() const;
 
 	// Is called when entity's energy changes
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
-	FEnergyChangedEvent OnEnergyChanged;
+	FStatsChangedEvent OnEnergyChanged;
 
 			/* DAMAGE */
 
@@ -82,7 +80,7 @@ public:
 
 	// Is called when entity receives a damage
 	UPROPERTY(BlueprintAssignable, Category = "Damage")
-	FDamageReceivedEvent OnDamage;
+	FEntityDamageReceivedEvent OnDamage;
 
 	UFUNCTION(Category = "Damage")
 	virtual void Stone(float Duration);

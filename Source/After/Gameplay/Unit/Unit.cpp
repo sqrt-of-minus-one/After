@@ -9,7 +9,6 @@
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperSpriteComponent.h"
-#include "Components/AudioComponent.h"
 
 #include "../../Data/Database/Database.h"
 #include "../LogGameplay.h"
@@ -39,16 +38,11 @@ AUnit::AUnit()
 	DamageBoxComponent->SetupAttachment(GetRootComponent());
 	DamageBoxComponent->SetCollisionProfileName(TEXT("TriggerArea"));
 	DamageBoxComponent->SetBoxExtent(GameConstants::TileSize + GameConstants::DamageBoxDelta);
-
-	AudioComponent = CreateDefaultSubobject<UAudioComponent>(TEXT("Audio"));
-	AudioComponent->SetupAttachment(GetRootComponent());
 }
 
 void AUnit::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OnEndPlay.AddDynamic(this, &AUnit::ClearTimers);
 
 	// Get game mode
 	AAfterGameModeBase* GameMode = GAME_MODE;
@@ -61,8 +55,7 @@ void AUnit::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	UnitData = &Database->GetUnitData(Id);
 
-	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
-	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
+	//SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)
@@ -70,7 +63,9 @@ void AUnit::BeginPlay()
 		if (UnitData->bSelectable)
 		{
 			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			OnBeginCursorOver.AddDynamic(this, &AUnit::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+			OnEndCursorOver.AddDynamic(this, &AUnit::Unselect);
 		}
 		else
 		{
@@ -112,29 +107,14 @@ const FGameplayTag& AUnit::GetId() const
 	return Id;
 }
 
-void AUnit::Select()
+void AUnit::Select(AActor* Actor)
 {
 	SelectionSpriteComponent->SetVisibility(true);
 }
 
-void AUnit::Unselect()
+void AUnit::Unselect(AActor* Actor)
 {
 	SelectionSpriteComponent->SetVisibility(false);
-}
-
-void AUnit::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
-{
-	if (GetWorld())
-	{
-		if (GetWorld()->GetTimerManager().IsTimerActive(AttackTimer))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(AttackTimer);
-		}
-		if (GetWorld()->GetTimerManager().IsTimerActive(AudioTimer))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(AudioTimer);
-		}
-	}
 }
 
 void AUnit::StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrimitiveComponent* OtherComponent, int32 Index,
@@ -143,7 +123,7 @@ void AUnit::StartAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPri
 	AEntity* Entity = Cast<AEntity>(OtherActor);
 	if (IsValid(Entity) && !Attacked.Contains(Entity))
 	{
-		Attacked.Add(Entity);
+		Attacked.AddTail(Entity);
 		if (!GetWorld()->GetTimerManager().IsTimerActive(AttackTimer))
 		{
 			Attack();
@@ -157,7 +137,7 @@ void AUnit::StopAttack(UPrimitiveComponent* Component, AActor* OtherActor, UPrim
 	AEntity* Entity = Cast<AEntity>(OtherActor);
 	if (Entity)
 	{
-		Attacked.Remove(Entity);
+		Attacked.RemoveNode(Entity);
 		if (Attacked.Num() == 0)
 		{
 			// Stop attack if there is no attacked entity
@@ -172,7 +152,7 @@ void AUnit::Attack()
 	{
 		if (IsValid(i))
 		{
-			// Direction is zero, because unit cannot push entity (direction is not important)
+			// Direction is not important (and is zero), because unit cannot push entity
 			i->Damage(UnitData->Damage, UnitData->DamageType, 0.f, this);
 		}
 	}
