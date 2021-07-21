@@ -34,8 +34,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	ALast* LastPawn;
-
 			/* DATA */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
@@ -54,8 +52,6 @@ protected:
 	AWidgetInitializer* WidgetInitializer;
 
 public:
-	void SetLast(ALast* Last);
-
 			/* DATA */
 
 	const UDatabase* GetDatabase() const;

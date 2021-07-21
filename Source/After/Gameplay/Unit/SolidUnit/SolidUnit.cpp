@@ -18,11 +18,9 @@
 #include "../../Item/Item.h"
 
 ASolidUnit::ASolidUnit() :
-	Breaking(0.f),
+	BreakingSpeedMultiplier(0.f),
 	BreakingStage(-1)
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	CollisionComponent->SetCollisionProfileName(FName("SolidUnit"));
 
 	SpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Sprite"));
@@ -52,6 +50,8 @@ void ASolidUnit::BeginPlay()
 		SpriteComponent = nullptr;
 
 		FlipbookComponent->SetFlipbook(SolidUnitData->Flipbook);
+
+		BreakingStagesCount = SolidUnitData->BreakFlipbooks.Num();
 	}
 	else
 	{
@@ -63,6 +63,12 @@ void ASolidUnit::BeginPlay()
 		FlipbookComponent = nullptr;
 
 		SpriteComponent->SetSprite(SolidUnitData->Sprite);
+
+		BreakingStagesCount = SolidUnitData->BreakSprites.Num();
+	}
+	if (BreakingStagesCount <= 0)
+	{
+		BreakingStagesCount = 1;
 	}
 
 	if (UnitData->bSelectable)
@@ -84,41 +90,6 @@ void ASolidUnit::BeginPlay()
 void ASolidUnit::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	if (Destroyers.Num() != 0)
-	{
-		for (TPair<int, FDestroyerInfo>& i : Destroyers)
-		{
-			// Entities can use hands. In this cast i.Value.Item == nullptr
-			Breaking += DeltaTime * i.Value.SpeedMultiplier;
-			if (IsValid(i.Value.Item))
-			{
-				if (i.Value.bIsToolRight)
-				{
-					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease);
-				}
-				else
-				{
-					i.Value.Item->Use(DeltaTime * GameConstants::ItemConditionDecrease * GameConstants::WrongItemConditionPenalty);
-				}
-			}
-		}
-		if (Breaking >= SolidUnitData->BreakingTime)
-		{
-			Break();
-		}
-		else if ((SolidUnitData->bUseFlipbook ? SolidUnitData->BreakFlipbooks.Num() : SolidUnitData->BreakSprites.Num()) > 0)
-		{
-			int NewStage = Breaking *
-				(SolidUnitData->bUseFlipbook ? SolidUnitData->BreakFlipbooks.Num() : SolidUnitData->BreakSprites.Num()) /
-				SolidUnitData->BreakingTime;
-			if (NewStage != BreakingStage)
-			{
-				BreakingStage = NewStage;
-				SetAppearance(NewStage);
-			}
-		}
-	}
 }
 
 const FSolidUnitInfo& ASolidUnit::GetSolidUnitData() const
@@ -168,6 +139,9 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 	{
 		FDestroyerInfo Info;
 		Info.Item = By;
+
+		BreakingSpeedMultiplier -= Destroyers[DestroyerId].SpeedMultiplier;
+
 		if (IsValid(By))
 		{
 			Info.bIsToolRight = false;
@@ -204,24 +178,25 @@ void ASolidUnit::SwitchItem(int DestroyerId, AItem* By)
 			Info.SpeedMultiplier = 0.f;
 		}
 		Destroyers[DestroyerId] = Info;
+
+		BreakingSpeedMultiplier += Info.SpeedMultiplier;
+
+		Break();
 	}
 }
 
 void ASolidUnit::StopBreaking(int DestroyerId)
 {
+	BreakingSpeedMultiplier -= Destroyers[DestroyerId].SpeedMultiplier;
 	Destroyers.Remove(DestroyerId);
-	if (Destroyers.Num() == 0)
+	if (Destroyers.Num() > 0)
 	{
-		Breaking = 0.f;
-		BreakingStage = -1;
-		SetAppearance(-1);
+		Break();
 	}
-}
-
-void ASolidUnit::Kill(FDamageType Type, AActor* Murderer)
-{
-	OnDeath.Broadcast(Type, Murderer);
-	GetWorld()->DestroyActor(this);
+	else
+	{
+		ResetBreaking();
+	}
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -246,8 +221,58 @@ void ASolidUnit::Kill(FDamageType Type, AActor* Murderer)
 //       |     |   |     |             /| |\                        //
 ///////////////////////////////////////ROOT!//////////////////////////
 
+void ASolidUnit::Kill(FDamageType Type, AActor* Murderer)
+{
+	OnDeath.Broadcast(Type, Murderer);
+	GetWorld()->DestroyActor(this);
+}
+
 void ASolidUnit::Break()
 {
+	if (BreakingSpeedMultiplier >= 0)
+	{
+		float NewRate = SolidUnitData->BreakingTime / (BreakingSpeedMultiplier * BreakingStagesCount);
+		
+		FTimerManager& TimerManager = GetWorld()->GetTimerManager();
+	
+		float FirstDelay = -1.f;
+		if (TimerManager.IsTimerActive(BreakingTimer))
+		{
+			FirstDelay = TimerManager.GetTimerRemaining(BreakingTimer) * NewRate / TimerManager.GetTimerRate(BreakingTimer);
+		}
+		else
+		{
+			NextBreakingStage();
+		}
+
+		TimerManager.SetTimer(BreakingTimer, this, &ASolidUnit::NextBreakingStage, NewRate, true, FirstDelay);
+	}
+}
+
+void ASolidUnit::NextBreakingStage()
+{
+	if (++BreakingStage >= BreakingStagesCount)
+	{
+		Broken();
+	}
+	else
+	{
+		SetAppearance();
+	}
+}
+
+void ASolidUnit::ResetBreaking()
+{
+	GetWorld()->GetTimerManager().ClearTimer(BreakingTimer);
+	BreakingStage = -1;
+	BreakingSpeedMultiplier = 0.f;
+	SetAppearance();
+}
+
+void ASolidUnit::Broken()
+{
+	GetWorld()->GetTimerManager().ClearTimer(BreakingTimer);
+
 	for (TPair<int, FDestroyerInfo>& i : Destroyers)
 	{
 		if (i.Value.bIsToolRight)
@@ -272,16 +297,18 @@ void ASolidUnit::Break()
 	GetWorld()->DestroyActor(this);
 }
 
-void ASolidUnit::SetAppearance(int Stage)
+void ASolidUnit::SetAppearance()
 {
 	if (SolidUnitData->bUseFlipbook)
 	{
 		int FlipbookPosition = FlipbookComponent->GetPlaybackPosition();
-		FlipbookComponent->SetFlipbook(Stage < 0 ? SolidUnitData->Flipbook : SolidUnitData->BreakFlipbooks[Stage]);
+		FlipbookComponent->SetFlipbook((BreakingStage < 0 || SolidUnitData->BreakFlipbooks.Num() <= 0) ?
+			SolidUnitData->Flipbook : SolidUnitData->BreakFlipbooks[BreakingStage]);
 		FlipbookComponent->SetPlaybackPosition(FlipbookPosition, false); // I'm not sure what happens if FlipbookPosition is more than flipbook length
 	}
 	else
 	{
-		SpriteComponent->SetSprite(Stage < 0 ? SolidUnitData->Sprite : SolidUnitData->BreakSprites[Stage]);
+		SpriteComponent->SetSprite((BreakingStage < 0 || SolidUnitData->BreakSprites.Num() <= 0) ?
+			SolidUnitData->Sprite : SolidUnitData->BreakSprites[BreakingStage]);
 	}
 }

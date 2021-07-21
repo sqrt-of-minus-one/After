@@ -79,6 +79,9 @@ public:
 
 			/* BREAKING */
 
+	UPROPERTY(BlueprintAssignable, Category = "Breaking")
+	FDestroyedEvent OnUnitDestroyed;
+
 	// Returns destroyer id
 	UFUNCTION(Category = "Breaking")
 	int StartBreaking(AItem* By);
@@ -107,26 +110,40 @@ protected:
 
 			/* BREAKING */
 
-	UPROPERTY(BlueprintAssignable, Category = "Breaking")
-	FDestroyedEvent OnUnitDestroyed;
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	FTimerHandle BreakingTimer;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	TMap<int, FDestroyerInfo> Destroyers;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
-	float Breaking;
+	float BreakingSpeedMultiplier;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
+	int BreakingStagesCount;
 
 	UPROPERTY(BlueprintReadOnly, Category = "Breaking")
 	int BreakingStage;
 
-	UFUNCTION(Category = "Damage")
+	// Setup the timer; BreakingRequiredTime must be set beforehand
+	UFUNCTION(Category = "Breaking")
 	void Break();
+
+	UFUNCTION(Category = "Breaking")
+	void NextBreakingStage();
+
+	// Stop breaking and clear the timer
+	UFUNCTION(Category = "Breaking")
+	void ResetBreaking();
+
+	UFUNCTION(Category = "Damage")
+	void Broken();
 
 			/* APPEARANCE */
 
 	// -1 = is not being broken
 	UFUNCTION(Category = "Appearance")
-	void SetAppearance(int Stage);
+	void SetAppearance();
 
 			/* COMPONENTS */
 

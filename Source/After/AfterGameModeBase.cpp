@@ -35,21 +35,8 @@ void AAfterGameModeBase::BeginPlay()
 	UE_LOG(LogLang, Log, TEXT("Language manager object has been created (%s)"), *LangManager->GetName());
 
 	WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
-	if (IsValid(LastPawn))
-	{
-		WidgetInitializer->DisplayMainWidget(LastPawn);
-	}
 
 	GetWorld()->GetTimerManager().SetTimer(EntityStatsTimer, this, &AAfterGameModeBase::EntityStatsExec, GameConstants::CalcStatsInterval, true);
-}
-
-void AAfterGameModeBase::SetLast(ALast* Last)
-{
-	LastPawn = Last;
-	if (IsValid(WidgetInitializer))
-	{
-		WidgetInitializer->DisplayMainWidget(LastPawn);
-	}
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const
