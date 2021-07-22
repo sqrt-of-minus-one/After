@@ -19,7 +19,7 @@ class UDatabase;
 class ALangManager;
 class AWidgetInitializer;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FEntityStatsEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameTickEvent);
 
 #define GAME_MODE Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())
 
@@ -34,6 +34,26 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
+	// ==================================================
+
+public:
+			/* DATA */
+
+	const UDatabase* GetDatabase() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	ALangManager* GetLangManager();
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	AWidgetInitializer* GetWidgetInitializer();
+
+			/* GAME TICK */
+
+	// Is called every game tick
+	UPROPERTY(BlueprintAssignable, Category = "GameTick")
+	FGameTickEvent OnGameTick;
+
+protected:
 			/* DATA */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
@@ -51,27 +71,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Data")
 	AWidgetInitializer* WidgetInitializer;
 
-public:
-			/* DATA */
+			/* GAME TICK */
 
-	const UDatabase* GetDatabase() const;
+	UPROPERTY(BlueprintReadOnly, Category = "GameTick")
+	FTimerHandle GameTickTimer;
 
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	ALangManager* GetLangManager();
-
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	AWidgetInitializer* GetWidgetInitializer();
-
-			/* ENTITIES */
-
-	// Is called when entities should calculate their stats
-	UPROPERTY(BlueprintAssignable, Category = "Entities")
-	FEntityStatsEvent OnEntityStats;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Entities")
-	FTimerHandle EntityStatsTimer;
-
-	UFUNCTION(Category = "Entities")
-	void EntityStatsExec();
+	UFUNCTION(Category = "GameTick")
+	void GameTickExec();
 
 };

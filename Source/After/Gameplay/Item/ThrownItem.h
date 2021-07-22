@@ -46,10 +46,10 @@ public:
 			/* SELECTION */
 
 	UFUNCTION(Category = "Selection")
-	void Select();
+	void Select(AActor* Actor);
 
 	UFUNCTION(Category = "Selection")
-	void Unselect();
+	void Unselect(AActor* Actor);
 
 protected:
 			/* GENERAL */

@@ -36,7 +36,7 @@ void AAfterGameModeBase::BeginPlay()
 
 	WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
 
-	GetWorld()->GetTimerManager().SetTimer(EntityStatsTimer, this, &AAfterGameModeBase::EntityStatsExec, GameConstants::CalcStatsInterval, true);
+	GetWorld()->GetTimerManager().SetTimer(GameTickTimer, this, &AAfterGameModeBase::GameTickExec, GameConstants::GameTickLength, true);
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const
@@ -54,7 +54,7 @@ AWidgetInitializer* AAfterGameModeBase::GetWidgetInitializer()
 	return WidgetInitializer;
 }
 
-void AAfterGameModeBase::EntityStatsExec()
+void AAfterGameModeBase::GameTickExec()
 {
-	OnEntityStats.Broadcast();
+	OnGameTick.Broadcast();
 }

@@ -35,14 +35,13 @@ AThrownItem::AThrownItem()
 	SpriteComponent->SetRelativeRotation(FRotator(0.f, 0.f, -90.f));
 
 	SelectionSpriteComponent = CreateDefaultSubobject<UPaperSpriteComponent>(TEXT("Selection Sprite"));
+	SelectionSpriteComponent->SetupAttachment(SpriteComponent);
 	SelectionSpriteComponent->SetVisibility(false);
 }
 
 void AThrownItem::BeginPlay()
 {
 	Super::BeginPlay();
-
-	SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
 }
 
 void AThrownItem::Tick(float DeltaTime)
@@ -57,20 +56,16 @@ AItem* AThrownItem::GetItem() const
 
 bool AThrownItem::SetItem(AItem* ItemToSet)
 {
-	if (Item || (ItemToSet && ItemToSet->IsPendingKill()))
-	{
-		return false;
-	}
-	else
+	if (!Item && IsValid(ItemToSet))
 	{
 		Item = ItemToSet;
 		
 		const FItemInfo& ItemData = Item->GetItemData();
-		SelectionSpriteComponent->SetRelativeLocation(FVector(0.f, 0.f, 0.f));
 		if (ItemData.bUseFlipbook)
 		{
 			FlipbookComponent->SetFlipbook(ItemData.WorldFlipbook);
 			FlipbookComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
+			SelectionSpriteComponent->AttachToComponent(FlipbookComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 			MeshComponent = FlipbookComponent;
 			SpriteComponent->DestroyComponent();
 			SpriteComponent = nullptr;
@@ -80,7 +75,6 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 			SpriteComponent->SetSprite(ItemData.WorldSprite);
 			SpriteComponent->SetRelativeScale3D(GameConstants::ThrownItemSize / GameConstants::TileSize);
 			MeshComponent = SpriteComponent;
-			SelectionSpriteComponent->AttachToComponent(SpriteComponent, FAttachmentTransformRules(EAttachmentRule::KeepRelative, false));
 			FlipbookComponent->DestroyComponent();
 			FlipbookComponent = nullptr;
 		}
@@ -89,7 +83,9 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 		if (LastController)
 		{
 			OnBeginCursorOver.AddDynamic(LastController, &ALastController::Select);
+			OnBeginCursorOver.AddDynamic(this, &AThrownItem::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
+			OnEndCursorOver.AddDynamic(this, &AThrownItem::Unselect);
 		}
 		else
 		{
@@ -109,14 +105,18 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 
 		return true;
 	}
+	else
+	{
+		return false;
+	}
 }
 
-void AThrownItem::Select()
+void AThrownItem::Select(AActor* Actor)
 {
 	SelectionSpriteComponent->SetVisibility(true);
 }
 
-void AThrownItem::Unselect()
+void AThrownItem::Unselect(AActor* Actor)
 {
 	SelectionSpriteComponent->SetVisibility(false);
 }

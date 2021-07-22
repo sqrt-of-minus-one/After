@@ -11,7 +11,8 @@
 #include "../../AfterGameModeBase.h"
 
 AItem::AItem() :
-	Count(1)
+	Count(1),
+	CustomIndex(0)
 {
 	PrimaryActorTick.bCanEverTick = false;
 }
@@ -59,6 +60,7 @@ bool AItem::SetCount(int NewCount)
 	if (NewCount <= 0)
 	{
 		Count = 0;
+		OnItemCountZero.Broadcast();
 		Destroy();
 		return true;
 	}
@@ -73,6 +75,16 @@ bool AItem::SetCount(int NewCount)
 	}
 }
 
+void AItem::SetCustomIndex(int Index)
+{
+	CustomIndex = Index;
+}
+
+int AItem::GetCustomIndex() const
+{
+	return CustomIndex;
+}
+
 float AItem::GetCondition() const
 {
 	return Condition;
@@ -85,6 +97,7 @@ void AItem::Use(float ConditionDecrease)
 		Condition -= ConditionDecrease;
 		if (Condition <= 0.f)
 		{
+			OnItemBroken.Broadcast();
 			Destroy();
 		}
 	}

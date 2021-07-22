@@ -15,12 +15,11 @@ const float GameConstants::MaxPlayerSpringArmLength = 1500.f;
 
 		/* WORLD */
 
+const float GameConstants::GameTickLength = 1.f;
 const FVector GameConstants::TileSize = FVector(16.f, 16.f, 4.f);
 const float GameConstants::LiquidValueInTile = 100.f;
 
 		/* ENTITY */
-
-const float GameConstants::CalcStatsInterval = 1.f;
 const float GameConstants::EntityPushDecrement = 0.85f;
 const float GameConstants::EntityOverlapOffsetMultiplier = 15.f;
 
@@ -32,7 +31,7 @@ const float GameConstants::MinMobChangeDirectionTime = 0.25f;
 const float GameConstants::MobUpdateDirectionTime = .3f;
 const float GameConstants::MobPainTime = 5.f;
 
-		/* UNIT */
+/* UNIT */
 
 const float GameConstants::UnitDamageInterval = 1.f;
 const FVector GameConstants::DamageBoxDelta = FVector(1.f, 1.f, GameConstants::TileSize.Z / 2);

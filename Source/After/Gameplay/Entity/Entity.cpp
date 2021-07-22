@@ -115,7 +115,7 @@ void AEntity::BeginPlay()
 			FMath::RandRange(EntityData->MinSoundPause, EntityData->MaxSoundPause), false);
 	}
 
-	GameMode->OnEntityStats.AddDynamic(this, &AEntity::CalculateStats);
+	GameMode->OnGameTick.AddDynamic(this, &AEntity::CalculateStats);
 }
 
 void AEntity::Tick(float DeltaTime)
@@ -374,7 +374,7 @@ void AEntity::RangedAttack(FRotator Direction)
 
 void AEntity::Death(FDamageType Type, AActor* Murderer)
 {
-	GAME_MODE->OnEntityStats.RemoveAll(this);
+	GAME_MODE->OnGameTick.RemoveAll(this);
 	SetFlipbook(CurrentDirection, FEntityStatus::Death);
 	PlaySound(FEntitySoundType::Death);
 	bIsDead = true;
