@@ -62,6 +62,18 @@ AItem* UInventoryComponent::Get(int Index) const
 	}
 }
 
+int UInventoryComponent::Find(FGameplayTag ItemTag) const
+{
+	for (int i = 0; i < Inventory.Num(); i++)
+	{
+		if (IsValid(Inventory[i]) && Inventory[i]->GetId() == ItemTag)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 AItem* UInventoryComponent::Take(int Index, int Count)
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
@@ -70,6 +82,8 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 		{
 			AItem* Item = Inventory[Index];
 			Inventory.RemoveAt(Index);
+			OnItemRemoved.Broadcast(Index, Item);
+			Item->OnItemBroken.RemoveAll(this);
 			Fullness -= Item->GetItemData().Weight * Item->GetCount();
 			return Item;
 		}
@@ -162,6 +176,7 @@ void UInventoryComponent::ItemBroken(AItem* Item, float Weight)
 			if (Inventory[i] == Item)
 			{
 				Inventory.RemoveAt(i);
+				OnItemRemoved.Broadcast(i, Item);
 				Fullness -= Weight;
 			}
 		}
@@ -186,6 +201,7 @@ int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComp
 				if (Moved >= FirstCount) // If all of the items were moved
 				{
 					Inventory.RemoveAt(Index);
+					OnItemRemoved.Broadcast(Index, Inventory[Index]);
 					Fullness -= FirstCount * Weight;
 				}
 				else

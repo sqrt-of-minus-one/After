@@ -14,6 +14,8 @@
 class AItem;
 class UPlayerInventoryComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemRemovedEvent, int, Index, AItem*, Item);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class AFTER_API UInventoryComponent : public UActorComponent
 {
@@ -49,6 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;
 
+	// Returns an index of item with passed tag or -1 if tag wasn't found
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int Find(FGameplayTag ItemTag) const;
+
 	// Remove some items from the inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Take(int Index, int Count);
@@ -69,9 +75,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
-			/* EVENTS */
-
-
+	// Is called when item is removed from the inventory
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FItemRemovedEvent OnItemRemoved;
 
 protected:
 			/* INVENTORY */

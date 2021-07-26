@@ -43,25 +43,6 @@ void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	// Todo: use events (AItem and UInventoryComponent)
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (bWasItemValid)
-	{
-		if (!IsValid(HotbarItem))
-		{
-			OnItemChanged.Broadcast(nullptr);
-			bWasItemValid = false;
-		}
-	}
-	else
-	{
-		if (IsValid(HotbarItem))
-		{
-			OnItemChanged.Broadcast(HotbarItem);
-			bWasItemValid = true;
-		}
-	}
-
 // Debug output
 	const ALangManager* LangManager = GAME_MODE->GetLangManager();
 
@@ -93,7 +74,9 @@ void ALastController::Tick(float DeltaTime)
 		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
 	}
 	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	if (bWasItemValid)
+	
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	if (IsValid(HotbarItem))
 	{
 		if (HotbarItem->GetItemData().MaxCondition > 0.f)
 		{
@@ -121,11 +104,8 @@ void ALastController::OnPossess(APawn* InPawn)
 			Inventory = LastPawn->GetInventory();
 
 			AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-			bWasItemValid = IsValid(HotbarItem);
-			if (bWasItemValid)
-			{
-				OnItemChanged.Broadcast(HotbarItem);
-			}
+			OnItemChanged.Broadcast(HotbarItem);
+			Inventory->OnHotbarItemChanged.AddDynamic(this, &ALastController::HotbarItemChanged);
 		}
 		else
 		{
@@ -144,7 +124,7 @@ void ALastController::OnUnPossess()
 {
 	Super::OnUnPossess();
 
-	UE_LOG(LogGameplay, Log, TEXT("Hello. I'm last controller. And I don't want to control any more. I'm tired. I want to leave. I've unpossessed. Bye."));
+	UE_LOG(LogGameplay, Log, TEXT("Hello. I'm last controller. And I don't want to control any more. I'm tired. I want to leave. That's why I've just unpossessed. Bye."));
 }
 
 void ALastController::Select(AActor* Actor)
@@ -219,20 +199,10 @@ int ALastController::GetHotbarSlot()
 
 void ALastController::SetHotbarSlot(int Slot)
 {
-	if (IsValid(Inventory) && Slot >= 0 && Slot < Cast<ALast>(GetPawn())->GetLastData().HotbarSize)
+	if (IsValid(Inventory) && Slot >= 0 && Slot < LastPawn->GetLastData().HotbarSize)
 	{
 		HotbarSlot = Slot;
-		AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-		if (IsValid(HotbarItem))
-		{
-			OnItemChanged.Broadcast(HotbarItem);
-			bWasItemValid = true;
-		}
-		else if (bWasItemValid)
-		{
-			OnItemChanged.Broadcast(HotbarItem);
-			bWasItemValid = false;
-		}
+		OnItemChanged.Broadcast(Inventory->GetHotbarItem(HotbarSlot));
 	}
 }
 
@@ -249,6 +219,14 @@ void ALastController::Death(FDamageType Type, AActor* Murderer)
 	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
 	StopBreak.BindLambda([]() {});
 	bIsDead = true;
+}
+
+void ALastController::HotbarItemChanged(int HotbarIndex, AItem* NewItem)
+{
+	if (HotbarIndex == HotbarSlot)
+	{
+		OnItemChanged.Broadcast(NewItem);
+	}
 }
 
 void ALastController::SetupInput()
@@ -373,7 +351,7 @@ void ALastController::Throw_f()
 	{
 		// Todo: Spawn thrown item in special function
 		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
+		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetInventory()->Find(Inventory->GetHotbarItemTag(HotbarSlot)), 1));
 	}
 }
 

@@ -111,10 +111,11 @@ protected:
 
 			/* HOTBAR */
 
-	bool bWasItemValid;
-
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Hotbar")
 	int HotbarSlot;
+
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	void HotbarItemChanged(int HotbarIndex, AItem* NewItem);
 
 			/* CONTROL */
 

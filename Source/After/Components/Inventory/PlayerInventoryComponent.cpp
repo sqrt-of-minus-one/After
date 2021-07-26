@@ -40,11 +40,9 @@ void UPlayerInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 void UPlayerInventoryComponent::Init(float Size, int HotbarSize)
 {
 	Inventory->Init(Size);
+	Inventory->OnItemRemoved.AddDynamic(this, &UPlayerInventoryComponent::HotbarItemRemoved);
 	Hotbar.SetNum(HotbarSize);
-	for (int& i : Hotbar)
-	{
-		i = -1;
-	}
+	HotbarItems.SetNum(HotbarSize);
 	bInitialized = true;
 }
 
@@ -100,7 +98,14 @@ float UPlayerInventoryComponent::GetMaxFullness() const
 
 UInventoryComponent* UPlayerInventoryComponent::GetInventory() const
 {
-	return Inventory;
+	if (bInitialized)
+	{
+		return Inventory;
+	}
+	else
+	{
+		return nullptr;
+	}
 }
 
 AItem* UPlayerInventoryComponent::GetClothes(FClothesType Type) const
@@ -117,7 +122,7 @@ AItem* UPlayerInventoryComponent::GetClothes(FClothesType Type) const
 
 UInventoryComponent* UPlayerInventoryComponent::GetClothesInventory(FClothesType Type) const
 {
-	if (bInitialized)
+	if (bInitialized && IsValid(Clothes[Type]))
 	{
 		return ClothesInventory[Type];
 	}
@@ -179,7 +184,7 @@ AItem* UPlayerInventoryComponent::GetHotbarItem(int Index) const
 {
 	if (bInitialized && Index >= 0 && Index < Hotbar.Num())
 	{
-		return Inventory->Get(Hotbar[Index]);
+		return HotbarItems[Index];
 	}
 	else
 	{
@@ -187,7 +192,7 @@ AItem* UPlayerInventoryComponent::GetHotbarItem(int Index) const
 	}
 }
 
-int UPlayerInventoryComponent::GetHotbarItemIndex(int Index) const
+FGameplayTag UPlayerInventoryComponent::GetHotbarItemTag(int Index) const
 {
 	if (bInitialized && Index >= 0 && Index < Hotbar.Num())
 	{
@@ -195,14 +200,35 @@ int UPlayerInventoryComponent::GetHotbarItemIndex(int Index) const
 	}
 	else
 	{
-		return -1;
+		return FGameplayTag::EmptyTag;
 	}
 }
 
-void UPlayerInventoryComponent::SetHotbarItem(int HotbarIndex, int ItemIndex)
+void UPlayerInventoryComponent::SetHotbarItem(int HotbarIndex, FGameplayTag ItemTag)
 {
 	if (bInitialized)
 	{
-		Hotbar[HotbarIndex] = ItemIndex;
+		AItem* Item = Inventory->Get(Inventory->Find(ItemTag));
+		if (!IsValid(Item))
+		{
+			Item = nullptr;
+			ItemTag = FGameplayTag::EmptyTag;
+		}
+		Hotbar[HotbarIndex] = ItemTag;
+		HotbarItems[HotbarIndex] = Item;
+		OnHotbarItemChanged.Broadcast(HotbarIndex, Item);
+	}
+}
+
+void UPlayerInventoryComponent::HotbarItemRemoved(int Index, AItem* Item)
+{
+	for (int i = 0; i < Hotbar.Num(); i++)
+	{
+		if (HotbarItems[i] == Item)
+		{
+			// Set another item with the same tag if it's contained in the inventory
+			SetHotbarItem(i, Hotbar[i]);
+			// OnHotbarItemChanged is called in SetHotbarItem function
+		}
 	}
 }
