@@ -77,7 +77,7 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 		{
 			AItem* Item = GetWorld()->SpawnActor<AItem>(Inventory[Index]->GetClass());
 			Item->SetCount(Count);
-			// Item should not be stackable (because otherwise "if" would have been true
+			// Item is not stackable (because otherwise "if" would have been true
 			Inventory[Index]->SetCount(Inventory[Index]->GetCount() - Count);
 			Fullness -= Item->GetItemData().Weight * Count;
 			return Item;
@@ -95,7 +95,7 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 	{
 		// How many items can be put into inventory
 		int MoveCount = FMath::Min3(Count, Item->GetCount(), static_cast<int>((MaxFullness - Fullness) / Item->GetItemData().Weight));
-		if (MoveCount <= 0) // Missing space
+		if (MoveCount <= 0) // Missing space or attempt to put non-positive count of items
 		{
 			return 0;
 		}
@@ -118,6 +118,7 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 			// Create a new stack
 			AItem* NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
 			NewItem->SetCount(MoveCount);
+			NewItem->OnItemBroken.AddDynamic(this, &UInventoryComponent::ItemBroken);
 			Fullness += Item->GetItemData().Weight * MoveCount;
 			Inventory.Add(NewItem);
 			Item->SetCount(Item->GetCount() - MoveCount);
@@ -150,6 +151,21 @@ int UInventoryComponent::MoveToInventory(int Index, int Count, UInventoryCompone
 int UInventoryComponent::MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent)
 {
 	return MoveToInventory_(Index, Count, InventoryComponent);
+}
+
+void UInventoryComponent::ItemBroken(AItem* Item, float Weight)
+{
+	if (Item)
+	{
+		for (int i = 0; i < Inventory.Num(); i++)
+		{
+			if (Inventory[i] == Item)
+			{
+				Inventory.RemoveAt(i);
+				Fullness -= Weight;
+			}
+		}
+	}
 }
 
 template<typename T>

@@ -14,8 +14,9 @@
 
 #include "Item.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FItemBrokenEvent);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FItemCountZeroEvent);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemBrokenEvent, AItem*, Item, float, Weight);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConditionChangedEvent, float, NewCondition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemCountZeroEvent, AItem*, Item);
 
 UCLASS()
 class AFTER_API AItem : public AActor
@@ -53,16 +54,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	bool SetCount(int NewCount);
 
-			/* CUSTOM INDEX */
-
-	// Custom index can be used by item owner (container) in order to search items faster
-	UFUNCTION(BlueprintCallable, Category = "CustomIndex")
-	void SetCustomIndex(int Index);
-
-	UFUNCTION(BlueprintCallable, Category = "CustomIndex")
-	int GetCustomIndex() const;
-
 			/* STATS */
+
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FConditionChangedEvent OnConditionChanged;
 
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
 	FItemBrokenEvent OnItemBroken;
@@ -83,11 +78,6 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
 	int Count;
-
-			/* CUSTOM INDEX */
-
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "CustomIndex")
-	int CustomIndex;
 
 			/* STATS */
 

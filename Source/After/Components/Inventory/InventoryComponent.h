@@ -69,6 +69,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
+			/* EVENTS */
+
+
+
 protected:
 			/* INVENTORY */
 
@@ -83,6 +87,9 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TArray<AItem*> Inventory;
+
+	UFUNCTION(Category = "Inventory")
+	void ItemBroken(AItem* Item, float Weight);
 
 private:
 	template<typename T>
