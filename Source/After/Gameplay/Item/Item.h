@@ -16,6 +16,7 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemBrokenEvent, AItem*, Item, float, Weight);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConditionChangedEvent, float, NewCondition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCountChangedEvent, int, NewCount);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemCountZeroEvent, AItem*, Item);
 
 UCLASS()
@@ -42,6 +43,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FGameplayTag& GetId() const;
+
+	// Is called when items count changed (even if new count is zero)
+	UPROPERTY(BlueprintAssignable, Category = "General")
+	FCountChangedEvent OnCountChanged;
 
 	// Is called when items count becomes zero and item object is destroyed
 	UPROPERTY(BlueprintAssignable, Category = "General")

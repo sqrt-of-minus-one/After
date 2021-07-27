@@ -200,8 +200,9 @@ int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComp
 			{
 				if (Moved >= FirstCount) // If all of the items were moved
 				{
+					AItem* Removed = Inventory[Index];
 					Inventory.RemoveAt(Index);
-					OnItemRemoved.Broadcast(Index, Inventory[Index]);
+					OnItemRemoved.Broadcast(Index, Removed);
 					Fullness -= FirstCount * Weight;
 				}
 				else

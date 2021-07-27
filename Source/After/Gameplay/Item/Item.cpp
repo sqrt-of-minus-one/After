@@ -59,6 +59,7 @@ bool AItem::SetCount(int NewCount)
 	if (NewCount <= 0)
 	{
 		Count = 0;
+		OnCountChanged.Broadcast(0);
 		OnItemCountZero.Broadcast(this);
 		Destroy();
 		return true;
@@ -66,6 +67,7 @@ bool AItem::SetCount(int NewCount)
 	else if (ItemData->bIsStackable)
 	{
 		Count = NewCount;
+		OnCountChanged.Broadcast(Count);
 		return true;
 	}
 	else
