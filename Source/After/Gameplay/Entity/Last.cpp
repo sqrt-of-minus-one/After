@@ -49,6 +49,12 @@ void ALast::BeginPlay()
 	Satiety = LastData->MaxSatiety;
 
 	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
+
+	AWidgetInitializer* WidgetInitializer = GAME_MODE->GetWidgetInitializer();
+	if (IsValid(WidgetInitializer))
+	{
+		WidgetInitializer->DisplayMainWidget(this);
+	}
 }
 
 void ALast::Tick(float DeltaTime)
@@ -187,4 +193,5 @@ void ALast::CalculateStats()
 	Super::CalculateStats();
 
 	Satiety = FMath::Clamp(Satiety - LastData->SatietySpeed, 0.f, LastData->MaxSatiety);
+	OnSatietyChanged.Broadcast(Satiety);
 }

@@ -397,11 +397,13 @@ void AEntity::CalculateStats()
 	if (Energy < EntityData->MaxEnergy && (!bIsRunning || Moving.IsZero()))
 	{
 		Energy = FMath::Clamp(Energy + EntityData->EnergyRegenerationSpeed, 0.f, EntityData->MaxEnergy);
+		OnEnergyChanged.Broadcast(Energy);
 	}
 
 	if (Oxygen < EntityData->MaxOxygen /* Todo: and if is not underwater */)
 	{
 		Oxygen = FMath::Clamp(Oxygen + EntityData->OxygenRegenerationSpeed, 0.f, EntityData->MaxOxygen);
+		OnOxygenChanged.Broadcast(Oxygen);
 	}
 }
 

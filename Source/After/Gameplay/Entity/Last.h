@@ -53,7 +53,7 @@ public:
 
 	// Is called when entity's satiety changes
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
-	FStatsChangedEvent OnSatietyChanged;
+	FSatietyChangedEvent OnSatietyChanged;
 
 			/* INVENTORY */
 

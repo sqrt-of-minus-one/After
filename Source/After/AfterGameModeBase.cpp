@@ -6,6 +6,8 @@
 
 #include "AfterGameModeBase.h"
 
+#include "Kismet/GameplayStatics.h"
+
 #include "Data/Database/Database.h"
 #include "Data/Lang/LangManager.h"
 #include "Gui/WidgetInitializer.h"
@@ -37,6 +39,12 @@ void AAfterGameModeBase::BeginPlay()
 	WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
 
 	GetWorld()->GetTimerManager().SetTimer(GameTickTimer, this, &AAfterGameModeBase::GameTickExec, GameConstants::GameTickLength, true);
+
+	ALast* Last = Cast<ALast>(UGameplayStatics::GetPlayerPawn(nullptr, 0));
+	if (IsValid(Last))
+	{
+		WidgetInitializer->DisplayMainWidget(Last);
+	}
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const

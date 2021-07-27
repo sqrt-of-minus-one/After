@@ -32,7 +32,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	UPROPERTY(BlueprintAssignable, Category = "Language")
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Language")
 	FLangChangedEvent OnLangChanged;
 
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Language")
