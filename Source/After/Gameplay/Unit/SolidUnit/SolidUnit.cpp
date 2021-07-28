@@ -292,6 +292,14 @@ void ASolidUnit::Broken()
 		}
 	}
 
+	for (TPair<int, FDestroyerInfo>& i : Destroyers)
+	{
+		if (IsValid(i.Value.Item))
+		{
+			i.Value.Item->Use(SolidUnitData->BreakingTime * (i.Value.bIsToolRight ? GameConstants::ItemConditionDecrease : GameConstants::WrongItemConditionPenalty));
+		}
+	}
+
 	OnUnitDestroyed.Broadcast();
 
 	GetWorld()->DestroyActor(this);

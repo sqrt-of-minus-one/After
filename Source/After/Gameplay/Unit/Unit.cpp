@@ -55,8 +55,6 @@ void AUnit::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	UnitData = &Database->GetUnitData(Id);
 
-	//SelectionSpriteComponent->SetWorldLocation(GetActorLocation());
-
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
 	if (LastController)
 	{
