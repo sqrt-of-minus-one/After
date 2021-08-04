@@ -77,6 +77,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	void SetHotbarItem(int HotbarIndex, FGameplayTag ItemTag);
 
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	void ClearHotbarSlot(int HotbarIndex);
+
 	// Is called when one of hotbar items is changed (removed or replaced)
 	UPROPERTY(BlueprintAssignable, Category = "Hotbar")
 	FHotbarItemChangedEvent OnHotbarItemChanged;

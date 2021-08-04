@@ -220,6 +220,16 @@ void UPlayerInventoryComponent::SetHotbarItem(int HotbarIndex, FGameplayTag Item
 	}
 }
 
+void UPlayerInventoryComponent::ClearHotbarSlot(int HotbarIndex)
+{
+	if (bInitialized)
+	{
+		Hotbar[HotbarIndex] = FGameplayTag::EmptyTag;
+		HotbarItems[HotbarIndex] = nullptr;
+		OnHotbarItemChanged.Broadcast(HotbarIndex, nullptr);
+	}
+}
+
 void UPlayerInventoryComponent::HotbarItemRemoved(int Index, AItem* Item)
 {
 	for (int i = 0; i < Hotbar.Num(); i++)
