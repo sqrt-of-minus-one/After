@@ -39,7 +39,7 @@ public:
 			/* INVENTORY */
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
-	void Init(float Size, int HotbarSize);
+	void Init(float Size, int HotbarSize, AActor* Owner);
 
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	float GetFullness() const;
@@ -63,6 +63,9 @@ public:
 	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int PutAll(AItem* Item);
+
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ThrowAll();
 
 			/* HOTBAR */
 
@@ -90,6 +93,9 @@ protected:
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	bool bInitialized;
 	
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	AActor* Owner;
+
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	UInventoryComponent* Inventory;
 

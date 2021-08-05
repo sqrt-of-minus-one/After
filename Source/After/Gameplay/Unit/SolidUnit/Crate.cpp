@@ -33,7 +33,7 @@ void ACrate::BeginPlay()
 	const UDatabase* Database = GameMode->GetDatabase();
 	CrateData = &Database->GetCrateData(Id);
 
-	InventoryComponent->Init(CrateData->InventorySize);
+	InventoryComponent->Init(CrateData->InventorySize, this);
 }
 
 void ACrate::Tick(float DeltaTime)
@@ -56,4 +56,11 @@ const FCrateInfo& ACrate::GetCrateData() const
 UInventoryComponent* ACrate::GetInventory() const
 {
 	return InventoryComponent;
+}
+
+void ACrate::Broken()
+{
+	InventoryComponent->ThrowAll();
+
+	Super::Broken();
 }

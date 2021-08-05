@@ -48,7 +48,7 @@ void ALast::BeginPlay()
 
 	Satiety = LastData->MaxSatiety;
 
-	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
+	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize, this);
 
 	AWidgetInitializer* WidgetInitializer = GAME_MODE->GetWidgetInitializer();
 	if (IsValid(WidgetInitializer))
@@ -186,6 +186,11 @@ void ALast::Disappear()
 {
 	FlipbookComponent->SetPlaybackPosition(FlipbookComponent->GetFlipbookLength(), false);
 	FlipbookComponent->Stop();
+}
+
+void ALast::DeathDrop()
+{
+	InventoryComponent->ThrowAll();
 }
 
 void ALast::CalculateStats()

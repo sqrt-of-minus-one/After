@@ -7,6 +7,10 @@
 #include "InventoryComponent.h"
 
 #include "../../Gameplay/Item/Item.h"
+#include "../../Gameplay/Item/ThrownItem.h"
+#include "../../AfterGameModeBase.h"
+#include "../../Data/Database/Database.h"
+#include "../../GameConstants.h"
 #include "PlayerInventoryComponent.h"
 
 UInventoryComponent::UInventoryComponent() :
@@ -26,10 +30,11 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UInventoryComponent::Init(float Size)
+void UInventoryComponent::Init(float Size, AActor* InventoryOwner)
 {
 	if (!bInitialized)
 	{
+		Owner = InventoryOwner;
 		MaxFullness = Size;
 		bInitialized = true;
 	}
@@ -96,6 +101,18 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 			Fullness -= Item->GetItemData().Weight * Count;
 			return Item;
 		}
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+AItem* UInventoryComponent::TakeAll(int Index)
+{
+	if (bInitialized && Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]))
+	{
+		return Take(Index, Inventory[Index]->GetCount());
 	}
 	else
 	{
@@ -179,6 +196,17 @@ void UInventoryComponent::ItemBroken(AItem* Item, float Weight)
 				OnItemRemoved.Broadcast(i, Item);
 				Fullness -= Weight;
 			}
+		}
+	}
+}
+
+void UInventoryComponent::ThrowAll()
+{
+	if (bInitialized)
+	{
+		for (int i = GetCurrentSize(); i >= 0; i--)
+		{
+			THROW_ITEM(TakeAll(i), RAND_ITEM_POSITION(Owner->GetActorLocation()));
 		}
 	}
 }

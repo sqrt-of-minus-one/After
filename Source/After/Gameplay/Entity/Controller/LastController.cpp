@@ -349,9 +349,7 @@ void ALastController::Throw_f()
 	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
 	if (!bIsDead && IsValid(HotbarItem))
 	{
-		// Todo: Spawn thrown item in special function
-		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetInventory()->Find(Inventory->GetHotbarItemTag(HotbarSlot)), 1));
+		THROW_ITEM(Inventory->GetInventory()->Take(Inventory->GetInventory()->Find(Inventory->GetHotbarItemTag(HotbarSlot)), 1), RAND_ITEM_POSITION(GetPawn()->GetActorLocation()));
 	}
 }
 

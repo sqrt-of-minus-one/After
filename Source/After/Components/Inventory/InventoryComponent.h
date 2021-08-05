@@ -35,7 +35,7 @@ public:
 public:
 			/* INVENTORY */
 
-	void Init(float Size);
+	void Init(float Size, AActor* InventoryOwner);
 
 	// Current number of cells
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Take(int Index, int Count);
 
+	// Remove the whole stack from the inventory
+	AItem* TakeAll(int Index);
+
 	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int Put(AItem* Item, int Count);
@@ -75,6 +78,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ThrowAll();
+
 	// Is called when item is removed from the inventory
 	UPROPERTY(BlueprintAssignable, Category = "Inventory")
 	FItemRemovedEvent OnItemRemoved;
@@ -82,8 +88,11 @@ public:
 protected:
 			/* INVENTORY */
 
-	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	bool bInitialized;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	AActor* Owner;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	float Fullness;

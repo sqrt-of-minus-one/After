@@ -102,6 +102,8 @@ protected:
 	
 	virtual void Disappear() override;
 
+	virtual void DeathDrop() override;
+
 			/* STATS */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Stats")

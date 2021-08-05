@@ -12,6 +12,19 @@
 
 #include "ThrownItem.generated.h"
 
+#define RAND_ITEM_POSITION(Position)  \
+	Position + GameConstants::TileSize * FMath::RandRange(-.5f, .5f)
+
+#define THROW_ITEM(Item, Position) \
+	(GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), Position, FRotator(0.f, 0.f, 0.f)))->SetItem(Item)
+
+#define SPAWN_THROWN_ITEM(Id, Count, Position) \
+	{ \
+		AItem* Item = GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(Id).Class.Get()); \
+		Item->SetCount(Count); \
+		THROW_ITEM(Item, Position); \
+	}
+
 class AItem;
 class UBoxComponent;
 class UPaperFlipbookComponent;

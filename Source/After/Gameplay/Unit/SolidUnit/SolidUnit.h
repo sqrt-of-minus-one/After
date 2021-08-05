@@ -137,7 +137,7 @@ protected:
 	void ResetBreaking();
 
 	UFUNCTION(Category = "Damage")
-	void Broken();
+	virtual void Broken();
 
 			/* APPEARANCE */
 

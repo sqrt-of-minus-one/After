@@ -122,9 +122,7 @@ void AMob::DeathDrop()
 		int Count;
 		if ((i.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < i.Chance) && (Count = FMath::RandRange(i.Min, i.Max)) > 0)
 		{
-			// Todo: Spawn thrown item in special function
-			AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(EntityData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-			Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(i.Item).Class.Get()));
+			SPAWN_THROWN_ITEM(i.Item, Count, RAND_ITEM_POSITION(GetActorLocation()));
 		}
 	}
 }

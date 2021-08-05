@@ -37,13 +37,17 @@ void UPlayerInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UPlayerInventoryComponent::Init(float Size, int HotbarSize)
+void UPlayerInventoryComponent::Init(float Size, int HotbarSize, AActor* InventoryOwner)
 {
-	Inventory->Init(Size);
-	Inventory->OnItemRemoved.AddDynamic(this, &UPlayerInventoryComponent::HotbarItemRemoved);
-	Hotbar.SetNum(HotbarSize);
-	HotbarItems.SetNum(HotbarSize);
-	bInitialized = true;
+	if (!bInitialized)
+	{
+		Owner = InventoryOwner;
+		Inventory->Init(Size, InventoryOwner);
+		Inventory->OnItemRemoved.AddDynamic(this, &UPlayerInventoryComponent::HotbarItemRemoved);
+		Hotbar.SetNum(HotbarSize);
+		HotbarItems.SetNum(HotbarSize);
+		bInitialized = true;
+	}
 }
 
 float UPlayerInventoryComponent::GetFullness() const
@@ -177,6 +181,25 @@ int UPlayerInventoryComponent::PutAll(AItem* Item)
 	else
 	{
 		return Put(Item, 0);
+	}
+}
+
+void UPlayerInventoryComponent::ThrowAll()
+{
+	if (bInitialized)
+	{
+		Inventory->ThrowAll();
+
+		// References for lambda
+		const TMap<FClothesType, AItem*>& ClothesRef = Clothes;
+		const TMap<FClothesType, UInventoryComponent*>& ClothesInventoryRef = ClothesInventory;
+		for_enum<FClothesType>([&ClothesRef, &ClothesInventoryRef](FClothesType i, bool& out_continue)
+		{
+			if (IsValid(ClothesRef[i]) && IsValid(ClothesInventoryRef[i]))
+			{
+				ClothesInventoryRef[i]->ThrowAll();
+			}
+		});
 	}
 }
 

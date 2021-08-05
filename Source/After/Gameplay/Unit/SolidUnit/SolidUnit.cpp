@@ -283,9 +283,7 @@ void ASolidUnit::Broken()
 				int Count;
 				if ((j.Chance >= 1.f || FMath::RandRange(0.f, 1.f) < j.Chance) && (Count = FMath::RandRange(j.Min, j.Max)) > 0)
 				{
-					// Todo: Spawn thrown item in special function
-					AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetActorLocation() + FVector(SolidUnitData->Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-					Drop->SetItem(GetWorld()->SpawnActor<AItem>(GAME_MODE->GetDatabase()->GetItemData(j.Item).Class.Get()));
+					SPAWN_THROWN_ITEM(j.Item, Count, RAND_ITEM_POSITION(GetActorLocation()));
 				}
 			}
 			break;
