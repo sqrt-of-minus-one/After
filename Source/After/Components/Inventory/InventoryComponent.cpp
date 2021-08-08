@@ -147,12 +147,20 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 				}
 			}
 			// Create a new stack
-			AItem* NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
-			NewItem->SetCount(MoveCount);
+			AItem* NewItem;
+			if (MoveCount == Item->GetCount())
+			{
+				NewItem = Item;
+			}
+			else
+			{
+				NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
+				NewItem->SetCount(MoveCount);
+				Item->SetCount(Item->GetCount() - MoveCount);
+			}
 			NewItem->OnItemBroken.AddDynamic(this, &UInventoryComponent::ItemBroken);
-			Fullness += Item->GetItemData().Weight * MoveCount;
+			Fullness += NewItem->GetItemData().Weight * MoveCount;
 			Inventory.Add(NewItem);
-			Item->SetCount(Item->GetCount() - MoveCount);
 			return MoveCount;
 		}
 	}
@@ -231,6 +239,7 @@ int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComp
 					AItem* Removed = Inventory[Index];
 					Inventory.RemoveAt(Index);
 					OnItemRemoved.Broadcast(Index, Removed);
+					Removed->OnItemBroken.RemoveAll(this);
 					Fullness -= FirstCount * Weight;
 				}
 				else
