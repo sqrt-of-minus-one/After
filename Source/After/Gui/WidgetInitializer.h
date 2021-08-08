@@ -31,6 +31,9 @@ public:
 public:
 
 	UFUNCTION(BlueprintCallable)
+	void CloseWidget();
+
+	UFUNCTION(BlueprintCallable)
 	void DisplayMainWidget(ALast* Last);
 
 	UFUNCTION(BlueprintCallable)

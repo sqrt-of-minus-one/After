@@ -25,6 +25,15 @@ void AWidgetInitializer::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void AWidgetInitializer::CloseWidget()
+{
+	if (IsValid(CurrentWidget))
+	{
+		CurrentWidget->RemoveFromParent();
+		CurrentWidget = nullptr;
+	}
+}
+
 void AWidgetInitializer::DisplayMainWidget(ALast* Last)
 {
 	if (!bIsMainWidgetCreated)
@@ -45,10 +54,7 @@ void AWidgetInitializer::DisplayCrateInventoryWidget(ACrate* Crate, ALast* Last)
 	CrateInventoryInit(Widget, Crate, Last);
 	if (IsValid(Widget))
 	{
-		if (IsValid(CurrentWidget))
-		{
-			CurrentWidget->RemoveFromParent();
-		}
+		CloseWidget();
 		Widget->AddToViewport(1);
 		CurrentWidget = Widget;
 	}
