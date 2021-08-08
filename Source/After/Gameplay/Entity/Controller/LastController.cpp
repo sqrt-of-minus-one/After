@@ -129,32 +129,11 @@ void ALastController::OnUnPossess()
 
 void ALastController::Select(AActor* Actor)
 {
-	bool bNew = false;
-	AActor* Old = Selected;
-
 	AEntity* Entity = Cast<AEntity>(Actor);
-	if (IsValid(Entity))
+	if (IsValid(Cast<AEntity>(Actor)) || IsValid(Cast<AUnit>(Actor)) || IsValid(Cast<AThrownItem>(Actor)))
 	{
-		Selected = Entity;
-		bNew = true;
-	}
-	else
-	{
-		AUnit* Unit = Cast<AUnit>(Actor);
-		if (IsValid(Unit))
-		{
-			Selected = Unit;
-			bNew = true;
-		}
-		else
-		{
-			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (IsValid(ThrownItem))
-			{
-				Selected = ThrownItem;
-				bNew = true;
-			}
-		}
+		Selected = Actor;
+		OnSelect.Broadcast(Actor);
 	}
 
 	if (bIsBreaking)
@@ -178,6 +157,7 @@ void ALastController::Unselect(AActor* Actor)
 	{
 		Selected = nullptr;
 	}
+	OnUnselect.Broadcast(Actor);
 }
 
 AItem* ALastController::GetSelectedItem()

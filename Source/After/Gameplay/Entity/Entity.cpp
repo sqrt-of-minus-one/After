@@ -79,6 +79,8 @@ void AEntity::BeginPlay()
 			OnBeginCursorOver.AddDynamic(this, &AEntity::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
 			OnEndCursorOver.AddDynamic(this, &AEntity::Unselect);
+			OnDestroyed.AddDynamic(LastController, &ALastController::Unselect);
+			OnDestroyed.AddDynamic(this, &AEntity::Unselect);
 
 			if (Database->GetExtraData().SelectionSprites.Contains(EntityData->Size) &&
 				Database->GetExtraData().SelectionSprites[EntityData->Size])

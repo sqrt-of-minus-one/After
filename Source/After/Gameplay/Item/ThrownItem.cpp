@@ -86,6 +86,8 @@ bool AThrownItem::SetItem(AItem* ItemToSet)
 			OnBeginCursorOver.AddDynamic(this, &AThrownItem::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
 			OnEndCursorOver.AddDynamic(this, &AThrownItem::Unselect);
+			OnDestroyed.AddDynamic(LastController, &ALastController::Unselect);
+			OnDestroyed.AddDynamic(this, &AThrownItem::Unselect);
 		}
 		else
 		{

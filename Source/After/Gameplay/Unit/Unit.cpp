@@ -64,6 +64,8 @@ void AUnit::BeginPlay()
 			OnBeginCursorOver.AddDynamic(this, &AUnit::Select);
 			OnEndCursorOver.AddDynamic(LastController, &ALastController::Unselect);
 			OnEndCursorOver.AddDynamic(this, &AUnit::Unselect);
+			OnDestroyed.AddDynamic(LastController, &ALastController::Unselect);
+			OnDestroyed.AddDynamic(this, &AUnit::Unselect);
 		}
 		else
 		{

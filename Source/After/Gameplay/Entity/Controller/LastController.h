@@ -26,6 +26,8 @@ DECLARE_DELEGATE_TwoParams(FStartBreakDelegate, ASolidUnit*, AItem*);
 DECLARE_DELEGATE(FStopBreakDelegate);
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemChangedEvent, AItem*, NewItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectEvent, AActor*, Selected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnselectEvent, AActor*, Unselected);
 
 UENUM(BlueprintType)
 enum class FMenuType : uint8
@@ -64,6 +66,12 @@ public:
 
 	UFUNCTION(Category = "Selection")
 	void Unselect(AActor* Actor);
+
+	UPROPERTY(BlueprintAssignable, Category = "Selection")
+	FOnSelectEvent OnSelect;
+
+	UPROPERTY(BlueprintAssignable, Category = "Selection")
+	FOnUnselectEvent OnUnselect;
 
 			/* CONTROL */
 
