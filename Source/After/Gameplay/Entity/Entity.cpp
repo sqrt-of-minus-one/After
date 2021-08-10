@@ -247,11 +247,11 @@ void AEntity::Move(float DeltaTime)
 		float Tg = Offset.Y / Offset.X;
 		if (Offset.Y > Offset.X)
 		{
-			RequiredDirection = Offset.Y > -Offset.X ? FDirection::F : FDirection::L;
+			RequiredDirection = Offset.Y > -Offset.X ? FDirection::B : FDirection::L;
 		}
 		else
 		{
-			RequiredDirection = Offset.Y > -Offset.X ? FDirection::R : FDirection::B;
+			RequiredDirection = Offset.Y > -Offset.X ? FDirection::R : FDirection::F;
 		}
 
 		FEntityStatus RequiredStatus = bIsRunning ? FEntityStatus::Run : FEntityStatus::Walk;

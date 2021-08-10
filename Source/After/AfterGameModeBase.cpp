@@ -27,7 +27,7 @@ AAfterGameModeBase::~AAfterGameModeBase()
 void AAfterGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!Database)
+	if (!IsValid(Database))
 	{
 		UE_LOG(LogDatabase, Fatal, TEXT("Couldn't find database"));
 	}
@@ -36,15 +36,7 @@ void AAfterGameModeBase::BeginPlay()
 	LangManager = Cast<ALangManager>(GetWorld()->SpawnActor(LangManagerClass));
 	UE_LOG(LogLang, Log, TEXT("Language manager object has been created (%s)"), *LangManager->GetName());
 
-	WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
-
 	GetWorld()->GetTimerManager().SetTimer(GameTickTimer, this, &AAfterGameModeBase::GameTickExec, GameConstants::GameTickLength, true);
-
-	ALast* Last = Cast<ALast>(UGameplayStatics::GetPlayerPawn(nullptr, 0));
-	if (IsValid(Last))
-	{
-		WidgetInitializer->DisplayMainWidget(Last);
-	}
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const
@@ -59,6 +51,10 @@ ALangManager* AAfterGameModeBase::GetLangManager()
 
 AWidgetInitializer* AAfterGameModeBase::GetWidgetInitializer()
 {
+	if (!IsValid(WidgetInitializer))
+	{
+		WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
+	}
 	return WidgetInitializer;
 }
 
