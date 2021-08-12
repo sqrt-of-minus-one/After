@@ -25,8 +25,6 @@ AMobController::AMobController() :
 void AMobController::BeginPlay()
 {
 	Super::BeginPlay();
-
-	OnEndPlay.AddDynamic(this, &AMobController::ClearTimers);
 }
 
 void AMobController::Tick(float DeltaTime)
@@ -34,52 +32,82 @@ void AMobController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void AMobController::Damage(float Direction, AActor* FromWho)
+void AMobController::OnPossess(APawn* InPawn)
 {
-	AEntity* EntityAttacker = Cast<AEntity>(FromWho);
-	if (IsValid(EntityAttacker))
-	{
-		Attacker = EntityAttacker;
-		bHasGoal = true;
-		SetRun_f(true);
-		GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime, false);
-		
-		const UDatabase* Database = GAME_MODE->GetDatabase();
-		const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
-		if (MobPawn->GetEntityData().Damage != 0 && !FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, EntityAttacker->GetId(), Database))
-		{
-			Target = EntityAttacker;
-		}
+	Super::OnPossess(InPawn);
 
-		ChangeStateDelegate.ExecuteIfBound();
+	MobPawn = Cast<AMob>(GetPawn());
+	if (IsValid(MobPawn))
+	{
+		MobPawn->OnDamage.AddDynamic(this, &AMobController::Damage);
+		MobPawn->OnBeginDanger.BindUObject(this, &AMobController::BeginDanger);
+		MobPawn->OnEndDanger.BindUObject(this, &AMobController::EndDanger);
+		MobPawn->OnBeginView.BindUObject(this, &AMobController::BeginView);
+		MobPawn->OnEndPursue.BindUObject(this, &AMobController::EndPursue);
+
+		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, this, &AMobController::UpdateDirection,
+			FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 	}
 	else
 	{
-		const AUnit* UnitAttacker = Cast<AUnit>(FromWho);
-		if (IsValid(UnitAttacker) && !DangerousUnits.Contains(UnitAttacker))
+		UE_LOG(LogGameplay, Error, TEXT("Mob Controller: The pawn is not a mob or does not exist"));
+		return;
+	}
+}
+
+void AMobController::Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push)
+{
+	if (Value > 0.f)
+	{
+		AEntity* EntityAttacker = Cast<AEntity>(FromWho);
+		if (IsValid(EntityAttacker)) // If attacker is entity
 		{
-			DangerousUnits.AddTail(UnitAttacker);
+			Attacker = EntityAttacker;
 			bHasGoal = true;
-			ChangeStateDelegate.ExecuteIfBound();
+			SetRun_f(true);
+			FTimerHandle MobPainTimer;
+			GetWorld()->GetTimerManager().SetTimer(MobPainTimer, this, &AMobController::StopPain, GameConstants::MobPainTime, false);
+		
+			const UDatabase* Database = GAME_MODE->GetDatabase();
+			const FBehaviourProfileInfo& BehaviourProfileData = Database->GetBehaviourProfileData(MobPawn->GetMobData().BehaviourProfile);
+			// If the mob can attack and doesn't fear attacker
+			if (MobPawn->GetEntityData().Damage != 0 && !FBehaviourProfileInfo::bIsFearfulTowards(BehaviourProfileData, EntityAttacker->GetId(), Database))
+			{
+				Target = EntityAttacker;
+			}
+
+			UpdateDirection();
+		}
+		else
+		{
+			const AUnit* UnitAttacker = Cast<AUnit>(FromWho);
+			// If attacker is unit
+			if (IsValid(UnitAttacker) && !DangerousUnits.Contains(UnitAttacker))
+			{
+				DangerousUnits.AddTail(UnitAttacker);
+				bHasGoal = true;
+
+				UpdateDirection();
+			}
 		}
 	}
 }
 
-void AMobController::BeginDanger(const AActor* Actor)
+void AMobController::BeginDanger(AActor* Actor)
 {
 	const AUnit* Unit = Cast<AUnit>(Actor);
 	if (IsValid(Unit) && Unit->GetUnitData().bSeemsDangerous && !DangerousUnits.Contains(Unit))
 	{
 		DangerousUnits.AddTail(Unit);
 		bHasGoal = true;
-		ChangeStateDelegate.ExecuteIfBound();
+		UpdateDirection();
 	}
 }
 
-void AMobController::EndDanger(const AActor* Actor)
+void AMobController::EndDanger(AActor* Actor)
 {
 	const AUnit* Unit = Cast<AUnit>(Actor);
-	if (Unit && DangerousUnits.Contains(Unit))
+	if (IsValid(Unit) && DangerousUnits.Contains(Unit))
 	{
 		DangerousUnits.RemoveNode(Unit);
 		if (!Target && RunningAwayFrom.Num() == 0 && !Attacker)
@@ -106,16 +134,16 @@ void AMobController::BeginView(AActor* Actor)
 			RunningAwayFrom.AddTail(Entity);
 			bHasGoal = true;
 			SetRun_f(true);
-			ChangeStateDelegate.ExecuteIfBound();
+			UpdateDirection();
 		}
-		else if (FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database) && MobPawn->GetEntityData().Damage != 0)
+		else if (MobPawn->GetEntityData().Damage != 0 && FBehaviourProfileInfo::bIsAgressiveTowards(BehaviourProfileData, Entity->GetId(), Database))
 		{
 			if (!IsValid(Target))
 			{
 				Target = Entity;
 				bHasGoal = true;
 				SetRun_f(true);
-				ChangeStateDelegate.ExecuteIfBound();
+				UpdateDirection();
 			}
 			else if (!PossibleTargets.Contains(Entity))
 			{
@@ -128,7 +156,7 @@ void AMobController::BeginView(AActor* Actor)
 void AMobController::EndPursue(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	if (Entity)
+	if (IsValid(Entity))
 	{
 		if (Target == Entity)
 		{
@@ -146,14 +174,8 @@ void AMobController::EndPursue(AActor* Actor)
 		{
 			Attacker = nullptr;
 		}
-		if (PossibleTargets.Contains(Entity))
-		{
-			PossibleTargets.RemoveNode(Entity);
-		}
-		if (RunningAwayFrom.Contains(Entity))
-		{
-			RunningAwayFrom.RemoveNode(Entity);
-		}
+		PossibleTargets.RemoveNode(Entity);
+		RunningAwayFrom.RemoveNode(Entity);
 		if (!Target && RunningAwayFrom.Num() == 0 && !Attacker)
 		{
 			SetRun_f(false);
@@ -165,54 +187,12 @@ void AMobController::EndPursue(AActor* Actor)
 	}
 }
 
-void AMobController::SetupInput()
-{
-	MobPawn = Cast<AMob>(GetPawn());
-	if (!IsValid(MobPawn))
-	{
-		UE_LOG(LogGameplay, Error, TEXT("Mob Controller: The pawn is not a mob"));
-		return;
-	}
-
-	ChangeStateDelegate.BindLambda([this]()
-	{
-		UpdateDirection();
-
-		GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
-			bHasGoal ? GameConstants::MobUpdateDirectionTime : FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
-	});
-	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, ChangeStateDelegate,
-		FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
-}
-
-void AMobController::OnUnPossess()
-{
-	Super::OnUnPossess();
-
-	ClearTimers(this, EEndPlayReason::Destroyed);
-}
-
-void AMobController::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
-{
-	if (GetWorld())
-	{
-		if (GetWorld()->GetTimerManager().IsTimerActive(ChangeStateTimer))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(ChangeStateTimer);
-		}
-		if (GetWorld()->GetTimerManager().IsTimerActive(MobPainTimer))
-		{
-			GetWorld()->GetTimerManager().ClearTimer(MobPainTimer);
-		}
-	}
-}
-
 void AMobController::UpdateDirection()
 {
 	if (bHasGoal) // Mob should go to specific direction
 	{
 		FVector2D Direction(0.f, 0.f);
-		if (RunningAwayFrom.Num() > 0 || DangerousUnits.Num() > 0 || (Attacker && !Target)) // Mob runs away from entities or dangerous units
+		if (RunningAwayFrom.Num() > 0 || DangerousUnits.Num() > 0 || (Attacker && !Target)) // Mob is running away from entities or dangerous units
 		{
 			for (const AEntity* i : RunningAwayFrom)
 			{
@@ -277,6 +257,9 @@ void AMobController::UpdateDirection()
 	{
 		Move_f(FVector2D(0.f, 0.f));
 	}
+	
+	GetWorld()->GetTimerManager().SetTimer(ChangeStateTimer, this, &AMobController::UpdateDirection,
+		bHasGoal ? GameConstants::MobUpdateDirectionTime : FMath::RandRange(GameConstants::MinMobChangeStateTime, GameConstants::MaxMobChangeStateTime), false);
 }
 
 void AMobController::StopPain()

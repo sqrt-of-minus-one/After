@@ -19,6 +19,8 @@ class UDatabase;
 class ALangManager;
 class AWidgetInitializer;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FGameTickEvent);
+
 #define GAME_MODE Cast<AAfterGameModeBase>(GetWorld()->GetAuthGameMode())
 
 UCLASS()
@@ -32,8 +34,26 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-	ALast* LastPawn;
+	// ==================================================
 
+public:
+			/* DATA */
+
+	const UDatabase* GetDatabase() const;
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	ALangManager* GetLangManager();
+
+	UFUNCTION(BlueprintCallable, Category = "Data")
+	AWidgetInitializer* GetWidgetInitializer();
+
+			/* GAME TICK */
+
+	// Is called every game tick
+	UPROPERTY(BlueprintAssignable, Category = "GameTick")
+	FGameTickEvent OnGameTick;
+
+protected:
 			/* DATA */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Data")
@@ -51,16 +71,12 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Data")
 	AWidgetInitializer* WidgetInitializer;
 
-public:
-	void SetLast(ALast* Last);
+			/* GAME TICK */
 
-			/* DATA */
+	UPROPERTY(BlueprintReadOnly, Category = "GameTick")
+	FTimerHandle GameTickTimer;
 
-	const UDatabase* GetDatabase() const;
+	UFUNCTION(Category = "GameTick")
+	void GameTickExec();
 
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	ALangManager* GetLangManager();
-
-	UFUNCTION(BlueprintCallable, Category = "Data")
-	AWidgetInitializer* GetWidgetInitializer();
 };

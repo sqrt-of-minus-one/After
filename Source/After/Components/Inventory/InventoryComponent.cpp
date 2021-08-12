@@ -7,6 +7,10 @@
 #include "InventoryComponent.h"
 
 #include "../../Gameplay/Item/Item.h"
+#include "../../Gameplay/Item/ThrownItem.h"
+#include "../../AfterGameModeBase.h"
+#include "../../Data/Database/Database.h"
+#include "../../GameConstants.h"
 #include "PlayerInventoryComponent.h"
 
 UInventoryComponent::UInventoryComponent() :
@@ -26,10 +30,11 @@ void UInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickType, FA
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UInventoryComponent::Init(float Size)
+void UInventoryComponent::Init(float Size, AActor* InventoryOwner)
 {
 	if (!bInitialized)
 	{
+		Owner = InventoryOwner;
 		MaxFullness = Size;
 		bInitialized = true;
 	}
@@ -62,6 +67,18 @@ AItem* UInventoryComponent::Get(int Index) const
 	}
 }
 
+int UInventoryComponent::Find(FGameplayTag ItemTag) const
+{
+	for (int i = 0; i < Inventory.Num(); i++)
+	{
+		if (IsValid(Inventory[i]) && Inventory[i]->GetId() == ItemTag)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 AItem* UInventoryComponent::Take(int Index, int Count)
 {
 	if (bInitialized && Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]) && Count > 0)
@@ -70,6 +87,8 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 		{
 			AItem* Item = Inventory[Index];
 			Inventory.RemoveAt(Index);
+			OnItemRemoved.Broadcast(Index, Item);
+			Item->OnItemBroken.RemoveAll(this);
 			Fullness -= Item->GetItemData().Weight * Item->GetCount();
 			return Item;
 		}
@@ -77,11 +96,23 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 		{
 			AItem* Item = GetWorld()->SpawnActor<AItem>(Inventory[Index]->GetClass());
 			Item->SetCount(Count);
-			// Item should not be stackable (because otherwise "if" would have been true
+			// Item is not stackable (because otherwise "if" would have been true
 			Inventory[Index]->SetCount(Inventory[Index]->GetCount() - Count);
 			Fullness -= Item->GetItemData().Weight * Count;
 			return Item;
 		}
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+AItem* UInventoryComponent::TakeAll(int Index)
+{
+	if (bInitialized && Index >= 0 && Index < Inventory.Num() && IsValid(Inventory[Index]))
+	{
+		return Take(Index, Inventory[Index]->GetCount());
 	}
 	else
 	{
@@ -95,7 +126,7 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 	{
 		// How many items can be put into inventory
 		int MoveCount = FMath::Min3(Count, Item->GetCount(), static_cast<int>((MaxFullness - Fullness) / Item->GetItemData().Weight));
-		if (MoveCount <= 0) // Missing space
+		if (MoveCount <= 0) // Missing space or attempt to put non-positive count of items
 		{
 			return 0;
 		}
@@ -116,11 +147,20 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 				}
 			}
 			// Create a new stack
-			AItem* NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
-			NewItem->SetCount(MoveCount);
-			Fullness += Item->GetItemData().Weight * MoveCount;
+			AItem* NewItem;
+			if (MoveCount == Item->GetCount())
+			{
+				NewItem = Item;
+			}
+			else
+			{
+				NewItem = GetWorld()->SpawnActor<AItem>(Item->GetClass());
+				NewItem->SetCount(MoveCount);
+				Item->SetCount(Item->GetCount() - MoveCount);
+			}
+			NewItem->OnItemBroken.AddDynamic(this, &UInventoryComponent::ItemBroken);
+			Fullness += NewItem->GetItemData().Weight * MoveCount;
 			Inventory.Add(NewItem);
-			Item->SetCount(Item->GetCount() - MoveCount);
 			return MoveCount;
 		}
 	}
@@ -152,6 +192,33 @@ int UInventoryComponent::MoveToPlayerInventory(int Index, int Count, UPlayerInve
 	return MoveToInventory_(Index, Count, InventoryComponent);
 }
 
+void UInventoryComponent::ItemBroken(AItem* Item, float Weight)
+{
+	if (Item)
+	{
+		for (int i = 0; i < Inventory.Num(); i++)
+		{
+			if (Inventory[i] == Item)
+			{
+				Inventory.RemoveAt(i);
+				OnItemRemoved.Broadcast(i, Item);
+				Fullness -= Weight;
+			}
+		}
+	}
+}
+
+void UInventoryComponent::ThrowAll()
+{
+	if (bInitialized)
+	{
+		for (int i = GetCurrentSize(); i >= 0; i--)
+		{
+			THROW_ITEM(TakeAll(i), RAND_ITEM_POSITION(Owner->GetActorLocation()));
+		}
+	}
+}
+
 template<typename T>
 int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComponent)
 {
@@ -169,7 +236,10 @@ int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComp
 			{
 				if (Moved >= FirstCount) // If all of the items were moved
 				{
+					AItem* Removed = Inventory[Index];
 					Inventory.RemoveAt(Index);
+					OnItemRemoved.Broadcast(Index, Removed);
+					Removed->OnItemBroken.RemoveAll(this);
 					Fullness -= FirstCount * Weight;
 				}
 				else

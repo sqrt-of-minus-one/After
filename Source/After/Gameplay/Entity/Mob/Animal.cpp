@@ -19,16 +19,9 @@ AAnimal::AAnimal()
 void AAnimal::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	// Get game mode
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	if (!GameMode)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
-	}
 
 	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	AnimalData = &Database->GetAnimalData(Id);
 }
 
@@ -42,10 +35,11 @@ const FAnimalInfo& AAnimal::GetAnimalData() const
 	return *AnimalData;
 }
 
-void AAnimal::Death(FDamageType Type, const AActor* Murderer)
+void AAnimal::Death(FDamageType Type, AActor* Murderer)
 {
-	bShouldMutate = Cast<AMutant>(Murderer) || Type == FDamageType::Radiation;
 	Super::Death(Type, Murderer);
+
+	bShouldMutate = Cast<AMutant>(Murderer) || Type == FDamageType::Radiation;
 }
 
 void AAnimal::Disappear()

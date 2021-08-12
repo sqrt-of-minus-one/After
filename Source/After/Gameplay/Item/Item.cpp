@@ -59,12 +59,15 @@ bool AItem::SetCount(int NewCount)
 	if (NewCount <= 0)
 	{
 		Count = 0;
+		OnCountChanged.Broadcast(0);
+		OnItemCountZero.Broadcast(this);
 		Destroy();
 		return true;
 	}
 	else if (ItemData->bIsStackable)
 	{
 		Count = NewCount;
+		OnCountChanged.Broadcast(Count);
 		return true;
 	}
 	else
@@ -85,7 +88,10 @@ void AItem::Use(float ConditionDecrease)
 		Condition -= ConditionDecrease;
 		if (Condition <= 0.f)
 		{
+			Condition = 0.f;
+			OnItemBroken.Broadcast(this, ItemData->Weight);
 			Destroy();
 		}
+		OnConditionChanged.Broadcast(Condition);
 	}
 }

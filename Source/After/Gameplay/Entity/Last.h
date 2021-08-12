@@ -17,7 +17,10 @@ class ASolidUnit;
 class USpringArmComponent;
 class UCameraComponent;
 class UPlayerInventoryComponent;
+class AController;
 //class USkillsComponent;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSatietyChangedEvent, float, NewSatiety);
 
 UCLASS()
 class AFTER_API ALast : public AEntity
@@ -33,6 +36,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void PossessedBy(AController* NewController) override;
+
 	// ==================================================
 
 public:
@@ -45,6 +50,10 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetSatiety() const;
+
+	// Is called when entity's satiety changes
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FSatietyChangedEvent OnSatietyChanged;
 
 			/* INVENTORY */
 
@@ -81,7 +90,7 @@ protected:
 	AItem* ItemForBreaking;
 
 	UFUNCTION(Category = "Breaking")
-	void SetItemForBreaking(AItem* Item);
+	void SetItem(AItem* Item);
 
 	UFUNCTION(Category = "Breaking")
 	void StartBreak(ASolidUnit* Target, AItem* Item);
@@ -90,10 +99,10 @@ protected:
 	void StopBreak();
 
 			/* DAMAGE */
-
-	virtual void Death(FDamageType Type, const AActor* Murderer) override;
 	
 	virtual void Disappear() override;
+
+	virtual void DeathDrop() override;
 
 			/* STATS */
 
@@ -101,10 +110,6 @@ protected:
 	float Satiety;
 
 	virtual void CalculateStats() override;
-
-			/* EVENTS */
-
-	TDelegate<void()> DeathDelegate;
 
 			/* COMPONENTS */
 

@@ -12,6 +12,8 @@
 
 enum class FMenuType : uint8;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnWidgetCreatedEvent);
+
 UCLASS()
 class AFTER_API AWidgetInitializer : public AActor
 {
@@ -29,6 +31,12 @@ public:
 	// ==================================================
 
 public:
+
+	UPROPERTY(BlueprintAssignable)
+	FOnWidgetCreatedEvent OnWidgetCreated;
+
+	UFUNCTION(BlueprintCallable)
+	void CloseWidget();
 
 	UFUNCTION(BlueprintCallable)
 	void DisplayMainWidget(ALast* Last);

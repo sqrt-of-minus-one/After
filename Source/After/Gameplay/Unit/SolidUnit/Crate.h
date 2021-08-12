@@ -50,6 +50,10 @@ protected:
 
 	const FCrateInfo* CrateData;
 
+			/* BREAKING */
+
+	virtual void Broken() override;
+
 			/* COMPONENTS */
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Components")

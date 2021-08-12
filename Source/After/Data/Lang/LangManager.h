@@ -21,6 +21,8 @@ enum class FLangs : uint8
 	DL_DL	// Dalnian (Dalnia)
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLangChangedEvent, FLangs, NewLang);
+
 UCLASS(Abstract)
 class ALangManager : public AActor
 {
@@ -30,6 +32,9 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+	UPROPERTY(BlueprintCallable, BlueprintAssignable, Category = "Language")
+	FLangChangedEvent OnLangChanged;
+
 	UFUNCTION(BlueprintCallable, BlueprintImplementableEvent, Category = "Language")
 	FString GetString(const FName& Key) const;
 

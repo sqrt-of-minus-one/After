@@ -8,16 +8,26 @@
 
 #include "CoreMinimal.h"
 
-#include <functional>
-
 #include "GameFramework/PlayerController.h"
 
 #include "LastController.generated.h"
 
 class AEntity;
+class ALast;
 class ASolidUnit;
 class AItem;
 class UPlayerInventoryComponent;
+
+DECLARE_DELEGATE_OneParam(FLastMovingDelegate, float);
+DECLARE_DELEGATE(FLastRunningDelegate);
+DECLARE_DELEGATE_RetVal_ThreeParams(bool, FLastAttackDelegate, AEntity*, bool, AItem*);
+DECLARE_DELEGATE(FZoomDelegate);
+DECLARE_DELEGATE_TwoParams(FStartBreakDelegate, ASolidUnit*, AItem*);
+DECLARE_DELEGATE(FStopBreakDelegate);
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnItemChangedEvent, AItem*, NewItem);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSelectEvent, AActor*, Selected);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnUnselectEvent, AActor*, Unselected);
 
 UENUM(BlueprintType)
 enum class FMenuType : uint8
@@ -42,51 +52,55 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void OnPossess(APawn* InPawn) override;
+
+	virtual void OnUnPossess() override;
+
 	// ==================================================
 
 public:
 			/* SELECTING */
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Select(AActor* Actor);
 
-	UFUNCTION()
+	UFUNCTION(Category = "Selection")
 	void Unselect(AActor* Actor);
 
-			/* EVENTS */
+	UPROPERTY(BlueprintAssignable, Category = "Selection")
+	FOnSelectEvent OnSelect;
 
-	UFUNCTION(Category = "Events")
-	virtual void Death(); // Is called when the last becames dead
+	UPROPERTY(BlueprintAssignable, Category = "Selection")
+	FOnUnselectEvent OnUnselect;
 
 			/* CONTROL */
 
-	TDelegate<void(float)> MoveX;
-	TDelegate<void(float)> MoveY;
-	TDelegate<void()> ZoomIn;
-	TDelegate<void()> ZoomOut;
-	TDelegate<void()> StartRun;
-	TDelegate<void()> StopRun;
-	TDelegate<bool(AEntity*, bool, AItem*)> Attack;
-	TDelegate<void(ASolidUnit*, AItem*)> StartBreak;
-	TDelegate<void()> StopBreak;
-	TDelegate<void(AItem*)> SetItem;
+	FLastMovingDelegate MoveX;
+	FLastMovingDelegate MoveY;
+	FZoomDelegate ZoomIn;
+	FZoomDelegate ZoomOut;
+	FLastRunningDelegate StartRun;
+	FLastRunningDelegate StopRun;
+	FLastAttackDelegate Attack;
+	FStartBreakDelegate StartBreak;
+	FStopBreakDelegate StopBreak;
 
-	void SetupInput();
+			/* HOTBAR */
 
-			/* INVENTORY */
+	UPROPERTY(BlueprintAssignable, Category = "Hotbar")
+	FOnItemChangedEvent OnItemChanged;
 
-	bool bWasValid;
+	// Do not change item!
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	AItem* GetSelectedItem();
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	int GetHotbarSlot();
 
-	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
 	void SetHotbarSlot(int Slot);
 
 protected:
-	AEntity* EntityPawn;
-	UPlayerInventoryComponent* Inventory;
-
 			/* SELECTING */
 
 	UPROPERTY(BlueprintReadOnly, Category = "Selecting")
@@ -100,12 +114,30 @@ protected:
 	UPROPERTY(BlueprintReadOnly, Category = "State")
 	bool bIsDead;
 
-			/* INVENTORY */
+	UFUNCTION(Category = "State")
+	void Death(FDamageType Type, AActor* Murderer); // Is called when the last dies
 
-	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+			/* HOTBAR */
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Hotbar")
 	int HotbarSlot;
 
+	UFUNCTION(BlueprintCallable, Category = "Hotbar")
+	void HotbarItemChanged(int HotbarIndex, AItem* NewItem);
+
 			/* CONTROL */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	AEntity* EntityPawn;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	ALast* LastPawn;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Control")
+	UPlayerInventoryComponent* Inventory;
+
+	UFUNCTION(Category = "Control")
+	void SetupInput();
 
 	void MoveX_f(float Value);
 	void MoveY_f(float Value);
@@ -116,10 +148,18 @@ protected:
 	void StartAttack_f();
 	void StopAttack_f();
 	void Interact_f();
-	void SwitchLang_tmp();
 	void Throw_f();
 	void Menu_f();
 	void Inventory_f();
 	void Crafting_f();
 	void Skills_f();
+	void SwitchLang_tmp();
+
+			/* DEBUG */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Debug")
+	FTimerHandle DebugOutputTimer;
+
+	UFUNCTION(Category = "Bebug")
+	void DebugOutput();
 };

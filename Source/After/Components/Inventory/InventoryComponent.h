@@ -14,6 +14,8 @@
 class AItem;
 class UPlayerInventoryComponent;
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemRemovedEvent, int, Index, AItem*, Item);
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class AFTER_API UInventoryComponent : public UActorComponent
 {
@@ -33,7 +35,7 @@ public:
 public:
 			/* INVENTORY */
 
-	void Init(float Size);
+	void Init(float Size, AActor* InventoryOwner);
 
 	// Current number of cells
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -49,9 +51,16 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Get(int Index) const;
 
+	// Returns an index of item with passed tag or -1 if tag wasn't found
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	int Find(FGameplayTag ItemTag) const;
+
 	// Remove some items from the inventory
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	AItem* Take(int Index, int Count);
+
+	// Remove the whole stack from the inventory
+	AItem* TakeAll(int Index);
 
 	// Returns how many items were put into inventory (-1 if inventory is not initialized)
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
@@ -69,11 +78,21 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Inventory")
 	int MoveToPlayerInventory(int Index, int Count, UPlayerInventoryComponent* InventoryComponent);
 
+	UFUNCTION(BlueprintCallable, Category = "Inventory")
+	void ThrowAll();
+
+	// Is called when item is removed from the inventory
+	UPROPERTY(BlueprintAssignable, Category = "Inventory")
+	FItemRemovedEvent OnItemRemoved;
+
 protected:
 			/* INVENTORY */
 
-	UPROPERTY(BlueprintReadOnly, Category = "Inventory")
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	bool bInitialized;
+
+	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
+	AActor* Owner;
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	float Fullness;
@@ -83,6 +102,9 @@ protected:
 
 	UPROPERTY(VisibleDefaultsOnly, BlueprintReadOnly, Category = "Inventory")
 	TArray<AItem*> Inventory;
+
+	UFUNCTION(Category = "Inventory")
+	void ItemBroken(AItem* Item, float Weight);
 
 private:
 	template<typename T>

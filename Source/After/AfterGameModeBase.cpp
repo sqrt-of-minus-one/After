@@ -6,12 +6,15 @@
 
 #include "AfterGameModeBase.h"
 
+#include "Kismet/GameplayStatics.h"
+
 #include "Data/Database/Database.h"
 #include "Data/Lang/LangManager.h"
 #include "Gui/WidgetInitializer.h"
 #include "Gameplay/Entity/Last.h"
 #include "Data/Database/LogDatabase.h"
 #include "Data/Lang/LogLang.h"
+#include "GameConstants.h"
 
 AAfterGameModeBase::~AAfterGameModeBase()
 {
@@ -24,7 +27,7 @@ AAfterGameModeBase::~AAfterGameModeBase()
 void AAfterGameModeBase::BeginPlay()
 {
 	Super::BeginPlay();
-	if (!Database)
+	if (!IsValid(Database))
 	{
 		UE_LOG(LogDatabase, Fatal, TEXT("Couldn't find database"));
 	}
@@ -33,20 +36,7 @@ void AAfterGameModeBase::BeginPlay()
 	LangManager = Cast<ALangManager>(GetWorld()->SpawnActor(LangManagerClass));
 	UE_LOG(LogLang, Log, TEXT("Language manager object has been created (%s)"), *LangManager->GetName());
 
-	WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
-	if (IsValid(LastPawn))
-	{
-		WidgetInitializer->DisplayMainWidget(LastPawn);
-	}
-}
-
-void AAfterGameModeBase::SetLast(ALast* Last)
-{
-	LastPawn = Last;
-	if (IsValid(WidgetInitializer))
-	{
-		WidgetInitializer->DisplayMainWidget(LastPawn);
-	}
+	GetWorld()->GetTimerManager().SetTimer(GameTickTimer, this, &AAfterGameModeBase::GameTickExec, GameConstants::GameTickLength, true);
 }
 
 const UDatabase* AAfterGameModeBase::GetDatabase() const
@@ -61,5 +51,14 @@ ALangManager* AAfterGameModeBase::GetLangManager()
 
 AWidgetInitializer* AAfterGameModeBase::GetWidgetInitializer()
 {
+	if (!IsValid(WidgetInitializer))
+	{
+		WidgetInitializer = Cast<AWidgetInitializer>(GetWorld()->SpawnActor(WidgetInitializerClass));
+	}
 	return WidgetInitializer;
+}
+
+void AAfterGameModeBase::GameTickExec()
+{
+	OnGameTick.Broadcast();
 }

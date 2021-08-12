@@ -15,12 +15,11 @@ const float GameConstants::MaxPlayerSpringArmLength = 1500.f;
 
 		/* WORLD */
 
+const float GameConstants::GameTickLength = 1.f;
 const FVector GameConstants::TileSize = FVector(16.f, 16.f, 4.f);
 const float GameConstants::LiquidValueInTile = 100.f;
 
 		/* ENTITY */
-
-const float GameConstants::CalcStatsInterval = 1.f;
 const float GameConstants::EntityPushDecrement = 0.85f;
 const float GameConstants::EntityOverlapOffsetMultiplier = 15.f;
 

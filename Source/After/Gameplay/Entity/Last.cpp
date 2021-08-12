@@ -42,54 +42,26 @@ void ALast::BeginPlay()
 {
 	Super::BeginPlay();
 
-	ALastController* LastController = Cast<ALastController>(GetController());
-	if (!LastController)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
-	}
-	LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
-	LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
-	LastController->ZoomIn.BindUObject(this, &ALast::ZoomIn);
-	LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
-	LastController->StartRun.BindUObject(this, &ALast::StartRun);
-	LastController->StopRun.BindUObject(this, &ALast::StopRun);
-	LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
-	LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
-	LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
-	LastController->SetItem.BindUObject(this, &ALast::SetItemForBreaking);
-	DeathDelegate.BindUObject(LastController, &ALastController::Death);
-	LastController->SetupInput();
-
-	// Get game mode
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	if (!GameMode)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
-	}
-
 	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	LastData = &Database->GetLastData(Id);
 
 	Satiety = LastData->MaxSatiety;
 
-	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize);
+	InventoryComponent->Init(LastData->InventorySize, LastData->HotbarSize, this);
 
-	GameMode->SetLast(this);
+	AWidgetInitializer* WidgetInitializer = GAME_MODE->GetWidgetInitializer();
+	if (IsValid(WidgetInitializer))
+	{
+		WidgetInitializer->DisplayMainWidget(this);
+	}
 }
 
 void ALast::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	const ALangManager* LangManager = GAME_MODE->GetLangManager();
-
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.oxygen")), Oxygen));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.energy")), Energy));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Magenta, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.satiety")), Satiety));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.health")), Health));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, FString::Printf(TEXT("\nFPS: %.2f (%.2f ms)"), 1 / DeltaTime, DeltaTime * 1000));
-
+	// Todo: Use events (SolidUnit)
 	if (DestroyedUnit)
 	{
 		if (!IsValid(DestroyedUnit))
@@ -111,6 +83,31 @@ void ALast::Tick(float DeltaTime)
 				DestroyerId = DestroyedUnit->StartBreaking(ItemForBreaking);
 			}
 		}
+	}
+}
+
+void ALast::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	ALastController* LastController = Cast<ALastController>(NewController);
+	if (IsValid(LastController))
+	{
+		LastController->MoveX.BindUObject(this, &ALast::SetMoveX);
+		LastController->MoveY.BindUObject(this, &ALast::SetMoveY);
+		LastController->ZoomIn.BindUObject(this, &ALast::ZoomIn);
+		LastController->ZoomOut.BindUObject(this, &ALast::ZoomOut);
+		LastController->StartRun.BindUObject(this, &ALast::StartRun);
+		LastController->StopRun.BindUObject(this, &ALast::StopRun);
+		LastController->Attack.BindUObject(this, &ALast::MeleeAttack);
+		LastController->StartBreak.BindUObject(this, &ALast::StartBreak);
+		LastController->StopBreak.BindUObject(this, &ALast::StopBreak);
+
+		LastController->OnItemChanged.AddDynamic(this, &ALast::SetItem);
+	}
+	else
+	{
+		UE_LOG(LogGameplay, Error, TEXT("Last (%s) doesn't have last controller"), *Id.ToString());
 	}
 }
 
@@ -148,7 +145,7 @@ void ALast::ZoomOut()
 		GameConstants::MinPlayerSpringArmLength, GameConstants::MaxPlayerSpringArmLength);
 }
 
-void ALast::SetItemForBreaking(AItem* Item)
+void ALast::SetItem(AItem* Item)
 {
 	ItemForBreaking = Item;
 	if (IsValid(DestroyedUnit) && DestroyerId >= 0)
@@ -175,17 +172,15 @@ void ALast::StopBreak()
 	DestroyerId = -1;
 }
 
-void ALast::Death(FDamageType Type, const AActor* Murderer)
-{
-	Super::Death(Type, Murderer);
-
-	DeathDelegate.ExecuteIfBound();
-}
-
 void ALast::Disappear()
 {
 	FlipbookComponent->SetPlaybackPosition(FlipbookComponent->GetFlipbookLength(), false);
 	FlipbookComponent->Stop();
+}
+
+void ALast::DeathDrop()
+{
+	InventoryComponent->ThrowAll();
 }
 
 void ALast::CalculateStats()
@@ -193,4 +188,5 @@ void ALast::CalculateStats()
 	Super::CalculateStats();
 
 	Satiety = FMath::Clamp(Satiety - LastData->SatietySpeed, 0.f, LastData->MaxSatiety);
+	OnSatietyChanged.Broadcast(Satiety);
 }

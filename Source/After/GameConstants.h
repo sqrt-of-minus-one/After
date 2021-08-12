@@ -18,12 +18,12 @@ extern const float MaxPlayerSpringArmLength; // Maximum zoom
 
 		/* WORLD */
 
+extern const float GameTickLength; // The length of game tick
 extern const FVector TileSize; // The size of one game tile
 extern const float LiquidValueInTile; // How much liquid can be contained in one tile
 
 		/* ENTITY */
 
-extern const float CalcStatsInterval; // How often entities calculate their stats
 extern const float EntityPushDecrement; // How quickly knockback decreases
 extern const float EntityOverlapOffsetMultiplier; // Entities repel each other when they overlap
 

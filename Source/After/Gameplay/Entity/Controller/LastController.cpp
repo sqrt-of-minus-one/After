@@ -36,123 +36,59 @@ void ALastController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	EntityPawn = Cast<AEntity>(GetPawn());
-	if (!IsValid(EntityPawn))
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Last Controller: Pawn is not entity or does not exist"));
-	}
-	Inventory = Cast<ALast>(GetPawn())->GetInventory();
+	SetupInput();
 
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	bWasValid = IsValid(HotbarItem);
-	if (bWasValid)
-	{
-		SetItem.ExecuteIfBound(HotbarItem);
-	}
+	GetWorld()->GetTimerManager().SetTimer(DebugOutputTimer, this, &ALastController::DebugOutput, 1.f, true);
 }
 
 void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
 
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (bWasValid)
+void ALastController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
+
+	EntityPawn = Cast<AEntity>(InPawn);
+	if (IsValid(EntityPawn))
 	{
-		if (!IsValid(HotbarItem))
+		LastPawn = Cast<ALast>(InPawn);
+		if (IsValid(LastPawn))
 		{
-			SetItem.ExecuteIfBound(nullptr);
-			bWasValid = false;
-		}
-	}
-	else
-	{
-		if (IsValid(HotbarItem))
-		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = true;
-		}
-	}
+			Inventory = LastPawn->GetInventory();
 
-
-	const ALangManager* LangManager = GAME_MODE->GetLangManager();
-
-	AEntity* SelectedEntity = nullptr;
-	AUnit* SelectedUnit = nullptr;
-	AThrownItem* SelectedThrownItem = nullptr;
-	if (SelectedEntity = Cast<AEntity>(Selected), IsValid(SelectedEntity))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
-
-		FString EntityName = GAME_MODE->GetLangManager()->GetString(FName(SelectedEntity->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *EntityName));
-	}
-	else if (SelectedUnit = Cast<AUnit>(Selected), IsValid(SelectedUnit))
-	{
-		FString UnitName = GAME_MODE->GetLangManager()->GetString(FName(SelectedUnit->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
-	}
-	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), IsValid(SelectedThrownItem))
-	{
-		FString ThrownItemName = GAME_MODE->GetLangManager()->GetString(FName(SelectedThrownItem->GetItem()->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *ThrownItemName));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
-	}
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	if (bWasValid)
-	{
-		if (HotbarItem->GetItemData().MaxCondition > 0.f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))), HotbarItem->GetCondition(), HotbarItem->GetItemData().MaxCondition));
+			AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+			OnItemChanged.Broadcast(HotbarItem);
+			Inventory->OnHotbarItemChanged.AddDynamic(this, &ALastController::HotbarItemChanged);
 		}
 		else
 		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))));
+			Inventory = nullptr;
 		}
+
+		EntityPawn->OnDeath.AddDynamic(this, &ALastController::Death);
 	}
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
+	else
+	{
+		UE_LOG(LogGameplay, Error, TEXT("Last Controller: Pawn is not an entity or does not exist"));
+	}
+}
+
+void ALastController::OnUnPossess()
+{
+	Super::OnUnPossess();
+
+	UE_LOG(LogGameplay, Log, TEXT("Hello. I'm last controller. And I don't want to control any more. I'm tired. I want to leave. That's why I've just unpossessed. Bye."));
 }
 
 void ALastController::Select(AActor* Actor)
 {
 	AEntity* Entity = Cast<AEntity>(Actor);
-	bool bNew = false;
-	AActor* Old = Selected;
-	if (IsValid(Entity))
+	if (IsValid(Cast<AEntity>(Actor)) || IsValid(Cast<AUnit>(Actor)) || IsValid(Cast<AThrownItem>(Actor)))
 	{
-		Selected = Entity;
-		Entity->Select();
-		bNew = true;
-	}
-	else
-	{
-		AUnit* Unit = Cast<AUnit>(Actor);
-		if (IsValid(Unit))
-		{
-			Selected = Unit;
-			Unit->Select();
-			bNew = true;
-		}
-		else
-		{
-			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (IsValid(ThrownItem))
-			{
-				Selected = ThrownItem;
-				ThrownItem->Select();
-				bNew = true;
-			}
-		}
-	}
-
-	if (bNew && Old)
-	{
-		Unselect(Old);
+		Selected = Actor;
+		OnSelect.Broadcast(Actor);
 	}
 
 	if (bIsBreaking)
@@ -160,50 +96,52 @@ void ALastController::Select(AActor* Actor)
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
 		if (IsValid(SolidUnit))
 		{
-			StartBreak.ExecuteIfBound(SolidUnit, nullptr /* Todo */);
+			StartBreak.ExecuteIfBound(SolidUnit, GetSelectedItem());
 		}
 	}
 }
 
 void ALastController::Unselect(AActor* Actor)
 {
-	AEntity* Entity = Cast<AEntity>(Actor);
-	if (IsValid(Entity))
+	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Actor);
+	if (bIsBreaking && SolidUnit)
 	{
-		Entity->Unselect();
-	}
-	else
-	{
-		AUnit* Unit = Cast<AUnit>(Actor);
-		if (IsValid(Unit))
-		{
-			Unit->Unselect();
-
-			if (bIsBreaking)
-			{
-				ASolidUnit* SolidUnit = Cast<ASolidUnit>(Unit);
-				if (SolidUnit)
-				{
-					StopBreak.ExecuteIfBound();
-				}
-			}
-		}
-		else
-		{
-			AThrownItem* ThrownItem = Cast<AThrownItem>(Actor);
-			if (IsValid(ThrownItem))
-			{
-				ThrownItem->Unselect();
-			}
-		}
+		StopBreak.ExecuteIfBound();
 	}
 	if (Selected == Actor)
 	{
 		Selected = nullptr;
 	}
+	OnUnselect.Broadcast(Actor);
 }
 
-void ALastController::Death()
+AItem* ALastController::GetSelectedItem()
+{
+	if (IsValid(Inventory))
+	{
+		return Inventory->GetHotbarItem(HotbarSlot);
+	}
+	else
+	{
+		return nullptr;
+	}
+}
+
+int ALastController::GetHotbarSlot()
+{
+	return HotbarSlot;
+}
+
+void ALastController::SetHotbarSlot(int Slot)
+{
+	if (IsValid(Inventory) && Slot >= 0 && Slot < LastPawn->GetLastData().HotbarSize)
+	{
+		HotbarSlot = Slot;
+		OnItemChanged.Broadcast(Inventory->GetHotbarItem(HotbarSlot));
+	}
+}
+
+void ALastController::Death(FDamageType Type, AActor* Murderer)
 {
 	// Unbinds all the delegate but zoom.
 	// UnBind function doesn't work and I don't know why. That's why empty lambdas are used.
@@ -215,8 +153,15 @@ void ALastController::Death()
 	Attack.BindLambda([](AEntity*, bool, AItem*) { return false; });
 	StartBreak.BindLambda([](ASolidUnit*, AItem*) {});
 	StopBreak.BindLambda([]() {});
-	SetItem.BindLambda([](AItem*) {});
 	bIsDead = true;
+}
+
+void ALastController::HotbarItemChanged(int HotbarIndex, AItem* NewItem)
+{
+	if (HotbarIndex == HotbarSlot)
+	{
+		OnItemChanged.Broadcast(NewItem);
+	}
 }
 
 void ALastController::SetupInput()
@@ -242,30 +187,6 @@ void ALastController::SetupInput()
 	CurrentInputStack[0]->BindAction("Inventory", IE_Pressed, this, &ALastController::Inventory_f);
 	CurrentInputStack[0]->BindAction("Crafting", IE_Pressed, this, &ALastController::Crafting_f);
 	CurrentInputStack[0]->BindAction("Skills", IE_Pressed, this, &ALastController::Skills_f);
-}
-
-int ALastController::GetHotbarSlot()
-{
-	return HotbarSlot;
-}
-
-void ALastController::SetHotbarSlot(int Slot)
-{
-	if (IsValid(Inventory) && Slot >= 0 && Slot < Cast<ALast>(GetPawn())->GetLastData().HotbarSize)
-	{
-		HotbarSlot = Slot;
-		AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-		if (IsValid(HotbarItem))
-		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = true;
-		}
-		else if (bWasValid)
-		{
-			SetItem.ExecuteIfBound(HotbarItem);
-			bWasValid = false;
-		}
-	}
 }
 
 void ALastController::MoveX_f(float Value)
@@ -341,16 +262,61 @@ void ALastController::StopAttack_f()
 
 void ALastController::Interact_f()
 {
-	ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
-	if (IsValid(SolidUnit) &&
-		FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+	if (!bIsDead)
 	{
-		SolidUnit->Interact(Cast<ALast>(GetPawn()));
+		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
+		if (IsValid(SolidUnit) &&
+			FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+		{
+			SolidUnit->Interact(Cast<ALast>(GetPawn()));
+		}
+		else // Tmp
+		{
+			// Spawn a caw
+			GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
+				FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+		}
 	}
-	else
+}
+
+void ALastController::Throw_f()
+{
+	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
+	if (!bIsDead && IsValid(HotbarItem))
 	{
-		GetWorld()->SpawnActor<AAnimal>(GAME_MODE->GetDatabase()->GetMobData(FGameplayTag::RequestGameplayTag(FName(TEXT("entity.animal.cow")))).Class,
-			FVector(0.f, 0.f, GetPawn()->GetActorLocation().Z), GetPawn()->GetActorRotation());
+		THROW_ITEM(Inventory->GetInventory()->Take(Inventory->GetInventory()->Find(Inventory->GetHotbarItemTag(HotbarSlot)), 1), RAND_ITEM_POSITION(GetPawn()->GetActorLocation()));
+	}
+}
+
+void ALastController::Menu_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Menu);
+	}
+}
+
+void ALastController::Inventory_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Inventory);
+	}
+}
+
+void ALastController::Crafting_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Crafting);
+	}
+}
+
+void ALastController::Skills_f()
+{
+	if (!bIsDead)
+	{
+		GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Skills);
 	}
 }
 
@@ -370,32 +336,24 @@ void ALastController::SwitchLang_tmp()
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
 }
 
-void ALastController::Throw_f()
+void ALastController::DebugOutput()
 {
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (!bIsDead && IsValid(HotbarItem))
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+	float Fps = 1 / DeltaTime;
+	FColor FpsTextColor;
+	if (Fps < 25.f)
 	{
-		AThrownItem* Drop = GetWorld()->SpawnActor<AThrownItem>(GAME_MODE->GetDatabase()->GetExtraData().ThrownItemClass.Get(), GetPawn()->GetActorLocation() + FVector(Cast<AEntity>(GetPawn())->GetEntityData().Size, 0.f) * GameConstants::TileSize * FMath::RandRange(-.5f, .5f), FRotator(0.f, 0.f, 0.f));
-		Drop->SetItem(Inventory->GetInventory()->Take(Inventory->GetHotbarItemIndex(HotbarSlot), 1));
+		FpsTextColor = Fps < 10.f ? FColor::Red : FColor::Orange;
 	}
-}
+	else if (Fps < 60.f)
+	{
+		FpsTextColor = Fps < 30.f ? FColor::Yellow : FColor::Green;
+	}
+	else
+	{
+		FpsTextColor = Fps < 100.f ? FColor::Blue : FColor::Magenta;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, .99f, FpsTextColor, FString::Printf(TEXT("%.0f FPS (%.2f ms)"), Fps, DeltaTime * 1000.f));
 
-void ALastController::Menu_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Menu);
-}
-
-void ALastController::Inventory_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Inventory);
-}
-
-void ALastController::Crafting_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Crafting);
-}
-
-void ALastController::Skills_f()
-{
-	GAME_MODE->GetWidgetInitializer()->DisplayPlayerMenuWidget(Cast<ALast>(GetPawn()), FMenuType::Skills);
+	GEngine->AddOnScreenDebugMessage(-1, .99f, FColor::White, TEXT("After v.Alpha 0.1.5 (DOUBLED_INVENTORY_TEST) by SnegirSoft"));
 }

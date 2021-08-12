@@ -15,6 +15,8 @@
 class AUnit;
 class USphereComponent;
 
+DECLARE_DELEGATE_OneParam(FViewDelegate, AActor*);
+
 UCLASS()
 class AFTER_API AMob : public AEntity
 {
@@ -29,6 +31,8 @@ protected:
 public:
 	virtual void Tick(float DeltaTime) override;
 
+	virtual void PossessedBy(AController* NewController) override;
+
 	// ==================================================
 
 public:
@@ -37,9 +41,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FMobInfo& GetMobData() const;
 
-			/* DAMAGE */
-	
-	virtual void Damage(float Value, FDamageType Type, float Direction, AActor* FromWho, float Push = 0.f) override;
+			/* VIEW */
+
+	FViewDelegate OnBeginDanger;
+	FViewDelegate OnEndDanger;
+	FViewDelegate OnBeginView;
+	FViewDelegate OnEndPursue;
 
 protected:
 			/* GENERAL */
@@ -69,15 +76,6 @@ protected:
 			/* DAMAGE */
 
 	virtual void DeathDrop() override;
-
-			/* EVENTS */
-
-//	UDELEGATE(Category = "Events")
-	TDelegate<void(float, AActor*)> DamageDelegate;
-	TDelegate<void(const AActor*)> BeginDangerDelegate;
-	TDelegate<void(const AActor*)> EndDangerDelegate;
-	TDelegate<void(AActor*)> BeginViewDelegate;
-	TDelegate<void(AActor*)> EndPursueDelegate;
 
 			/* COMPONENTS */
 

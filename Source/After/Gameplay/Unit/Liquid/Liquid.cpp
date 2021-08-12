@@ -9,7 +9,6 @@
 #include "Components/BoxComponent.h"
 #include "PaperFlipbookComponent.h"
 #include "PaperSpriteComponent.h"
-#include "Components/AudioComponent.h"
 
 #include "../../../Data/Database/Database.h"
 #include "../../LogGameplay.h"
@@ -25,17 +24,8 @@ void ALiquid::BeginPlay()
 {
 	Super::BeginPlay();
 
-	OnEndPlay.AddDynamic(this, &ALiquid::ClearTimers);
-
-	// Get game mode
-	AAfterGameModeBase* GameMode = GAME_MODE;
-	if (!GameMode)
-	{
-		UE_LOG(LogGameplay, Fatal, TEXT("Auth game mode is not AAfterGameModeBase"));
-	}
-
 	// Get database
-	const UDatabase* Database = GameMode->GetDatabase();
+	const UDatabase* Database = GAME_MODE->GetDatabase();
 	LiquidData = &Database->GetLiquidData(Id);
 
 	if (UnitData->bSelectable)
@@ -118,16 +108,5 @@ void ALiquid::ClearTimers(AActor* Actor, EEndPlayReason::Type Reason)
 void ALiquid::Flow()
 {
 	// Todo
-	PlaySound(FLiquidSoundType::Flow);
 	GetWorld()->GetTimerManager().ClearTimer(FlowTimer);
-}
-
-void ALiquid::PlaySound(FLiquidSoundType Sound)
-{
-	int Size = LiquidData->Sounds.Sounds[Sound].Sounds.Num();
-	if (Size != 0)
-	{
-		AudioComponent->SetSound(LiquidData->Sounds.Sounds[Sound].Sounds[FMath::RandRange(0, Size - 1)]);
-		AudioComponent->Play();
-	}
 }

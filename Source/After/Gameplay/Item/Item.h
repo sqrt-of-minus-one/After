@@ -14,6 +14,11 @@
 
 #include "Item.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemBrokenEvent, AItem*, Item, float, Weight);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConditionChangedEvent, float, NewCondition);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCountChangedEvent, int, NewCount);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemCountZeroEvent, AItem*, Item);
+
 UCLASS()
 class AFTER_API AItem : public AActor
 {
@@ -39,6 +44,14 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "General")
 	const FGameplayTag& GetId() const;
 
+	// Is called when items count changed (even if new count is zero)
+	UPROPERTY(BlueprintAssignable, Category = "General")
+	FCountChangedEvent OnCountChanged;
+
+	// Is called when items count becomes zero and item object is destroyed
+	UPROPERTY(BlueprintAssignable, Category = "General")
+	FItemCountZeroEvent OnItemCountZero;
+
 	UFUNCTION(BlueprintCallable, Category = "General")
 	int GetCount() const;
 
@@ -47,6 +60,12 @@ public:
 	bool SetCount(int NewCount);
 
 			/* STATS */
+
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FConditionChangedEvent OnConditionChanged;
+
+	UPROPERTY(BlueprintAssignable, Category = "Stats")
+	FItemBrokenEvent OnItemBroken;
 
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetCondition() const;
