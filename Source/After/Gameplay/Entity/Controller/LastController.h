@@ -154,4 +154,12 @@ protected:
 	void Crafting_f();
 	void Skills_f();
 	void SwitchLang_tmp();
+
+			/* DEBUG */
+
+	UPROPERTY(BlueprintReadOnly, Category = "Debug")
+	FTimerHandle DebugOutputTimer;
+
+	UFUNCTION(Category = "Bebug")
+	void DebugOutput();
 };

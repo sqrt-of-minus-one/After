@@ -37,58 +37,13 @@ void ALastController::BeginPlay()
 	Super::BeginPlay();
 
 	SetupInput();
+
+	GetWorld()->GetTimerManager().SetTimer(DebugOutputTimer, this, &ALastController::DebugOutput, 1.f, true);
 }
 
 void ALastController::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-// Debug output
-	const ALangManager* LangManager = GAME_MODE->GetLangManager();
-
-	AEntity* SelectedEntity = nullptr;
-	AUnit* SelectedUnit = nullptr;
-	AThrownItem* SelectedThrownItem = nullptr;
-	if (SelectedEntity = Cast<AEntity>(Selected), IsValid(SelectedEntity))
-	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Orange, FString::Printf(TEXT("*          %s: %f"), *LangManager->GetString(FName("stats.health")), SelectedEntity->GetHealth()));
-
-		FString EntityName = GAME_MODE->GetLangManager()->GetString(FName(SelectedEntity->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *EntityName));
-	}
-	else if (SelectedUnit = Cast<AUnit>(Selected), IsValid(SelectedUnit))
-	{
-		FString UnitName = GAME_MODE->GetLangManager()->GetString(FName(SelectedUnit->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *UnitName));
-	}
-	else if (SelectedThrownItem = Cast<AThrownItem>(Selected), IsValid(SelectedThrownItem))
-	{
-		FString ThrownItemName = GAME_MODE->GetLangManager()->GetString(FName(SelectedThrownItem->GetItem()->GetId().ToString() + FString(".name")));
-
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: %s"), *LangManager->GetString(FName("tmp.selected")), *ThrownItemName));
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Green, FString::Printf(TEXT("%s: None"), *LangManager->GetString(FName("tmp.selected"))));
-	}
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-	
-	AItem* HotbarItem = Inventory->GetHotbarItem(HotbarSlot);
-	if (IsValid(HotbarItem))
-	{
-		if (HotbarItem->GetItemData().MaxCondition > 0.f)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, FString::Printf(TEXT("%s (%f / %f)"), *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))), HotbarItem->GetCondition(), HotbarItem->GetItemData().MaxCondition));
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Blue, *GAME_MODE->GetLangManager()->GetString(FName(HotbarItem->GetId().ToString() + FString(".name"))));
-		}
-	}
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("\n")));
-// End debug output
 }
 
 void ALastController::OnPossess(APawn* InPawn)
@@ -379,4 +334,26 @@ void ALastController::SwitchLang_tmp()
 	}
 	LangManager->SetLang(Lang);
 	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Cyan, FString::Printf(TEXT("%s %s"), *LangManager->GetString(FName("lang.changed")), *LangManager->GetString(FName("lang.name"))));
+}
+
+void ALastController::DebugOutput()
+{
+	float DeltaTime = GetWorld()->GetDeltaSeconds();
+	float Fps = 1 / DeltaTime;
+	FColor FpsTextColor;
+	if (Fps < 25.f)
+	{
+		FpsTextColor = Fps < 10.f ? FColor::Red : FColor::Orange;
+	}
+	else if (Fps < 60.f)
+	{
+		FpsTextColor = Fps < 30.f ? FColor::Yellow : FColor::Green;
+	}
+	else
+	{
+		FpsTextColor = Fps < 100.f ? FColor::Blue : FColor::Magenta;
+	}
+	GEngine->AddOnScreenDebugMessage(-1, .99f, FpsTextColor, FString::Printf(TEXT("%.0f FPS (%.2f ms)"), Fps, DeltaTime * 1000.f));
+
+	GEngine->AddOnScreenDebugMessage(-1, .99f, FColor::White, TEXT("After v.Alpha 0.1.5 (DOUBLED_INVENTORY_TEST) by SnegirSoft"));
 }

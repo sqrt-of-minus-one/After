@@ -61,16 +61,6 @@ void ALast::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-// Debug output
-	const ALangManager* LangManager = GAME_MODE->GetLangManager();
-
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::White, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.oxygen")), Oxygen));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Yellow, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.energy")), Energy));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Magenta, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.satiety")), Satiety));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Red, FString::Printf(TEXT("%s: %f"), *LangManager->GetString(FName("stats.health")), Health));
-	GEngine->AddOnScreenDebugMessage(-1, DeltaTime, FColor::Black, FString::Printf(TEXT("FPS: %.2f (%.2f ms)"), 1 / DeltaTime, DeltaTime * 1000));
-// End debug output
-
 	// Todo: Use events (SolidUnit)
 	if (DestroyedUnit)
 	{
