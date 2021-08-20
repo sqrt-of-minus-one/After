@@ -56,18 +56,19 @@ int AItem::GetCount() const
 
 bool AItem::SetCount(int NewCount)
 {
+	int OldCount = Count;
 	if (NewCount <= 0)
 	{
 		Count = 0;
-		OnCountChanged.Broadcast(0);
-		OnItemCountZero.Broadcast(this);
+		OnCountChanged.Broadcast(this, OldCount, 0, ItemData->Weight);
+		OnItemCountZero.Broadcast(this, ItemData->Weight);
 		Destroy();
 		return true;
 	}
 	else if (ItemData->bIsStackable)
 	{
 		Count = NewCount;
-		OnCountChanged.Broadcast(Count);
+		OnCountChanged.Broadcast(this, OldCount, NewCount, ItemData->Weight);
 		return true;
 	}
 	else
@@ -81,7 +82,7 @@ float AItem::GetCondition() const
 	return Condition;
 }
 
-void AItem::Use(float ConditionDecrease)
+void AItem::DecreaseCondition(float ConditionDecrease)
 {
 	if (ItemData->MaxCondition > 0.f)
 	{
@@ -94,4 +95,9 @@ void AItem::Use(float ConditionDecrease)
 		}
 		OnConditionChanged.Broadcast(Condition);
 	}
+}
+
+bool AItem::Interact(ALast* Last)
+{
+	return false;
 }

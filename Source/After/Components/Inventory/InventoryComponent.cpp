@@ -89,6 +89,7 @@ AItem* UInventoryComponent::Take(int Index, int Count)
 			Inventory.RemoveAt(Index);
 			OnItemRemoved.Broadcast(Index, Item);
 			Item->OnItemBroken.RemoveAll(this);
+			Item->OnCountChanged.RemoveAll(this);
 			Fullness -= Item->GetItemData().Weight * Item->GetCount();
 			return Item;
 		}
@@ -159,6 +160,7 @@ int UInventoryComponent::Put(AItem* Item, int Count)
 				Item->SetCount(Item->GetCount() - MoveCount);
 			}
 			NewItem->OnItemBroken.AddDynamic(this, &UInventoryComponent::ItemBroken);
+			NewItem->OnCountChanged.AddDynamic(this, &UInventoryComponent::ItemCountChanged);
 			Fullness += NewItem->GetItemData().Weight * MoveCount;
 			Inventory.Add(NewItem);
 			return MoveCount;
@@ -203,6 +205,24 @@ void UInventoryComponent::ItemBroken(AItem* Item, float Weight)
 				Inventory.RemoveAt(i);
 				OnItemRemoved.Broadcast(i, Item);
 				Fullness -= Weight;
+				break;
+			}
+		}
+	}
+}
+
+void UInventoryComponent::ItemCountChanged(AItem* Item, int OldCount, int NewCount, float Weight)
+{
+	Fullness -= Weight * (OldCount - NewCount);
+	if (NewCount <= 0)
+	{
+		for (int i = 0; i < Inventory.Num(); i++)
+		{
+			if (Inventory[i] == Item)
+			{
+				Inventory.RemoveAt(i);
+				OnItemRemoved.Broadcast(i, Item);
+				break;
 			}
 		}
 	}
@@ -240,6 +260,7 @@ int UInventoryComponent::MoveToInventory_(int Index, int Count, T* InventoryComp
 					Inventory.RemoveAt(Index);
 					OnItemRemoved.Broadcast(Index, Removed);
 					Removed->OnItemBroken.RemoveAll(this);
+					Removed->OnCountChanged.RemoveAll(this);
 					Fullness -= FirstCount * Weight;
 				}
 				else

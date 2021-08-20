@@ -16,6 +16,7 @@ class UPaperSprite;
 struct FDatabaseInitData;
 struct FExtraInfo;
 class AItem;
+class AFood;
 
 USTRUCT(BlueprintType)
 struct FItemInfo
@@ -145,6 +146,12 @@ struct FFoodInfo
 	GENERATED_USTRUCT_BODY()
 
 public:
+			/* GENERAL */
+
+	// Food's class
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "General")
+	TSubclassOf<AFood> Class;
+
 			/* USING */
 
 	// Amount of satieny that this food can recover

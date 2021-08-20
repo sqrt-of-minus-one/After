@@ -347,7 +347,7 @@ bool AEntity::MeleeAttack(AEntity* Target, bool bCanMiss, AItem* Weapon)
 				if (IsValid(Weapon))
 				{
 					Target->Damage(Weapon->GetItemData().Damage, Weapon->GetItemData().DamageType, FMath::Atan2(Direction.Y, Direction.X), this, Weapon->GetItemData().Push);
-					Weapon->Use(GameConstants::ItemConditionDecrease);
+					Weapon->DecreaseCondition(GameConstants::ItemConditionDecrease);
 				}
 				else
 				{
@@ -398,14 +398,18 @@ void AEntity::CalculateStats()
 {
 	if (Energy < EntityData->MaxEnergy && (!bIsRunning || Moving.IsZero()))
 	{
-		Energy = FMath::Clamp(Energy + EntityData->EnergyRegenerationSpeed, 0.f, EntityData->MaxEnergy);
+		Energy = FMath::Clamp(Energy + EntityData->EnergyRegenerationSpeed * GameConstants::GameTickLength, 0.f, EntityData->MaxEnergy);
 		OnEnergyChanged.Broadcast(Energy);
 	}
 
 	if (Oxygen < EntityData->MaxOxygen /* Todo: and if is not underwater */)
 	{
-		Oxygen = FMath::Clamp(Oxygen + EntityData->OxygenRegenerationSpeed, 0.f, EntityData->MaxOxygen);
+		Oxygen = FMath::Clamp(Oxygen + EntityData->OxygenRegenerationSpeed * GameConstants::GameTickLength, 0.f, EntityData->MaxOxygen);
 		OnOxygenChanged.Broadcast(Oxygen);
+	}
+	else if (Oxygen <= 0.f)
+	{
+		Damage(EntityData->OxygenDamage * GameConstants::GameTickLength, FDamageType::Suffocation, 0.f, nullptr, 0.f);
 	}
 }
 

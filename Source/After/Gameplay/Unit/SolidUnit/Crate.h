@@ -38,7 +38,7 @@ public:
 
 			/* INTERACTION */
 
-	virtual void Interact(ALast* Last) override;
+	virtual bool Interact(ALast* Last) override;
 
 			/* CONTENT */
 

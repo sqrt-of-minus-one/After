@@ -16,8 +16,8 @@
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemBrokenEvent, AItem*, Item, float, Weight);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FConditionChangedEvent, float, NewCondition);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FCountChangedEvent, int, NewCount);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FItemCountZeroEvent, AItem*, Item);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_FourParams(FCountChangedEvent, AItem*, Item, int, OldCount, int, NewCount, float, Weight);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FItemCountZeroEvent, AItem*, Item, float, Weight);
 
 UCLASS()
 class AFTER_API AItem : public AActor
@@ -71,7 +71,13 @@ public:
 	float GetCondition() const;
 
 	UFUNCTION(Category = "Stats")
-	void Use(float ConditionDecrease);
+	void DecreaseCondition(float ConditionDecrease);
+
+			/* INTERACTION */
+
+	// Return true if the item is interactive and interaction has been successfully handled
+	UFUNCTION(Category = "Interaction")
+	virtual bool Interact(ALast* Last);
 
 protected:
 			/* GENERAL */

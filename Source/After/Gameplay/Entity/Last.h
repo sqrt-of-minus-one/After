@@ -51,6 +51,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Stats")
 	float GetSatiety() const;
 
+	// Return true if satiety has been successfully increased
+	UFUNCTION(BlueprintCallable, Category = "Stats")
+	bool IncreaseSatiety(float SatietyIncrease);
+
 	// Is called when entity's satiety changes
 	UPROPERTY(BlueprintAssignable, Category = "Stats")
 	FSatietyChangedEvent OnSatietyChanged;

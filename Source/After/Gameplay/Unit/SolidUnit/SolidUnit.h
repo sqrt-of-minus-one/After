@@ -63,8 +63,9 @@ public:
 
 			/* INTERACTION */
 
+	// Return true if the unit is interactive and interaction has been successfully handled
 	UFUNCTION(Category = "Interaction")
-	virtual void Interact(ALast* Last);
+	virtual bool Interact(ALast* Last);
 
 			/* DAMAGE */
 

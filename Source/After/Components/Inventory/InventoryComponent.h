@@ -106,6 +106,9 @@ protected:
 	UFUNCTION(Category = "Inventory")
 	void ItemBroken(AItem* Item, float Weight);
 
+	UFUNCTION(Category = "Inventory")
+	void ItemCountChanged(AItem* Item, int OldCount, int NewCount, float Weight);
+
 private:
 	template<typename T>
 	int MoveToInventory_(int Index, int Count, T* InventoryComponent);

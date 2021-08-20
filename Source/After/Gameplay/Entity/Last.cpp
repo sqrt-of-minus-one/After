@@ -121,6 +121,20 @@ float ALast::GetSatiety() const
 	return Satiety;
 }
 
+bool ALast::IncreaseSatiety(float SatietyIncrease)
+{
+	if (Satiety < LastData->MaxSatiety)
+	{
+		Satiety = FMath::Clamp(Satiety + SatietyIncrease, 0.f, LastData->MaxSatiety);
+		OnSatietyChanged.Broadcast(Satiety);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 UPlayerInventoryComponent* ALast::GetInventory()
 {
 	return InventoryComponent;
@@ -187,6 +201,13 @@ void ALast::CalculateStats()
 {
 	Super::CalculateStats();
 
-	Satiety = FMath::Clamp(Satiety - LastData->SatietySpeed, 0.f, LastData->MaxSatiety);
-	OnSatietyChanged.Broadcast(Satiety);
+	if (Satiety > 0)
+	{
+		Satiety = FMath::Clamp(Satiety - LastData->SatietySpeed * GameConstants::GameTickLength, 0.f, LastData->MaxSatiety);
+		OnSatietyChanged.Broadcast(Satiety);
+	}
+	else
+	{
+		Damage(LastData->SatietyDamage * GameConstants::GameTickLength, FDamageType::Internal, 0.f, nullptr, 0.f);
+	}
 }

@@ -266,9 +266,16 @@ void ALastController::Interact_f()
 	{
 		ASolidUnit* SolidUnit = Cast<ASolidUnit>(Selected);
 		if (IsValid(SolidUnit) &&
-			FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius))
+			FVector::DistSquared(SolidUnit->GetActorLocation(), GetPawn()->GetActorLocation()) <= FMath::Square(Cast<AEntity>(GetPawn())->GetEntityData().AttackRadius) &&
+			SolidUnit->Interact(Cast<ALast>(GetPawn())))
 		{
-			SolidUnit->Interact(Cast<ALast>(GetPawn()));
+			return;	
+		}
+
+		AItem* Item = Inventory->GetHotbarItem(HotbarSlot);
+		if (IsValid(Item) && Item->Interact(Cast<ALast>(GetPawn())))
+		{
+			return;
 		}
 		else // Tmp
 		{

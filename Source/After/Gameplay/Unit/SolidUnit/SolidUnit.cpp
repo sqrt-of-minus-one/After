@@ -102,9 +102,9 @@ float ASolidUnit::GetHealth() const
 	return Health;
 }
 
-void ASolidUnit::Interact(ALast* Last)
+bool ASolidUnit::Interact(ALast* Last)
 {
-	// This should be pure virtual, but it's Unreal...
+	return false;
 }
 
 void ASolidUnit::Damage(float Value, FDamageType Type, AActor* FromWho)
@@ -294,7 +294,7 @@ void ASolidUnit::Broken()
 	{
 		if (IsValid(i.Value.Item))
 		{
-			i.Value.Item->Use(SolidUnitData->BreakingTime * (i.Value.bIsToolRight ? GameConstants::ItemConditionDecrease : GameConstants::WrongItemConditionPenalty));
+			i.Value.Item->DecreaseCondition(SolidUnitData->BreakingTime * (i.Value.bIsToolRight ? GameConstants::ItemConditionDecrease : GameConstants::WrongItemConditionPenalty));
 		}
 	}
 

@@ -41,11 +41,13 @@ void ACrate::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
-void ACrate::Interact(ALast* Last)
+bool ACrate::Interact(ALast* Last)
 {
 	Super::Interact(Last);
 
 	GAME_MODE->GetWidgetInitializer()->DisplayCrateInventoryWidget(this, Last);
+
+	return true;
 }
 
 const FCrateInfo& ACrate::GetCrateData() const

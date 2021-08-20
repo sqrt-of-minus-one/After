@@ -50,6 +50,7 @@ enum class FDamageType : uint8
 	Poison,
 	Radiation,
 	Suffocation,
+	Internal,
 	Burn
 };
 template<>

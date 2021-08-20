@@ -52,19 +52,23 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float MaxEnergy;
 
-	// Oxygen decreasing per (tick * delta) while the entity is underwater
+	// Oxygen decreasing per second while the entity is underwater
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float OxygenSpeed;
 
-	// Oxygen increasing per (tick * delta) while the entity is not underwater
+	// Oxygen increasing per second while the entity is not underwater
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float OxygenRegenerationSpeed;
 
-	// Energy decreasing per (tick * delta) while the entity is running
+	// Health decreasing per second when oxygen has ended
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float OxygenDamage;
+
+	// Energy decreasing per second while the entity is running
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float EnergySpeed;
 
-	// Energy increasing per (tick * delta) while the entity is not running
+	// Energy increasing per second while the entity is not running
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float EnergyRegenerationSpeed;
 
@@ -194,9 +198,13 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float MaxSatiety;
 
-	// Satiety decreasing per (tick * delta)
+	// Satiety decreasing per second
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
 	float SatietySpeed;
+
+	// Health decreasing per second when satiety is zero
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Stats")
+	float SatietyDamage;
 };
 void Check(FLastInfo& Data, const FGameplayTag& Tag, FDatabaseInitData& InitData, const FExtraInfo& ExtraData);
 

@@ -18,7 +18,7 @@
 #include "../../Gameplay/Unit/Liquid/Liquid.h"
 #include "../../Gameplay/Unit/SolidUnit/SolidUnit.h"
 #include "../../Gameplay/Item/ThrownItem.h"
-#include "../../Gameplay/Item/Item.h"
+#include "../../Gameplay/Item/Food.h"
 
 #include <functional>
 
