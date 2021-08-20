@@ -26,6 +26,7 @@ extern const float LiquidValueInTile; // How much liquid can be contained in one
 
 extern const float EntityPushDecrement; // How quickly knockback decreases
 extern const float EntityOverlapOffsetMultiplier; // Entities repel each other when they overlap
+extern const FVector EntitySizeDelta; // The difference between tile size and entity size
 
 		/* MOB */
 

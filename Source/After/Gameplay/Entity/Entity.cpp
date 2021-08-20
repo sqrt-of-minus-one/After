@@ -35,7 +35,7 @@ AEntity::AEntity() :
 
 	CollisionComponent = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	SetRootComponent(CollisionComponent);
-	CollisionComponent->SetBoxExtent(GameConstants::TileSize);
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize - GameConstants::EntitySizeDelta);
 	CollisionComponent->SetCollisionProfileName(FName("Entity"));
 
 	FlipbookComponent = CreateDefaultSubobject<UPaperFlipbookComponent>(TEXT("Flipbook"));
@@ -67,7 +67,7 @@ void AEntity::BeginPlay()
 
 	CollisionComponent->OnComponentBeginOverlap.AddDynamic(this, &AEntity::StartOverlap);
 	CollisionComponent->OnComponentEndOverlap.AddDynamic(this, &AEntity::StopOverlap);
-	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f));
+	CollisionComponent->SetBoxExtent(GameConstants::TileSize * FVector(EntityData->Size, 1.f) - GameConstants::EntitySizeDelta);
 	AudioComponent->AttenuationSettings = Database->GetExtraData().SoundAttenuation;
 
 	ALastController* LastController = Cast<ALastController>(GetWorld()->GetFirstPlayerController());
